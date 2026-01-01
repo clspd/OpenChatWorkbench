@@ -14,5 +14,6 @@ import MainView from './MainView.vue'
     inset: 0;
     display: flex;
     flex-direction: column;
+    overflow: auto;
 }
 </style>

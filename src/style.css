@@ -1,0 +1,32 @@
+*:disabled, *[disabled] {
+    cursor: not-allowed;
+}
+a, button {
+    cursor: pointer;
+}
+a:any-link {
+    text-decoration: none;
+}
+a:any-link:hover {
+    text-decoration: underline;
+}
+
+.flexible-space {
+    flex: 1;
+}
+
+/* ------ */
+
+.ant-layout {
+    background: unset;
+}
+
+/* ------ */
+
+:root {
+    --color: #000;
+    --background: #fff;
+    --layout-header-bg: #fff;
+    --layout-sider-bg: #f0f2f5;
+    --split-border-color: #e4e7ed;
+}
