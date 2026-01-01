@@ -41,5 +41,3 @@ features:
 ## Getting Started
 
 > This project is under active development. Documentation and APIs are subject to change.
-
-For developers interested in contributing, please check our [Development Guide](/guide/development) (to be written).
