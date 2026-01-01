@@ -10,6 +10,7 @@ hero:
     - theme: brand
       text: 🚀 Try Now
       link: https://chat.openchatworkbench.com
+      target: _self
     - theme: alt  
       text: View on GitHub
       link: https://github.com/clspd/OpenChatWorkbench
