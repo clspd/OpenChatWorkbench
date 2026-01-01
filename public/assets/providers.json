@@ -1,0 +1,137 @@
+[
+    {
+        "name": "OpenAI",
+        "description": "GPT series large language model services provided by OpenAI",
+        "baseURL": "https://api.openai.com/v1/",
+        "icon": "🤖",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://platform.openai.com/api-keys",
+        "isCustom": false
+    },
+    {
+        "name": "DeepSeek",
+        "description": "DeepSeek large language model services from China",
+        "baseURL": "https://api.deepseek.com/",
+        "icon": "🤖",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://platform.deepseek.com/api_keys",
+        "isCustom": false
+    },
+    {
+        "name": "Other OpenAI-Compatible Provider",
+        "description": "Any provider with OpenAI-compatible API",
+        "baseURL": "",
+        "icon": "🔌",
+        "requestPath": "/chat/completions",
+        "purchase_url": "",
+        "isCustom": true
+    },
+    {
+        "name": "Aliyun Dashscope",
+        "description": "Dashscope large language model services provided by Alibaba Cloud (Bailian)",
+        "baseURL": "https://dashscope.aliyuncs.com/compatible-mode/v1/",
+        "icon": "☁️",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://bailian.console.aliyun.com/",
+        "isCustom": false
+    },
+    {
+        "name": "Anthropic Claude",
+        "description": "Claude series models from Anthropic",
+        "baseURL": "https://api.anthropic.com/",
+        "icon": "🧠",
+        "requestPath": "/v1/messages",
+        "purchase_url": "https://console.anthropic.com/settings/keys",
+        "isCustom": false
+    },
+    {
+        "name": "Google Gemini",
+        "description": "Google's Gemini large language model services",
+        "baseURL": "https://generativelanguage.googleapis.com/v1/",
+        "icon": "🔮",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://aistudio.google.com/app/apikey",
+        "isCustom": false
+    },
+    {
+        "name": "Microsoft Azure OpenAI",
+        "description": "OpenAI services on Microsoft Azure platform",
+        "baseURL": "https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT_NAME/?api-version=2024-02-15-preview",
+        "icon": "💎",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://portal.azure.com/#create/Microsoft.CognitiveServicesOpenAI",
+        "isCustom": false
+    },
+    {
+        "name": "Baidu Wenxin Yiyan",
+        "description": "Wenxin large language model services launched by Baidu",
+        "baseURL": "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/",
+        "icon": "🐼",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application",
+        "isCustom": false
+    },
+    {
+        "name": "iFlytek Spark",
+        "description": "Spark cognitive large language model from iFlytek",
+        "baseURL": "https://spark-api.xf-yun.com/v1.1/chat",
+        "icon": "✨",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://xinghuo.xfyun.cn/sparkapi",
+        "isCustom": false
+    },
+    {
+        "name": "Zhipu AI",
+        "description": "GLM series large language models from Zhipu AI",
+        "baseURL": "https://open.bigmodel.cn/api/paas/v4/",
+        "icon": "🎯",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://open.bigmodel.cn/usercenter/apikeys",
+        "isCustom": false
+    },
+    {
+        "name": "Moonshot AI",
+        "description": "Kimi large language model from Moonshot AI",
+        "baseURL": "https://api.moonshot.cn/v1/",
+        "icon": "🌙",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://platform.moonshot.cn/console/api-keys",
+        "isCustom": false
+    },
+    {
+        "name": "01.AI",
+        "description": "Yi series large language models from 01.AI",
+        "baseURL": "https://api.lingyiwanwu.com/v1/",
+        "icon": "🎨",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://platform.lingyiwanwu.com/apikeys",
+        "isCustom": false
+    },
+    {
+        "name": "Ollama",
+        "description": "Locally deployed Ollama services",
+        "baseURL": "http://localhost:11434/v1/",
+        "icon": "🦙",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://ollama.ai/",
+        "isCustom": false
+    },
+    {
+        "name": "OpenRouter",
+        "description": "Aggregated platform for multiple large language models",
+        "baseURL": "https://openrouter.ai/api/v1/",
+        "icon": "🔀",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://openrouter.ai/keys",
+        "isCustom": false
+    },
+    {
+        "name": "Groq",
+        "description": "High-speed inference Groq API services",
+        "baseURL": "https://api.groq.com/openai/v1/",
+        "icon": "⚡",
+        "requestPath": "/chat/completions",
+        "purchase_url": "https://console.groq.com/keys",
+        "isCustom": false
+    }
+]

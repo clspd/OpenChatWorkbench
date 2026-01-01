@@ -2,7 +2,7 @@
     <a-layout class="main-layout">
         <Sidebar></Sidebar>
         <a-layout class="main-content">
-            <a-layout-header v-if="windowState.isSmallScreen || appState.page === 'chat'" class="main-content-header">
+            <a-layout-header class="main-content-header">
                 <HeaderBar></HeaderBar>
             </a-layout-header>
             <router-view></router-view>

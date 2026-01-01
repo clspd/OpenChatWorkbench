@@ -26,11 +26,16 @@ const router = createRouter({
       path: '/settings/:settingId',
       name: 'setting',
       component: () => import('@/views/Settings.vue'),
+      props: true,
     },
     {
       path: '/about/',
       name: 'about',
       component: () => import('@/views/About.vue'),
+    },
+    {
+      path: '/debug/file-browser',
+      component: () => import('@/views/FileBrowser.vue'),
     },
     {
       path: '/:pathMatch(.*)*',

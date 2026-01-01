@@ -1,0 +1,12 @@
+:root {
+    --color: #000;
+    --background: #fff;
+    --layout-header-bg: #fff;
+    --layout-sider-bg: #f0f2f5;
+    --split-border-color: #e4e7ed;
+    --plain-btn-bg: #f5f7fa;
+    --plain-btn-hover-bg: #e6ebf1;
+    --plain-btn-active-bg: #d9e0e7;
+    --plain-btn-disabled-bg: #e4e7ed;
+    --plain-btn-focus-outline: #91caff;
+}

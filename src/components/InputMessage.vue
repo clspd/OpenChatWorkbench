@@ -2,14 +2,17 @@
     <div class="input-message">
         <editor-content class="edit-message"
             :editor="editor"
-            @keydown.enter="handleEnterPress"
         ></editor-content>
         <div class="bottom-view">
-            <div class="model-chooser"></div>
+            <div class="model-chooser">
+                <ModelChooser
+                    :modelId="props.modelId" @update:modelId="emit('update:modelId', $event)"
+                    :providerId="props.providerId" @update:providerId="emit('update:providerId', $event)" />
+            </div>
             <div class="file-attacher"></div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button type="primary" shape="circle">
+                <a-button type="primary" shape="circle" @click="emit('sendMessage')">
                     <ArrowUpOutlined />
                 </a-button>
             </div>
@@ -21,29 +24,59 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
-import { Placeholder } from '@tiptap/extension-placeholder'
+import Placeholder from '@tiptap/extension-placeholder'
+import Link from '@tiptap/extension-link'
+import ModelChooser from './ModelChooser.vue'
 
 const props = defineProps({
     modelValue: {
         type: String,
         default: ''
     },
+    modelId: {
+        type: String,
+        default: ''
+    },
+    providerId: {
+        type: String,
+        default: ''
+    },
 })
-const emit = defineEmits(['update:modelValue', 'sendMessage'])
+const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'sendMessage'])
 
 const editor = ref<Editor>()
 
 onMounted(() => {
     editor.value = new Editor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({
+                link: false,
+            }),
             Placeholder,
+            Link.configure({
+                openOnClick: false,
+                autolink: true,
+            }),
         ],
         content: props.modelValue,
         onUpdate: () => {
             const html = editor.value?.getHTML()
             if (html) emit('update:modelValue', html)
-        }
+        },
+        editorProps: {
+            handleKeyDown: (view, event) => {
+                if (event.key === 'Enter') {
+                    if (event.shiftKey) {
+                        editor.value?.commands.insertContent('<br>')
+                        return true
+                    }
+                    event.preventDefault()
+                    emit('sendMessage')
+                    return true
+                }
+                return false
+            },
+        },
     })
 })
 onBeforeUnmount(() => {
@@ -64,13 +97,8 @@ watch(() => props.modelValue, (newValue) => {
     editor.value?.commands.setContent(newValue)
 })
 
-const handleEnterPress = (ev: KeyboardEvent) => {
-    if (ev.shiftKey) {
-        return
-    }
-    ev.preventDefault()
-    emit('sendMessage', props.modelValue)
-}
+const modelId = ref('')
+const providerId = ref('')
 </script>
 
 <style scoped>
@@ -118,6 +146,7 @@ const handleEnterPress = (ev: KeyboardEvent) => {
 }
 .model-chooser {
     margin-right: 0.5em;
+    overflow: auto;
 }
 .file-attacher {
     margin-right: 0.5em;
