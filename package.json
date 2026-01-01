@@ -7,7 +7,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "preinstall": "only-allow pnpm",
+    "postinstall": "only-allow pnpm",
     "dev": "only-allow pnpm && vite",
     "build": "only-allow pnpm && run-p type-check \"build-only {@}\" --",
     "preview": "only-allow pnpm && vite preview",
