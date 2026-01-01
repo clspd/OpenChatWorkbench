@@ -48,28 +48,9 @@
             </div>
             <div class="user-and-settings">
                 <div class="row"><a-button type="text" @click="goSettings">Settings</a-button></div>
-                <div class="row"><a-button type="text" @click="goAbout">About</a-button></div>
             </div>
         </div>
     </teleport>
-
-    <div class="s-tl-extra" v-if="windowState.isLargeScreen && appState.sidebarCollapsed">
-        <AppLogo :size="16" />
-        <div class="btn-group">
-            <!-- 浮动的“展开”按钮（桌面端） -->
-            <a-button
-                type="text"
-                shape="circle"
-                @click="appState.sidebarCollapsed = !appState.sidebarCollapsed"
-            >
-                <CaretRightFilled />
-            </a-button>
-            <!-- 新对话（桌面端） -->
-            <a-button type="text" shape="circle" @click="newChat">
-                <PlusCircleOutlined />
-            </a-button>
-        </div>
-    </div>
 </template>
 
 <script setup lang="ts">
@@ -135,24 +116,5 @@ const goAbout = () => {
 .row+.row {
     margin-top: 0.5em;
 }
-.s-tl-extra {
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin: 1em;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-}
-.s-tl-extra > * + * {
-    margin-left: 1em;
-}
-.s-tl-extra > .btn-group {
-    border: 1px solid var(--split-border-color);
-    border-radius: 100px;
-    padding: 2px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 100px;
-    background: var(--background);
-}
+
 </style>

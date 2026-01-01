@@ -23,10 +23,3 @@ a:any-link:hover {
 
 /* ------ */
 
-:root {
-    --color: #000;
-    --background: #fff;
-    --layout-header-bg: #fff;
-    --layout-sider-bg: #f0f2f5;
-    --split-border-color: #e4e7ed;
-}
