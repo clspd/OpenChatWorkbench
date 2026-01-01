@@ -1,13 +1,36 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-export const useWindowStateStore = defineStore('WindowState', () => {
-    const width = ref(0)
-    const height = ref(0)
-    const updateWindowSize = (w: number, h: number) => {
-        width.value = w
-        height.value = h
-    }
+export const useWindowStateStore = defineStore('WindowState', {
+    state: () => ({
+        width: 0,
+        height: 0,
+    }),
+    actions: {
+        updateWindowSize(w: number, h: number) {
+            this.width = w
+            this.height = h
+        },
+    },
+    getters: {
+        isMobile(): boolean {
+            return this.width < 640
+        },
 
-    return { width, height, updateWindowSize }
+        isTablet(): boolean {
+            return this.width >= 640 && this.width < 768
+        },
+
+        isDesktop(): boolean {
+            return this.width >= 768
+        },
+
+        isSmallScreen(): boolean {
+            return this.isMobile
+        },
+
+        isLargeScreen(): boolean {
+            return this.isDesktop || this.isTablet
+        },
+    },
 })

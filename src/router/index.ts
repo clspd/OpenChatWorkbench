@@ -9,27 +9,32 @@ const router = createRouter({
     },
     {
       path: '/chat',
+      name: 'new-chat',
       component: () => import('@/views/NewChat.vue'),
     },
     {
       path: '/chat/c/:chatId',
+      name: 'chat',
       component: () => import('@/views/ChatView.vue'),
     },
     {
       path: '/settings/',
+      name: 'settings',
       component: () => import('@/views/Settings.vue'),
     },
     {
       path: '/settings/:settingId',
+      name: 'setting',
       component: () => import('@/views/Settings.vue'),
     },
     {
       path: '/about/',
+      name: 'about',
       component: () => import('@/views/About.vue'),
     },
     {
-      // 404
       path: '/:pathMatch(.*)*',
+      name: 'not-found',
       component: () => import('@/views/NotFound.vue'),
     }
   ],
