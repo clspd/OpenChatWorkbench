@@ -10,4 +10,14 @@
     --plain-btn-disabled-bg: #e4e7ed;
     --plain-btn-focus-outline: #91caff;
     --color-disabled-text: #999;
+    --scrollbar-track-color: transparent;
+    --scrollbar-thumb-color: #c9d0d7;
+    --scrollbar-thumb-hover-color: #bcc3c9;
+    --app-message-list-conversation-item-bg: transparent;
+    --app-message-list-conversation-hover-bg: #e6ebf1;
+    --app-message-list-conversation-active-bg: #d9e0e7;
+    --app-message-list-conversation-item-text-color: #000;
+    --app-message-list-conversation-active-text-color: #000;
+    --app-message-list-conversation-selected-bg: #c9d0d7;
+    --app-message-list-conversation-selected-text-color: #000;
 }

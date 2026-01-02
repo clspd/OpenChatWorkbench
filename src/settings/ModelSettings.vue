@@ -2,13 +2,34 @@
     <div class="sub-settings-container">
         <h2>Models</h2>
 
+        <div class="filter-bar">
+            <a-input 
+                v-model:value="searchKeyword" 
+                placeholder="Filter by model ID..." 
+                allow-clear
+            >
+                <template #prefix>
+                    <span>🔍</span>
+                </template>
+            </a-input>
+        </div>
+
         <div class="action-buttons">
             <a-button type="primary" @click="handleAdd">Add Model</a-button>
             <a-button @click="openFetchModal">Fetch Models</a-button>
         </div>
 
         <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
-            <h3 class="provider-name">{{ group.provider.name }}</h3>
+            <div class="provider-header">
+                <h3 class="provider-name">{{ group.provider.name }}</h3>
+                <a-button 
+                    type="link" 
+                    size="small"
+                    @click="handleToggleAllModels(group)"
+                >
+                    {{ allModelsEnabled(group) ? 'Disable All' : 'Enable All' }}
+                </a-button>
+            </div>
             
             <a-table 
                 :columns="columns" 
@@ -176,6 +197,7 @@ const conflictModalVisible = ref(false)
 const conflictModels = ref<Array<{ id: string, existing: ModelConfig, new: any }>>([])
 const selectedProvider = ref<ProviderConfig | null>(null)
 const conflictDetailsVisible = ref(false)
+const searchKeyword = ref('')
 
 const formData = reactive<Partial<ModelConfig>>({
     id: '',
@@ -250,7 +272,9 @@ const enabledProviders = computed(() => {
 const groupedModels = computed(() => {
     const groups = enabledProviders.value.map(provider => ({
         provider,
-        models: configStore.models.filter(m => m.provider_id === provider.id)
+        models: configStore.models
+            .filter(m => m.provider_id === provider.id)
+            .filter(m => !searchKeyword.value || m.id.toLowerCase().includes(searchKeyword.value.toLowerCase()))
     }))
     return groups.filter(group => group.models.length > 0)
 })
@@ -279,6 +303,29 @@ const handleDelete = (id: string) => {
 
 const handleToggleEnabled = (model: ModelConfig) => {
     configStore.updateModel(model.id, model)
+}
+
+const allModelsEnabled = (group: { provider: ProviderConfig, models: ModelConfig[] }) => {
+    return group.models.every(m => m.enabled)
+}
+
+const handleToggleAllModels = (group: { provider: ProviderConfig, models: ModelConfig[] }) => {
+    const hasFilter = searchKeyword.value.trim() !== ''
+    const targetModels = hasFilter 
+        ? group.models 
+        : configStore.models.filter(m => m.provider_id === group.provider.id)
+    
+    const newState = !allModelsEnabled(group)
+    
+    for (const model of targetModels) {
+        configStore.updateModel(model.id, {
+            ...model,
+            enabled: newState
+        })
+    }
+    
+    const scope = hasFilter ? 'filtered' : 'all'
+    message.success(`${newState ? 'Enabled' : 'Disabled'} ${scope} models for ${group.provider.name}`)
 }
 
 const handleOk = async () => {
@@ -430,6 +477,14 @@ const handleFetchOk = async () => {
     gap: 1em;
 }
 
+.filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg-color);
+    padding: 0.5em 0;
+}
+
 .action-buttons {
     display: flex;
     gap: 0.5em;
@@ -439,8 +494,15 @@ const handleFetchOk = async () => {
     margin-top: 1.5em;
 }
 
+.provider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5em;
+}
+
 .provider-name {
-    margin: 0 0 0.5em 0;
+    margin: 0;
     font-size: 1.1em;
     font-weight: 600;
     color: var(--text-color);

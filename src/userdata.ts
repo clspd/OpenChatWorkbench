@@ -3,7 +3,7 @@ import type { IDBPDatabase, IDBPTransaction } from 'idb';
 
 // config
 export const db_name = app_name_id + '_data'
-export const version = 1;
+export const version = 2;
 
 
 import { openDB, unwrap } from 'idb';
@@ -35,6 +35,9 @@ const dbUpgrade: Record<number, UpgradeFunction> = {
         db.createObjectStore('files');
         db.createObjectStore('tmp');
         db.createObjectStore('cache');
+    },
+    1(db, t, old) {
+        db.createObjectStore('kv'); // key-value store
     },
 };
 

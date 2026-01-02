@@ -1,9 +1,13 @@
 import { watch } from "vue";
 import router from "./router";
 import { useAppStateStore } from "./stores/appState";
+import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
 import { app_name } from "./config";
+import { useAppStateSessionStore } from "./stores/appStateSession";
+import { useConversationStore } from "./stores/conversationStore";
+import '@/utils/appInstanceDetector'
 
 export default async function init() {
     const onResize = () => {
@@ -22,7 +26,18 @@ export default async function init() {
     await loadConfig()
     initAutoSave()
 
+    const { load: loadAppStateAutoSave, initAutoSave: initAppStateAutoSave } = useAppStatePersistStore();
+    await loadAppStateAutoSave()
+    initAppStateAutoSave();
+
+    const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave, cleanup: cleanupAppStateSession } = useAppStateSessionStore()
+    await loadAppStateSession()
+    initAppStateSessionAutoSave()
+    cleanupAppStateSession()
+
     watch(() => useAppStateStore().title, (title) => {
         document.title = title ? (useAppStateStore().titleCustomize ? title : `${title} - ${app_name}`) : app_name
     })
+
+    useConversationStore()
 };

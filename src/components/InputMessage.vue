@@ -4,15 +4,38 @@
             :editor="editor"
         ></editor-content>
         <div class="bottom-view">
+           <div class="attacher">
+                <a-dropdown placement="top" :trigger="['click']">
+                    <template #overlay>
+                        <a-menu @click="handleAttachMenuClick" :disabled="props.disabled">
+                            <a-menu-item key="attachFile">
+                                <LinkOutlined />
+                                Attach File
+                            </a-menu-item>
+                            <a-menu-item key="attachImage">
+                                <FileImageOutlined />
+                                Attach Image
+                            </a-menu-item>
+                            <a-menu-divider />
+                            <a-menu-item key="deepThink">
+                                <CheckOutlined :style="{ color: props.config.thinking_enabled ? 'var(--primary-color)' : 'transparent' }" />
+                                <span>Deep Think</span>
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                    <a-button shape="circle" type="text" :disabled="props.disabled">
+                        <PlusOutlined />
+                    </a-button>
+                </a-dropdown>
+            </div>
             <div class="model-chooser">
                 <ModelChooser
                     :modelId="props.modelId" @update:modelId="emit('update:modelId', $event)"
                     :providerId="props.providerId" @update:providerId="emit('update:providerId', $event)" />
             </div>
-            <div class="file-attacher"></div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button type="primary" shape="circle" @click="emit('sendMessage')">
+                <a-button :disabled="props.disabled" type="primary" shape="circle" @click="emit('sendMessage')">
                     <ArrowUpOutlined />
                 </a-button>
             </div>
@@ -28,6 +51,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
 import { safeParseJSON } from '@/utils/parseTiptap'
+import { EMPTY_MESSAGE } from '@/types'
 
 const props = defineProps({
     modelValue: {
@@ -46,8 +70,12 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
+    config: {
+        type: Object,
+        default: () => ({})
+    }
 })
-const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'sendMessage'])
+const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'update:config', 'sendMessage'])
 
 const editor = ref<Editor>()
 
@@ -63,7 +91,7 @@ onMounted(() => {
                 autolink: true,
             }),
         ],
-        content: safeParseJSON(props.modelValue, { "type": "doc", "content": [{ "type": "paragraph", "content": [] }] }),
+        content: safeParseJSON(props.modelValue, EMPTY_MESSAGE),
         editable: !props.disabled,
         onUpdate: () => {
             // const html = editor.value?.getHTML()
@@ -91,23 +119,37 @@ onBeforeUnmount(() => {
     editor.value?.destroy()
 })
 
-watch(() => props.modelValue, (newValue) => {
+watch(() => props.modelValue, (newValue, oldValue) => {
     // HTML
     // const isSame = editor.value?.getHTML() === newValue
 
     // JSON
-    const isSame = JSON.stringify(safeParseJSON(props.modelValue, {})) === JSON.stringify(safeParseJSON(newValue, {}))
+    const isSame = oldValue === newValue
+    // console.log('isSame', isSame, '|', oldValue, '|', newValue)
 
     if (isSame) {
         return
     }
 
-    editor.value?.commands.setContent(newValue)
+    const json = (!newValue) ? EMPTY_MESSAGE : safeParseJSON(newValue, null)
+    if (json) editor.value?.commands.setContent(json)
 })
 
 watch(() => props.disabled, (newValue) => {
     editor.value?.setEditable(!newValue)
 })
+
+const handleAttachMenuClick = (key: string) => {
+    if (props.disabled) {
+        return
+    }
+    if (key === 'deepThink') {
+        emit('update:config', { ...props.config, thinking_enabled: !props.config.thinking_enabled })
+    }
+    if (key === 'attachFile' || key === 'attachImage') {
+        
+    }
+}
 </script>
 
 <style scoped>
@@ -136,7 +178,7 @@ watch(() => props.disabled, (newValue) => {
     outline: none !important;
     min-height: 6em;
 }
-.edit-message :deep(p:first-child) {
+.edit-message > * > :deep(:first-child) {
     margin-top: 0;
 }
 .edit-message::-webkit-scrollbar {
@@ -161,8 +203,10 @@ watch(() => props.disabled, (newValue) => {
 .model-chooser {
     margin-right: 0.5em;
     overflow: auto;
+    display: flex;
+    align-items: center;
 }
-.file-attacher {
+.attacher {
     margin-right: 0.5em;
 }
 </style>

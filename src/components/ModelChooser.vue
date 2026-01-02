@@ -9,8 +9,22 @@
             </span>
         </a-button>
 
-        <a-modal v-model:open="modalVisible" title="Select Model" :width="600" @ok="handleOk" @cancel="handleCancel">
-            <div class="model-selection">
+        <dialog-view v-model="modalVisible" style="max-width: 500px; width: calc(100% - 2em);">
+            <template #title>
+                Select Model
+            </template>
+            <div class="model-selection" ref="modelSelectionRef">
+                <div class="search-bar">
+                    <a-input 
+                        v-model:value="searchKeyword" 
+                        placeholder="Filter by model ID..." 
+                        allow-clear
+                    >
+                        <template #prefix>
+                            <span>🔍</span>
+                        </template>
+                    </a-input>
+                </div>
                 <div class="filter-section">
                     <a-checkbox v-model:checked="showFavoritesOnly">
                         Show favorites only
@@ -28,42 +42,45 @@
                             </a-tag>
                         </div>
                         <div class="model-list" v-if="group.provider.enabled">
-                            <div 
-                                v-for="model in group.models" 
-                                :key="model.id"
-                                class="model-item"
-                                :class="{ 'selected': tempModelId === model.id }"
-                                @click="selectModel(model, group.provider.id)"
-                                v-show="group.provider.enabled"
-                            >
-                                <div class="model-info">
-                                    <div class="model-id">{{ model.id }}</div>
+                            <template v-for="model in group.models" >
+                                <div 
+                                    v-if="model.enabled"
+                                    :key="model.id"
+                                    class="model-item"
+                                    :class="{ 'selected': props.modelId === model.id }"
+                                    @click="selectModel(model, group.provider.id)"
+                                >
+                                    <div class="model-info">
+                                        <div class="model-id">{{ model.id }}</div>
+                                    </div>
+                                    <div class="model-actions">
+                                        <a-button 
+                                            type="text" 
+                                            size="small"
+                                            @click.stop="toggleFavorite(group.provider.id, model.id)"
+                                            class="favorite-btn"
+                                        >
+                                            <StarFilled v-if="configStore.isFavoriteModel(group.provider.id, model.id)" class="star-icon filled" />
+                                            <StarOutlined v-else class="star-icon" />
+                                        </a-button>
+                                        <CheckOutlined v-if="props.modelId === model.id" class="check-icon" />
+                                    </div>
                                 </div>
-                                <div class="model-actions">
-                                    <a-button 
-                                        type="text" 
-                                        size="small"
-                                        @click.stop="toggleFavorite(group.provider.id, model.id)"
-                                        class="favorite-btn"
-                                    >
-                                        <StarFilled v-if="configStore.isFavoriteModel(group.provider.id, model.id)" class="star-icon filled" />
-                                        <StarOutlined v-else class="star-icon" />
-                                    </a-button>
-                                    <CheckOutlined v-if="tempModelId === model.id" class="check-icon" />
-                                </div>
-                            </div>
+                            </template>
                         </div>
                     </div>
                 </div>
             </div>
-        </a-modal>
+        </dialog-view>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { DownOutlined, CheckOutlined, StarOutlined, StarFilled } from '@ant-design/icons-vue'
 import { useConfigStore } from '@/stores/configStore'
+import { useAppStatePersistStore } from '@/stores/appStatePersist'
+import { DialogView } from 'vue-dialog-view'
 
 const props = defineProps({
     modelId: {
@@ -79,10 +96,11 @@ const props = defineProps({
 const emit = defineEmits(['update:modelId', 'update:providerId'])
 
 const configStore = useConfigStore()
+const appStatePersistStore = useAppStatePersistStore()
 
 const modalVisible = ref(false)
-const tempModelId = ref('')
-const tempProviderId = ref('')
+const searchKeyword = ref('')
+const modelSelectionRef = ref<HTMLElement | null>(null)
 const showFavoritesOnly = computed({
     get: () => configStore.modelChooser_showFavoritesOnly,
     set: (value: boolean) => configStore.modelChooser_showFavoritesOnly = value
@@ -122,6 +140,12 @@ const groupedModels = computed(() => {
             )
         }
         
+        if (searchKeyword.value.trim()) {
+            models = models.filter(model => 
+                model.id.toLowerCase().includes(searchKeyword.value.toLowerCase())
+            )
+        }
+        
         return {
             provider,
             models
@@ -130,38 +154,34 @@ const groupedModels = computed(() => {
 })
 
 const openModal = () => {
-    tempModelId.value = props.modelId
-    tempProviderId.value = props.providerId
     modalVisible.value = true
 }
 
 const selectModel = (model: any, providerId: string) => {
-    tempModelId.value = model.id
-    tempProviderId.value = providerId
+    emit('update:modelId', model.id)
+    emit('update:providerId', providerId)
+    modalVisible.value = false
 }
 
 const toggleFavorite = (providerId: string, modelId: string) => {
     configStore.toggleFavoriteModel(providerId, modelId)
 }
 
-const handleOk = () => {
-    emit('update:modelId', tempModelId.value)
-    emit('update:providerId', tempProviderId.value)
-    modalVisible.value = false
-}
-
 const handleCancel = () => {
-    tempModelId.value = props.modelId
-    tempProviderId.value = props.providerId
     modalVisible.value = false
 }
 
-watch(() => props.modelId, (newVal) => {
-    tempModelId.value = newVal
-})
-
-watch(() => props.providerId, (newVal) => {
-    tempProviderId.value = newVal
+watch(modalVisible, async (newVal) => {
+    if (newVal) {
+        await nextTick()
+        if (modelSelectionRef.value) {
+            modelSelectionRef.value.scrollTop = appStatePersistStore.modelChooserScrollPos
+        }
+    } else {
+        if (modelSelectionRef.value) {
+            appStatePersistStore.modelChooserScrollPos = modelSelectionRef.value.scrollTop
+        }
+    }
 })
 </script>
 
@@ -200,6 +220,16 @@ watch(() => props.providerId, (newVal) => {
 .model-selection {
     max-height: 500px;
     overflow-y: auto;
+    position: relative;
+}
+
+.search-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--background);
+    padding: 0.5em 0;
+    margin-bottom: 0.5em;
 }
 
 .filter-section {

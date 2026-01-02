@@ -34,7 +34,8 @@
 
             <!-- 输入区域 -->
             <div class="input-container">
-                <InputMessage v-model="userMessage" v-model:modelId="modelId" v-model:providerId="providerId"
+                <InputMessage v-model="userMessage" v-model:modelId="modelId" v-model:providerId="providerId" 
+                    v-model:config="userMessageConfig"
                     @send-message="handleSendMessage" :disabled="isSending" />
             </div>
         </div>
@@ -52,12 +53,15 @@ import { useAppStateStore } from '@/stores/appState'
 import InputMessage from '@/components/InputMessage.vue'
 import { loadConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
-import type { Conversation } from '@/types/index.ts'
+import { EMPTY_MESSAGE_JSON, MessageEditConfig, type Conversation } from '@/types/index.ts'
+import { useAppStatePersistStore } from '@/stores/appStatePersist'
+import { useAppStateSessionStore } from '@/stores/appStateSession'
 
 const route = useRoute()
 const router = useRouter()
 const conversation = ref<Conversation | null>(null)
 const userMessage = ref('')
+const userMessageConfig = ref(new MessageEditConfig())
 const modelId = ref('')
 const providerId = ref('')
 const isSending = ref(false)
@@ -78,6 +82,16 @@ const loadChat = async () => {
 
         // 设置页面标题
         useAppStateStore().setTitle(loadedConversation.session.title)
+
+        // 设置cached用户输入
+        const cachedMessage = useAppStateSessionStore().chatEditBuffer[chatId.value]
+        if (cachedMessage !== undefined) {
+            userMessage.value = cachedMessage.content
+            userMessageConfig.value = cachedMessage.config || new MessageEditConfig()
+        } else {
+            userMessage.value = EMPTY_MESSAGE_JSON
+            userMessageConfig.value = new MessageEditConfig()
+        }
     } catch (error) {
         console.error('Failed to load conversation:', error)
         router.push('/')
@@ -147,6 +161,24 @@ watch(() => modelId.value, (newVal) => {
 watch(() => providerId.value, (newVal) => {
     useConfigStore().selectedProviderId = newVal
 })
+
+// 监听用户输入变化
+watch(() => userMessage.value, (newValue) => {
+    // 缓存用户输入
+    useAppStateSessionStore().chatEditBuffer[chatId.value] = {
+        content: newValue,
+        config: userMessageConfig.value
+    }
+})
+
+// 监听用户输入配置变化
+watch(() => userMessageConfig.value, (newValue) => {
+    // 缓存用户输入配置
+    useAppStateSessionStore().chatEditBuffer[chatId.value] = {
+        content: userMessage.value,
+        config: newValue
+    }
+}, { deep: true })
 </script>
 
 <style scoped>

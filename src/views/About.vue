@@ -32,7 +32,7 @@
                     <strong>Framework:</strong> Vue 3.5.26
                 </div>
                 <div class="tech-item">
-                    <strong>UI Library:</strong> Ant Design Vue 4.0.0-rc.6
+                    <strong>UI Library:</strong> Ant Design Vue 4.2.6
                 </div>
                 <div class="tech-item">
                     <strong>State Management:</strong> Pinia 3.0.4

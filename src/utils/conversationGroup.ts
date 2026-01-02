@@ -20,13 +20,25 @@ export interface ConversationIndexItem {
 
 export function groupConversationsByTime(
     conversations: ConversationIndexItem[],
-    locale: string = 'zh-cn'
+    locale: string = 'en'
 ): ConversationGroup[] {
     dayjs.locale(locale)
     const now = dayjs()
-    const groups: Map<string, ConversationIndexItem[]> = new Map()
+    const groups: ConversationGroup[] = []
 
-    conversations.forEach(conv => {
+    const pinnedConversations = conversations.filter(conv => conv.pinned)
+    const normalConversations = conversations.filter(conv => !conv.pinned)
+
+    if (pinnedConversations.length > 0) {
+        groups.push({
+            label: '已置顶',
+            conversations: pinnedConversations.sort((a, b) => b.updated_at - a.updated_at)
+        })
+    }
+
+    const timeGroups: Map<string, ConversationIndexItem[]> = new Map()
+
+    normalConversations.forEach(conv => {
         const date = dayjs(conv.updated_at)
         const diffDays = now.diff(date, 'day')
 
@@ -38,13 +50,13 @@ export function groupConversationsByTime(
             groupLabel = date.format('YYYY-MM')
         }
 
-        if (!groups.has(groupLabel)) {
-            groups.set(groupLabel, [])
+        if (!timeGroups.has(groupLabel)) {
+            timeGroups.set(groupLabel, [])
         }
-        groups.get(groupLabel)!.push(conv)
+        timeGroups.get(groupLabel)!.push(conv)
     })
 
-    return Array.from(groups.entries())
+    const sortedTimeGroups = Array.from(timeGroups.entries())
         .map(([label, convs]) => ({
             label,
             conversations: convs.sort((a, b) => b.updated_at - a.updated_at)
@@ -58,6 +70,10 @@ export function groupConversationsByTime(
 
             return 0
         })
+
+    groups.push(...sortedTimeGroups)
+
+    return groups
 }
 
 export function formatConversationTime(
