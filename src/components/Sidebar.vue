@@ -47,7 +47,10 @@
                 <MessageList />
             </div>
             <div class="user-and-settings">
-                <div class="row"><a-button type="text" @click="goSettings">Settings</a-button></div>
+                <div class="row"><a-button type="text" @click="goSettings">
+                    <SettingOutlined />
+                    <span>Settings</span>
+                </a-button></div>
             </div>
         </div>
     </teleport>
@@ -90,19 +93,23 @@ const goAbout = () => {
 .a-sider :deep(.ant-layout-sider-children) {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .sidebar-content-container {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .sidebar-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .message-list-container {
     flex: 1;
+    overflow: auto;
 }
 .user-and-settings {
     margin-top: 0.5em;

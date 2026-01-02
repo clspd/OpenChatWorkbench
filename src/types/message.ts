@@ -72,3 +72,22 @@ export interface ConversationUserPref {
   last_access_at: number;
 }
 
+export interface ConversationIndex {
+  schemaVersion: number; // 1
+  conversations: ConversationIndexItem[];
+  has_more: boolean;
+}
+
+export interface ConversationIndexItem {
+  id: string;
+  created_at: number; // Timestamp
+  updated_at: number;
+  title: string;
+  pinned: boolean;
+}
+
+export interface ConversationGroup {
+  label: string;
+  conversations: ConversationIndexItem[];
+}
+

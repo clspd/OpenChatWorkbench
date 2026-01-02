@@ -27,7 +27,7 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
-import { safeParseJSON } from '@/util/parseTiptap'
+import { safeParseJSON } from '@/utils/parseTiptap'
 
 const props = defineProps({
     modelValue: {

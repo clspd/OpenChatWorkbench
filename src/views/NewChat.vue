@@ -18,7 +18,7 @@ import { watch } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import { createNewConversation, saveConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
-import { tiptap2markdown } from '@/util/parseTiptap'
+import { tiptap2markdown } from '@/utils/parseTiptap'
 
 const userMessage = ref('')
 const modelId = ref('')
