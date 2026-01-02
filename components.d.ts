@@ -54,6 +54,7 @@ declare module 'vue' {
     PlusCircleOutlined: typeof import('@ant-design/icons-vue')['PlusCircleOutlined']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
   }
 }

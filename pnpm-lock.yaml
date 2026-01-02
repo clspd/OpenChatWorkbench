@@ -38,6 +38,9 @@ importers:
       ant-design-vue:
         specifier: 4.0.0-rc.6
         version: 4.0.0-rc.6(vue@3.5.26(typescript@5.9.3))
+      dayjs:
+        specifier: ^1.11.19
+        version: 1.11.19
       idb:
         specifier: ^8.0.3
         version: 8.0.3

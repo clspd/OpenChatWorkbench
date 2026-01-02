@@ -1,6 +1,8 @@
 import { fs } from '@/userdata';
 import { SchemaVersion } from '@/types/index.ts';
 import type { Conversation } from '@/types/index.ts';
+import { addToIndex, updateInIndex, removeFromIndex, updateUserPref, updatePinnedStatus } from './convIndex';
+import { useConversationStore } from '@/stores/conversationStore';
 
 // 对话文件存储路径
 const CONVERSATIONS_DIR = '/data/conversations/';
@@ -43,6 +45,18 @@ export async function createNewConversation(): Promise<Conversation> {
     messages: []
   };
   
+  await addToIndex(conversation, false);
+  await updateUserPref(conversation.id, 0, false);
+  
+  const store = useConversationStore();
+  store.addConversation({
+    id: conversation.id,
+    created_at: conversation.session.created_at,
+    updated_at: conversation.session.updated_at,
+    title: conversation.session.title,
+    pinned: false
+  });
+  
   return conversation;
 }
 
@@ -50,12 +64,18 @@ export async function createNewConversation(): Promise<Conversation> {
 export async function saveConversation(conversation: Conversation): Promise<void> {
   await ensureConversationsDirExists();
   
-  // 更新会话更新时间
   conversation.session.updated_at = Date.now();
   
   const filePath = `${CONVERSATIONS_DIR}${conversation.id}.json`;
   try {
     await fs.writeFile(filePath, JSON.stringify(conversation), 'utf-8');
+    await updateInIndex(conversation);
+    
+    const store = useConversationStore();
+    store.updateConversation(conversation.id, {
+      updated_at: conversation.session.updated_at,
+      title: conversation.session.title
+    });
   } catch (error) {
     console.error(`Failed to save conversation ${conversation.id}:`, error);
     throw error;
@@ -107,6 +127,10 @@ export async function deleteConversation(conversationId: string): Promise<void> 
   
   try {
     await fs.unlink(filePath);
+    await removeFromIndex(conversationId);
+    
+    const store = useConversationStore();
+    store.removeConversation(conversationId);
   } catch (error) {
     console.error(`Failed to delete conversation ${conversationId}:`, error);
     throw error;
@@ -123,6 +147,19 @@ export async function updateConversationTitle(conversationId: string, title: str
     await saveConversation(conversation);
   } catch (error) {
     console.error(`Failed to update conversation title ${conversationId}:`, error);
+    throw error;
+  }
+}
+
+export async function updateConversationPinned(conversationId: string, pinned: boolean): Promise<void> {
+  try {
+    await updatePinnedStatus(conversationId, pinned);
+    await updateUserPref(conversationId, 0, pinned);
+    
+    const store = useConversationStore();
+    store.updatePinnedStatus(conversationId, pinned);
+  } catch (error) {
+    console.error(`Failed to update conversation pinned status ${conversationId}:`, error);
     throw error;
   }
 }
