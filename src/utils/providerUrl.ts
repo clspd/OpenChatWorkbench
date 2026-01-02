@@ -6,6 +6,9 @@ export function GetProviderRequestUrl(providerId: string, requestPath: string): 
         throw new Error(`Provider ${providerId} not found`)
     }
     const baseUrl = (provider.baseURL.endsWith('/') ? provider.baseURL : provider.baseURL + '/')
+    if (requestPath.startsWith('/')) {
+        requestPath = '.' + requestPath
+    }
     try {
         const url = new URL(requestPath, baseUrl)
         return url.href

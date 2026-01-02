@@ -17,8 +17,8 @@
                                 Attach Image
                             </a-menu-item>
                             <a-menu-divider />
-                            <a-menu-item key="deepThink">
-                                <CheckOutlined :style="{ color: props.config.thinking_enabled ? 'var(--primary-color)' : 'transparent' }" />
+                            <a-menu-item key="deepThink" :style="{ color: props.config.thinking_enabled ? 'var(--text-primary-color)' : '' }">
+                                <CheckOutlined :style="{ color: props.config.thinking_enabled ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 Deep Think
                             </a-menu-item>
                         </a-menu>
@@ -156,7 +156,7 @@ const handleAttachMenuClick = ({ key = '' }) => {
 .input-message {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--split-border-color);
+    border: 1px solid var(--input-border-color);
     border-radius: 1em;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -170,13 +170,13 @@ const handleAttachMenuClick = ({ key = '' }) => {
 }
 .edit-message {
     flex: 1;
-    min-height: 6em;
+    min-height: 4em;
     max-height: calc(100vh - 20em);
     overflow: auto;
 }
 .edit-message > * {
     outline: none !important;
-    min-height: 6em;
+    min-height: 4em;
 }
 .edit-message > * > :deep(:first-child) {
     margin-top: 0;

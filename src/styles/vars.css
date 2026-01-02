@@ -4,6 +4,7 @@
     --layout-header-bg: #fff;
     --layout-sider-bg: #f0f2f5;
     --split-border-color: #e4e7ed;
+    --input-border-color: #e4e7ed;
     --plain-btn-bg: #f5f7fa;
     --plain-btn-hover-bg: #e6ebf1;
     --plain-btn-active-bg: #d9e0e7;
@@ -20,4 +21,6 @@
     --app-message-list-conversation-active-text-color: #000;
     --app-message-list-conversation-selected-bg: #c9d0d7;
     --app-message-list-conversation-selected-text-color: #000;
+    --app-message-list-conversation-focus-outline: #91caff;
+    --text-primary-color: #4096ff;
 }

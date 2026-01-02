@@ -7,17 +7,17 @@
         <div v-else class="conversation-groups">
             <div v-for="group in conversationGroups" :key="group.label" class="group">
                 <div class="group-label">{{ group.label }}</div>
-                <div v-for="conversation in group.conversations" :key="conversation.id" 
+                <a v-for="conversation in group.conversations" :key="conversation.id" 
                     class="conversation-item"
                     :class="{ 'is-selected': isActive(conversation.id) }"
-                    draggable="true"
-                    @dragstart="handleDragStart(conversation.id, $event)"
+                    role="link"
+                    :href="getConversationUrl(conversation.id)"
                     @click="handleConversationClick(conversation.id)">
                     <div class="conversation-title">{{ conversation.title }}</div>
                     <div class="conversation-meta">
                         <span class="conversation-time">{{ formatConversationTime(conversation.updated_at) }}</span>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>
@@ -29,6 +29,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useConversationStore } from '@/stores/conversationStore'
 import { groupConversationsByTime, formatConversationTime } from '@/utils/conversationGroup'
 import type { ConversationGroup } from '@/utils/conversationGroup'
+import { useWindowStateStore } from '@/stores/windowState'
+import { useAppStateStore } from '@/stores/appState'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,12 +43,19 @@ const conversationGroups = computed<ConversationGroup[]>(() => {
 
 const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
+    if (!useWindowStateStore().isLargeScreen) {
+        useAppStateStore().sidebarCollapsed = true
+    }
 }
 
-const handleDragStart = (conversationId: string, event: DragEvent) => {
-    if (!event.dataTransfer) return
-    event.dataTransfer.setData('text/plain', conversationStore.getConversationById(conversationId)?.title || 'Untitled')
-    event.dataTransfer.setData('text/uri-list', new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href)
+// const handleDragStart = (conversationId: string, event: DragEvent) => {
+//     if (!event.dataTransfer) return
+//     event.dataTransfer.setData('text/plain', conversationStore.getConversationById(conversationId)?.title || 'Untitled')
+//     event.dataTransfer.setData('text/uri-list', new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href)
+// }
+
+const getConversationUrl = (conversationId: string): string => {
+    return new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href
 }
 
 const isActive = (conversationId: string): boolean => {
@@ -103,10 +112,12 @@ onMounted(async () => {
 }
 
 .conversation-item {
+    display: block;
     padding: 0.75em;
     margin-top: 0.25em;
     border-radius: 0.5em;
     cursor: pointer;
+    text-decoration: none !important;
     transition: all 0.2s;
     border: 1px solid transparent;
     background-color: var(--app-message-list-conversation-item-bg);
@@ -120,6 +131,10 @@ onMounted(async () => {
 .conversation-item:active {
     background-color: var(--app-message-list-conversation-active-bg);
     color: var(--app-message-list-conversation-active-text-color);
+}
+
+.conversation-item:focus-visible {
+    outline: 2px solid var(--app-message-list-conversation-focus-outline);
 }
 
 .conversation-item.is-selected {
