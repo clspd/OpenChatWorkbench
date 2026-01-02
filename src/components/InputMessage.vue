@@ -19,7 +19,7 @@
                             <a-menu-divider />
                             <a-menu-item key="deepThink">
                                 <CheckOutlined :style="{ color: props.config.thinking_enabled ? 'var(--primary-color)' : 'transparent' }" />
-                                <span>Deep Think</span>
+                                Deep Think
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -139,7 +139,7 @@ watch(() => props.disabled, (newValue) => {
     editor.value?.setEditable(!newValue)
 })
 
-const handleAttachMenuClick = (key: string) => {
+const handleAttachMenuClick = ({ key = '' }) => {
     if (props.disabled) {
         return
     }
