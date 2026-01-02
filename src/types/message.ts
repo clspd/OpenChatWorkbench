@@ -91,3 +91,15 @@ export interface ConversationGroup {
   conversations: ConversationIndexItem[];
 }
 
+export class MessageEditConfig {
+  thinking_enabled: boolean = false;
+  files: FileAttachmentInfo[] = [];
+}
+
+export type ChatEditBuffer = Record<string, {
+  content: MessageContent;
+  config: MessageEditConfig;
+}>
+
+export const EMPTY_MESSAGE = { "type": "doc", "content": [{ "type": "paragraph", "content": [] }] };
+export const EMPTY_MESSAGE_JSON = JSON.stringify(EMPTY_MESSAGE)

@@ -1,17 +1,20 @@
 <template>
     <div class="message-list">
-        <div v-if="conversationStore.loading" class="loading">加载中...</div>
-        <div v-else-if="conversationGroups.length === 0" class="empty">暂无对话</div>
+        <div v-if="conversationStore.loading" class="loading">Loading...</div>
+        <div v-else-if="conversationGroups.length === 0" class="empty">
+            No conversations
+        </div>
         <div v-else class="conversation-groups">
             <div v-for="group in conversationGroups" :key="group.label" class="group">
                 <div class="group-label">{{ group.label }}</div>
                 <div v-for="conversation in group.conversations" :key="conversation.id" 
                     class="conversation-item"
-                    :class="{ 'pinned': conversation.pinned, 'active': isActive(conversation.id) }"
+                    :class="{ 'is-selected': isActive(conversation.id) }"
+                    draggable="true"
+                    @dragstart="handleDragStart(conversation.id, $event)"
                     @click="handleConversationClick(conversation.id)">
                     <div class="conversation-title">{{ conversation.title }}</div>
                     <div class="conversation-meta">
-                        <span v-if="conversation.pinned" class="pinned-icon">📌</span>
                         <span class="conversation-time">{{ formatConversationTime(conversation.updated_at) }}</span>
                     </div>
                 </div>
@@ -30,6 +33,7 @@ import type { ConversationGroup } from '@/utils/conversationGroup'
 const router = useRouter()
 const route = useRoute()
 const conversationStore = useConversationStore()
+const emit = defineEmits(['initialized'])
 
 const conversationGroups = computed<ConversationGroup[]>(() => {
     return groupConversationsByTime(conversationStore.sortedConversations)
@@ -39,12 +43,19 @@ const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
 }
 
+const handleDragStart = (conversationId: string, event: DragEvent) => {
+    if (!event.dataTransfer) return
+    event.dataTransfer.setData('text/plain', conversationStore.getConversationById(conversationId)?.title || 'Untitled')
+    event.dataTransfer.setData('text/uri-list', new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href)
+}
+
 const isActive = (conversationId: string): boolean => {
     return route.params.chatId === conversationId
 }
 
 onMounted(async () => {
     await conversationStore.loadIndex()
+    emit('initialized')
 })
 </script>
 
@@ -98,19 +109,22 @@ onMounted(async () => {
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid transparent;
+    background-color: var(--app-message-list-conversation-item-bg);
+    color: var(--app-message-list-conversation-item-text-color);
 }
 
 .conversation-item:hover {
-    background-color: var(--conversation-hover-bg);
+    background-color: var(--app-message-list-conversation-hover-bg);
 }
 
-.conversation-item.active {
-    background-color: var(--conversation-active-bg);
-    border-color: var(--conversation-active-border);
+.conversation-item:active {
+    background-color: var(--app-message-list-conversation-active-bg);
+    color: var(--app-message-list-conversation-active-text-color);
 }
 
-.conversation-item.pinned {
-    background-color: var(--conversation-pinned-bg);
+.conversation-item.is-selected {
+    background-color: var(--app-message-list-conversation-selected-bg);
+    color: var(--app-message-list-conversation-selected-text-color);
 }
 
 .conversation-title {
@@ -129,10 +143,6 @@ onMounted(async () => {
     margin-top: 0.25em;
     font-size: 0.75em;
     color: var(--text-secondary);
-}
-
-.pinned-icon {
-    margin-right: 0.25em;
 }
 
 .conversation-time {
