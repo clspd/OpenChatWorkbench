@@ -160,7 +160,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
-import type { ModelConfig, ProviderConfig } from '@/types'
+import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
 import { message } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 

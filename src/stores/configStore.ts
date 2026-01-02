@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ModelConfig, ProviderConfig } from '@/types'
+import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
 import { db } from '@/userdata'
 
 export const useConfigStore = defineStore('config', {
