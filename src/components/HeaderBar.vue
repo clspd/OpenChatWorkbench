@@ -17,7 +17,7 @@
                 </div>
             </div>
 
-            <div v-if="appState.page === 'chat'">
+            <template v-if="appState.page === 'chat'">
                 <div class="flexible-space"></div>
                 <div class="title"></div>
                 <div class="flexible-space"></div>
@@ -25,10 +25,20 @@
                     <PlusCircleOutlined />
                 </a-button>
                 <!-- 对话设置按钮 -->
-                <a-button shape="circle" type="text">
-                    <EllipsisOutlined />
-                </a-button>
-            </div>
+                <a-dropdown :trigger="['click']">
+                    <template #overlay>
+                        <a-menu @click="handleMenuClick">
+                            <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
+                                <DeleteOutlined />
+                                Delete
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                    <a-button shape="circle" type="text">
+                        <EllipsisOutlined />
+                    </a-button>
+                </a-dropdown>
+            </template>
             <div v-else class="flexible-space title-text">{{ appState.title }}</div>
         </template>
         <template v-else>
@@ -51,6 +61,8 @@
 <script setup lang="ts">
 import { useAppStateStore } from '@/stores/appState';
 import { useWindowStateStore } from '@/stores/windowState';
+import { message } from 'ant-design-vue';
+import confirm from 'ant-design-vue/es/modal/confirm';
 import { useRouter } from 'vue-router';
 
 const appState = useAppStateStore();
@@ -60,6 +72,23 @@ const router = useRouter();
 
 const newChat = () => {
     router.push('/chat')
+}
+
+const handleMenuClick = ({ key }: { key: string }) => {
+    if (key === 'delete') {
+        // 确认删除？
+        confirm({
+            title: 'Are you sure delete this conversation?',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            
+            onOk: () => {
+                message.error('Not implemented yet');
+            },
+            onCancel: () => {},
+        });
+    }
 }
 </script>
 

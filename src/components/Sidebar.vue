@@ -79,12 +79,21 @@ onMounted(() => {
 
 const newChat = () => {
     router.push('/chat')
+    if (!windowState.isLargeScreen) {
+        appState.sidebarCollapsed = true
+    }
 }
 const goSettings = () => {
     router.push('/settings/')
+    if (!windowState.isLargeScreen) {
+        appState.sidebarCollapsed = true
+    }
 }
 const goAbout = () => {
     router.push('/about/')
+    if (!windowState.isLargeScreen) {
+        appState.sidebarCollapsed = true
+    }
 }
 
 const handleConvListScroll = (e: Event) => {

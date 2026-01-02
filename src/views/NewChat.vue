@@ -19,6 +19,7 @@ import { watch } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import { createNewConversation, saveConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
+import { generateResponse } from '@/modules/chat/respond'
 import { tiptap2markdown } from '@/utils/parseTiptap'
 import { message } from 'ant-design-vue'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
@@ -91,7 +92,7 @@ const handleSendMessage = async () => {
         
         const conversation = await createNewConversation()
         
-        await sendUserMessage(
+        const userMsg = await sendUserMessage(
             conversation,
             userMessageMd,
             modelId.value,
@@ -105,8 +106,17 @@ const handleSendMessage = async () => {
         delete useAppStateSessionStore().chatEditBuffer["_"]
         
         router.push(`/chat/c/${conversation.id}`)
+        
+        await generateResponse(
+            conversation,
+            userMsg.id,
+            providerId.value,
+            modelId.value,
+            userMessageConfig.value
+        )
     } catch (error) {
         console.error('Failed to send message:', error)
+        message.error('Failed to send message: ' + (error as Error).message)
     } finally {
         isSending.value = false
     }

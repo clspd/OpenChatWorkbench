@@ -51,8 +51,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore'
 import { useAppStateStore } from '@/stores/appState'
 import InputMessage from '@/components/InputMessage.vue'
-import { loadConversation } from '@/modules/chat/conversation'
+import { loadConversation, saveConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
+import { generateResponse } from '@/modules/chat/respond'
+import { tiptap2markdown } from '@/utils/parseTiptap'
 import { EMPTY_MESSAGE_JSON, MessageEditConfig, type Conversation } from '@/types/index.ts'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
@@ -113,14 +115,19 @@ const handleSendMessage = async () => {
             return
         }
 
+        // 转换为 markdown 格式
+        const userMessageMd = tiptap2markdown(userMessage.value)
+
         // 发送用户消息
-        await sendUserMessage(
+        const userMsg = await sendUserMessage(
             conversation.value,
-            userMessage.value,
+            userMessageMd,
             modelId.value,
             providerId.value,
             provider.name
         )
+
+        await saveConversation(conversation.value)
 
         // 清空输入
         userMessage.value = ''
@@ -132,6 +139,29 @@ const handleSendMessage = async () => {
                 messageList.scrollTop = messageList.scrollHeight
             }
         }, 100)
+
+        // 生成响应
+        await generateResponse(
+            conversation.value,
+            userMsg.id,
+            providerId.value,
+            modelId.value,
+            userMessageConfig.value,
+            // onComplete - 响应完成
+            () => {
+                // 滚动到底部
+                setTimeout(() => {
+                    const messageList = document.querySelector('.message-list')
+                    if (messageList) {
+                        messageList.scrollTop = messageList.scrollHeight
+                    }
+                }, 100)
+            },
+            // onError - 错误处理
+            (error) => {
+                console.error('Failed to generate response:', error)
+            }
+        )
     } catch (error) {
         console.error('Failed to send message:', error)
     } finally {
