@@ -51,6 +51,11 @@ export interface Message {
   has_pending_fragment: boolean;
 }
 
+export interface MessageRequest {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
 // Conversation types
 export interface Conversation {
   schemaVersion: number; // 1
