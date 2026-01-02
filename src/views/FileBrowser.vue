@@ -16,36 +16,50 @@
                     </template>
                     New File
                 </a-button>
-                <a-button @click="handleUpload" :disabled="!selectedItem">
+                <a-button @click="handleUpload">
                     <template #icon>
                         <UploadOutlined />
                     </template>
                     Upload
                 </a-button>
-                <a-button @click="handleDelete" danger :disabled="!selectedItem">
+                <a-button @click="handleDelete" danger :disabled="selectedRowKeys.length === 0">
                     <template #icon>
                         <DeleteOutlined />
                     </template>
                     Delete
                 </a-button>
-                <a-button @click="handleRename" :disabled="!selectedItem">
+                <a-button @click="handleRename" :disabled="selectedRowKeys.length === 0">
                     <template #icon>
                         <EditOutlined />
                     </template>
                     Rename
+                </a-button>
+                <a-button @click="handleDownload" :disabled="selectedRowKeys.length === 0">
+                    <template #icon>
+                        <DownloadOutlined />
+                    </template>
+                    Download
                 </a-button>
             </a-space>
         </div>
 
         <div class="file-browser-path">
             <a-breadcrumb>
-                <a-breadcrumb-item @click="navigateToPath('')">
+                <a-breadcrumb-item 
+                    tabindex="0"
+                    @click="navigateToPath('')"
+                    @keydown.enter="navigateToPath('')"
+                    @keydown.space.prevent="navigateToPath('')"
+                >
                     <HomeOutlined /> Root
                 </a-breadcrumb-item>
                 <a-breadcrumb-item 
                     v-for="(segment, index) in pathSegments" 
                     :key="index"
+                    tabindex="0"
                     @click="navigateToPath(getPathUpTo(index))"
+                    @keydown.enter="navigateToPath(getPathUpTo(index))"
+                    @keydown.space.prevent="navigateToPath(getPathUpTo(index))"
                 >
                     {{ segment }}
                 </a-breadcrumb-item>
@@ -58,12 +72,14 @@
                 :data-source="fileList" 
                 :pagination="false"
                 row-key="name"
-                :custom-row="customRow"
-                @row-click="handleRowClick"
+                :row-selection="{ 
+                    selectedRowKeys: selectedRowKeys, 
+                    onChange: onSelectChange,
+                }"
             >
                 <template #bodyCell="{ column, record }">
                     <template v-if="column.key === 'name'">
-                        <span class="file-name">
+                        <span class="file-name" tabindex="0" @click="handleRowClick(record)" @keydown.enter="handleRowClick(record)">
                             <span class="file-icon">{{ record.isDirectory ? '📁' : '📄' }}</span>
                             {{ record.name }}
                         </span>
@@ -102,11 +118,26 @@
             </a-form>
         </a-modal>
 
+        <a-modal 
+            v-model:open="viewFileVisible" 
+            :title="`Editing: ${currentEditingFile}`" 
+            width="80%"
+            @ok="handleSaveFile"
+            @cancel="handleCancelEdit"
+        >
+            <a-textarea 
+                v-model:value="fileContent" 
+                :auto-size="{ minRows: 15, maxRows: 30 }"
+                placeholder="File content..."
+            />
+        </a-modal>
+
         <input 
             ref="fileInputRef" 
             type="file" 
             style="display: none" 
             @change="handleFileInputChange"
+            multiple
         />
     </div>
 </template>
@@ -115,14 +146,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { fs } from '@/userdata'
 import { useAppStateStore } from '@/stores/appState'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import { 
     FolderAddOutlined, 
     FileAddOutlined, 
     DeleteOutlined, 
     EditOutlined,
     HomeOutlined,
-    UploadOutlined
+    UploadOutlined,
+    DownloadOutlined
 } from '@ant-design/icons-vue'
 
 onMounted(() => {
@@ -131,7 +163,7 @@ onMounted(() => {
 })
 
 const currentPath = ref('')
-const selectedItem = ref<any>(null)
+const selectedRowKeys = ref<string[]>([])
 const fileList = ref<Array<{
     name: string
     isDirectory: boolean
@@ -142,9 +174,12 @@ const fileList = ref<Array<{
 const createFolderVisible = ref(false)
 const createFileVisible = ref(false)
 const renameVisible = ref(false)
+const viewFileVisible = ref(false)
 const newFolderName = ref('')
 const newFileName = ref('')
 const newName = ref('')
+const fileContent = ref('')
+const currentEditingFile = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const pathSegments = computed(() => {
@@ -173,17 +208,13 @@ const columns = [
     }
 ]
 
-const customRow = (record: any) => {
-    return {
-        class: {
-            'selected-row': selectedItem.value?.name === record.name
-        },
-        onDblclick: () => {
-            if (record.isDirectory) {
-                navigateToPath(currentPath.value ? `${currentPath.value}/${record.name}` : record.name)
-            }
-        }
-    }
+const getSelectedItems = () => {
+    if (selectedRowKeys.value.length === 0) return []
+    return fileList.value.filter(item => selectedRowKeys.value.includes(item.name))
+}
+
+const onSelectChange = (keys: string[]) => {
+    selectedRowKeys.value = keys
 }
 
 const loadFiles = async () => {
@@ -217,16 +248,12 @@ const loadFiles = async () => {
 
 const navigateToPath = (path: string) => {
     currentPath.value = path
-    selectedItem.value = null
+    selectedRowKeys.value = []
     loadFiles()
 }
 
 const getPathUpTo = (index: number) => {
     return pathSegments.value.slice(0, index + 1).join('/')
-}
-
-const handleRowClick = (record: any) => {
-    selectedItem.value = record
 }
 
 const handleCreateFolder = () => {
@@ -277,31 +304,51 @@ const handleCreateFileOk = async () => {
     }
 }
 
-const handleDelete = async () => {
-    if (!selectedItem.value) return
+const handleDelete = () => {
+    const selectedItems = getSelectedItems()
+    if (selectedItems.length === 0) return
 
-    try {
-        const path = currentPath.value || '/'
-        const fullPath = path === '/' ? `/${selectedItem.value.name}` : `${path}/${selectedItem.value.name}`
-        
-        if (selectedItem.value.isDirectory) {
-            await fs.rm(fullPath, { recursive: true, force: true })
-        } else {
-            await fs.unlink(fullPath)
+    Modal.confirm({
+        title: 'Confirm Delete',
+        content: `Are you sure you want to delete ${selectedItems.length} item(s)? This action cannot be undone.`,
+        okText: 'Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk: async () => {
+            try {
+                const path = currentPath.value || '/'
+                
+                await Promise.all(
+                    selectedItems.map(async (item) => {
+                        const fullPath = path === '/' ? `/${item.name}` : `${path}/${item.name}`
+                        if (item.isDirectory) {
+                            await fs.rm(fullPath, { recursive: true, force: true })
+                        } else {
+                            await fs.unlink(fullPath)
+                        }
+                    })
+                )
+                
+                message.success(`Deleted ${selectedItems.length} item(s) successfully`)
+                selectedRowKeys.value = []
+                loadFiles()
+            } catch (error) {
+                console.error('Error deleting:', error)
+                message.error('Failed to delete')
+            }
         }
-        
-        message.success('Deleted successfully')
-        selectedItem.value = null
-        loadFiles()
-    } catch (error) {
-        console.error('Error deleting:', error)
-        message.error('Failed to delete')
-    }
+    })
 }
 
 const handleRename = () => {
-    if (!selectedItem.value) return
-    newName.value = selectedItem.value.name
+    const selectedItems = getSelectedItems()
+    if (selectedItems.length === 0) return
+    if (selectedItems.length > 1) {
+        message.warning('Please select only one item to rename')
+        return
+    }
+    // @ts-ignore
+    newName.value = selectedItems[0].name
     renameVisible.value = true
 }
 
@@ -311,15 +358,19 @@ const handleRenameOk = async () => {
         return
     }
 
+    const selectedItems = getSelectedItems()
+    if (selectedItems.length === 0) return
+
     try {
         const path = currentPath.value || '/'
-        const oldPath = path === '/' ? `/${selectedItem.value.name}` : `${path}/${selectedItem.value.name}`
+        // @ts-ignore
+        const oldPath = path === '/' ? `/${selectedItems[0].name}` : `${path}/${selectedItems[0].name}`
         const newPath = path === '/' ? `/${newName.value}` : `${path}/${newName.value}`
         
         await fs.rename(oldPath, newPath)
         message.success('Renamed successfully')
         renameVisible.value = false
-        selectedItem.value = null
+        selectedRowKeys.value = []
         loadFiles()
     } catch (error) {
         console.error('Error renaming:', error)
@@ -328,27 +379,36 @@ const handleRenameOk = async () => {
 }
 
 const handleUpload = () => {
-    if (!selectedItem.value || !selectedItem.value.isDirectory) {
-        message.warning('Please select a folder to upload to')
-        return
-    }
     fileInputRef.value?.click()
 }
 
 const handleFileInputChange = async (event: Event) => {
     const target = event.target as HTMLInputElement
-    const file = target.files?.[0]
+    const files = target.files
     
-    if (!file) return
+    if (!files || files.length === 0) return
 
     try {
         const path = currentPath.value || '/'
-        const fullPath = path === '/' ? `/${selectedItem.value.name}/${file.name}` : `${path}/${selectedItem.value.name}/${file.name}`
+        const selectedItems = getSelectedItems()
+        // @ts-ignore
+        const targetDir = selectedItems.length === 1 && selectedItems[0].isDirectory ? selectedItems[0].name : ''
         
-        const content = await file.arrayBuffer()
-        await fs.writeFile(fullPath, new Uint8Array(content))
+        await Promise.all(
+            Array.from(files).map(async (file) => {
+                let fullPath: string
+                if (targetDir) {
+                    fullPath = path === '/' ? `/${targetDir}/${file.name}` : `${path}/${targetDir}/${file.name}`
+                } else {
+                    fullPath = path === '/' ? `/${file.name}` : `${path}/${file.name}`
+                }
+                
+                const content = await file.arrayBuffer()
+                await fs.writeFile(fullPath, new Uint8Array(content))
+            })
+        )
         
-        message.success('File uploaded successfully')
+        message.success(`Uploaded ${files.length} file(s) successfully`)
         loadFiles()
     } catch (error) {
         console.error('Error uploading file:', error)
@@ -357,6 +417,47 @@ const handleFileInputChange = async (event: Event) => {
     
     if (target) {
         target.value = ''
+    }
+}
+
+const handleDownload = async () => {
+    const selectedItems = getSelectedItems()
+    if (selectedItems.length === 0) {
+        message.warning('Please select a file to download')
+        return
+    }
+
+    const filesToDownload = selectedItems.filter(item => !item.isDirectory)
+    if (filesToDownload.length === 0) {
+        message.warning('Please select at least one file to download')
+        return
+    }
+
+    try {
+        const path = currentPath.value || '/'
+        
+        await Promise.all(
+            filesToDownload.map(async (item) => {
+                const fullPath = path === '/' ? `/${item.name}` : `${path}/${item.name}`
+                
+                const content = await fs.readFile(fullPath)
+                const blob = new Blob([new Uint8Array(content)])
+                const url = URL.createObjectURL(blob)
+                
+                const a = document.createElement('a')
+                a.href = url
+                a.download = item.name
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+            })
+        )
+        
+        message.success(`Downloaded ${filesToDownload.length} file(s) successfully`)
+    } catch (error) {
+        console.error('Error downloading file:', error)
+        message.error('Failed to download file')
     }
 }
 
@@ -370,6 +471,101 @@ const formatSize = (bytes: number): string => {
 
 const formatDate = (date: Date): string => {
     return new Date(date).toLocaleString()
+}
+
+const handleRowClick = async (record: any) => {
+    if (record.isDirectory) {
+        const path = currentPath.value || '/'
+        const newPath = path === '/' ? `/${record.name}` : `${path}/${record.name}`
+        navigateToPath(newPath)
+    } else {
+        const fileName = record.name.toLowerCase()
+        const isTextFile = fileName.endsWith('.txt') || fileName.endsWith('.json')
+        const maxSize = 128 * 1024
+        
+        if (isTextFile && record.size <= maxSize) {
+            await handlePreviewFile(record)
+        } else {
+            await handleDownloadFile(record)
+        }
+    }
+}
+
+const handlePreviewFile = async (record: any) => {
+    try {
+        const path = currentPath.value || '/'
+        const fullPath = path === '/' ? `/${record.name}` : `${path}/${record.name}`
+        
+        const content = await fs.readFile(fullPath)
+        
+        try {
+            const value = new TextDecoder().decode(content)
+            if (value[0] === '{' && value.length < (16 * 1024) && value.endsWith('}')) {
+                // 尝试格式化JSON
+                try {
+                    const json = JSON.parse(value)
+                    fileContent.value = JSON.stringify(json, null, 4)
+                } catch (error) {
+                    fileContent.value = value
+                }
+            }
+            else {
+                fileContent.value = value
+            }
+            currentEditingFile.value = fullPath
+            viewFileVisible.value = true
+        } catch (error) {
+            message.warning('Cannot decode file content')
+        }
+    } catch (error) {
+        console.error('Error previewing file:', error)
+        message.error('Failed to preview file')
+    }
+}
+
+const handleSaveFile = async () => {
+    if (!currentEditingFile.value) return
+
+    try {
+        const content = new TextEncoder().encode(fileContent.value)
+        await fs.writeFile(currentEditingFile.value, content)
+        message.success('File saved successfully')
+        viewFileVisible.value = false
+        loadFiles()
+    } catch (error) {
+        console.error('Error saving file:', error)
+        message.error('Failed to save file')
+    }
+}
+
+const handleCancelEdit = () => {
+    currentEditingFile.value = ''
+    fileContent.value = ''
+    viewFileVisible.value = false
+}
+
+const handleDownloadFile = async (record: any) => {
+    try {
+        const path = currentPath.value || '/'
+        const fullPath = path === '/' ? `/${record.name}` : `${path}/${record.name}`
+        
+        const content = await fs.readFile(fullPath)
+        const blob = new Blob([new Uint8Array(content)])
+        const url = URL.createObjectURL(blob)
+        
+        const a = document.createElement('a')
+        a.href = url
+        a.download = record.name
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        
+        message.success('File downloaded successfully')
+    } catch (error) {
+        console.error('Error downloading file:', error)
+        message.error('Failed to download file')
+    }
 }
 </script>
 

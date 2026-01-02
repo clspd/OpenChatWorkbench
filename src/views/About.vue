@@ -58,12 +58,31 @@
         <a-card title="License" class="license-card">
             <p>GPL-3.0 License</p>
         </a-card>
+
+        <a-card title="Debug Tools" class="debug-card">
+            <a-space direction="vertical" :size="8" style="width: 100%;">
+                <a-button 
+                    type="primary" 
+                    block 
+                    @click="router.push('/debug/file-browser')"
+                >
+                    <template #icon>
+                        <FolderOpenOutlined />
+                    </template>
+                    File Browser
+                </a-button>
+            </a-space>
+        </a-card>
     </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { FolderOpenOutlined } from '@ant-design/icons-vue';
 import { useAppStateStore } from '@/stores/appState'
+
+const router = useRouter()
 
 onMounted(() => {
     useAppStateStore().setTitle('About')
@@ -82,7 +101,8 @@ onMounted(() => {
 .info-card,
 .features-card,
 .tech-card,
-.license-card {
+.license-card,
+.debug-card {
     background-color: var(--plain-btn-bg);
 }
 

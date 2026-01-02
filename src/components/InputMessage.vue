@@ -1,5 +1,5 @@
 <template>
-    <div class="input-message">
+    <div class="input-message" :data-disabled="props.disabled">
         <editor-content class="edit-message"
             :editor="editor"
         ></editor-content>
@@ -27,6 +27,7 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
+import { safeParseJSON } from '@/util/parseTiptap'
 
 const props = defineProps({
     modelValue: {
@@ -40,6 +41,10 @@ const props = defineProps({
     providerId: {
         type: String,
         default: ''
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     },
 })
 const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'sendMessage'])
@@ -58,10 +63,13 @@ onMounted(() => {
                 autolink: true,
             }),
         ],
-        content: props.modelValue,
+        content: safeParseJSON(props.modelValue, { "type": "doc", "content": [{ "type": "paragraph", "content": [] }] }),
+        editable: !props.disabled,
         onUpdate: () => {
-            const html = editor.value?.getHTML()
-            if (html) emit('update:modelValue', html)
+            // const html = editor.value?.getHTML()
+            // if (html) emit('update:modelValue', html)
+            const json = editor.value?.getJSON()
+            if (json) emit('update:modelValue', JSON.stringify(json))
         },
         editorProps: {
             handleKeyDown: (view, event) => {
@@ -85,10 +93,10 @@ onBeforeUnmount(() => {
 
 watch(() => props.modelValue, (newValue) => {
     // HTML
-    const isSame = editor.value?.getHTML() === newValue
+    // const isSame = editor.value?.getHTML() === newValue
 
     // JSON
-    // const isSame = JSON.stringify(this.editor.getJSON()) === JSON.stringify(value)
+    const isSame = JSON.stringify(safeParseJSON(props.modelValue, {})) === JSON.stringify(safeParseJSON(newValue, {}))
 
     if (isSame) {
         return
@@ -97,8 +105,9 @@ watch(() => props.modelValue, (newValue) => {
     editor.value?.commands.setContent(newValue)
 })
 
-const modelId = ref('')
-const providerId = ref('')
+watch(() => props.disabled, (newValue) => {
+    editor.value?.setEditable(!newValue)
+})
 </script>
 
 <style scoped>
@@ -111,6 +120,11 @@ const providerId = ref('')
     width: 100%;
     max-width: 50rem;
     padding: 1em;
+    margin: 0 auto;
+}
+.input-message[data-disabled="true"] {
+    cursor: not-allowed;
+    color: var(--color-disabled-text);
 }
 .edit-message {
     flex: 1;

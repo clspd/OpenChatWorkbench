@@ -12,7 +12,7 @@
         "name": "DeepSeek",
         "description": "DeepSeek large language model services from China",
         "baseURL": "https://api.deepseek.com/",
-        "icon": "🤖",
+        "icon": "🐋",
         "requestPath": "/chat/completions",
         "purchase_url": "https://platform.deepseek.com/api_keys",
         "isCustom": false

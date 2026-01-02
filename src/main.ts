@@ -6,8 +6,8 @@ import router from './router'
 import init from './init'
 import './userdata'
 
-import './style.css'
-import './vars.css'
+import './styles/style.css'
+import './styles/vars.css'
 
 const app = createApp(App)
 
