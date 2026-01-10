@@ -12,7 +12,7 @@
                     <div class="message-content">
                         <div v-for="fragment in message.fragments" :key="fragment.id" class="message-fragment"
                             :class="`fragment-${fragment.type.toLowerCase()}`">
-                            <div v-html="renderedContent.get(fragment.id) || ''"></div>
+                            <div v-html="fragment.content"></div>
                             <div v-if="fragment.elapsed > 0" class="fragment-elapsed">
                                 {{ fragment.elapsed }}s
                             </div>
@@ -55,8 +55,7 @@ import { loadConversation, saveConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
 import { generateResponse } from '@/modules/chat/respond'
 import { tiptap2markdown } from '@/utils/parseTiptap'
-import { renderMarkdown } from '@/utils/markdown'
-import { EMPTY_MESSAGE_JSON, MessageEditConfig, MessageRole, MessageStatus, type Conversation } from '@/types/index.ts'
+import { EMPTY_MESSAGE_JSON, MessageEditConfig, type Conversation } from '@/types/index.ts'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
 
@@ -68,20 +67,6 @@ const userMessageConfig = ref(new MessageEditConfig())
 const modelId = ref('')
 const providerId = ref('')
 const isSending = ref(false)
-const renderedContent = ref<Map<number, string>>(new Map())
-
-watch(() => conversation.value, async (newConversation) => {
-    if (newConversation) {
-        for (const message of newConversation.messages) {
-            for (const fragment of message.fragments) {
-                if (!renderedContent.value.has(fragment.id)) {
-                    const html = await renderMarkdown(fragment.content)
-                    renderedContent.value.set(fragment.id, html)
-                }
-            }
-        }
-    }
-}, { deep: true })
 
 // 获取对话ID
 const chatId = computed(() => route.params.chatId as string)
@@ -162,22 +147,6 @@ const handleSendMessage = async () => {
             providerId.value,
             modelId.value,
             userMessageConfig.value,
-            // onChunk - 实时更新 UI
-            async (content) => {
-                if (conversation.value) {
-                    const assistantMessage = conversation.value.messages.find(
-                        msg => msg.role === MessageRole.ASSISTANT && msg.status === MessageStatus.WIP
-                    );
-                    if (assistantMessage && assistantMessage.fragments.length > 0) {
-                        const lastFragment = assistantMessage.fragments[assistantMessage.fragments.length - 1];
-                        if (lastFragment) {
-                            lastFragment.content += content;
-                            const html = await renderMarkdown(lastFragment.content)
-                            renderedContent.value.set(lastFragment.id, html)
-                        }
-                    }
-                }
-            },
             // onComplete - 响应完成
             () => {
                 // 滚动到底部
