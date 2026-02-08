@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
-importScripts('/assets/init_config.js?v=1770562834'); // update v if the external file is changed (in order to bust the cache); no need to update v if sw.js itself changed
+importScripts('/internal/init_config.js?ts=202602090247+0800');
+// update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
 const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;

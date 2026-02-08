@@ -80,7 +80,7 @@ onMounted(() => {
 })
 
 const newChat = () => {
-    router.push('/chat')
+    router.push('/')
     if (!windowState.isLargeScreen) {
         appStatePersist.sidebarCollapsed = true
     }

@@ -73,7 +73,7 @@ const appStatePersist = useAppStatePersistStore();
 const router = useRouter();
 
 const newChat = () => {
-    router.push('/chat')
+    router.push('/')
 }
 
 const handleMenuClick = ({ key }: { key: string }) => {
