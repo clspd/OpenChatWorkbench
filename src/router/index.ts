@@ -5,10 +5,6 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/chat',
-    },
-    {
-      path: '/',
       name: 'new-chat',
       component: () => import('@/views/NewChat.vue'),
     },
