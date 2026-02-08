@@ -10,6 +10,13 @@ import { useConversationStore } from "./stores/conversationStore";
 import '@/utils/appInstanceDetector'
 
 export default async function init() {
+    // register service worker
+    if (Reflect.has(window.navigator, 'serviceWorker') && typeof window.navigator.serviceWorker.register === 'function') {
+        window.navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+        });
+    }
+
     const onResize = () => {
         const { updateWindowSize } = useWindowStateStore()
         updateWindowSize(window.innerWidth, window.innerHeight)
@@ -41,10 +48,4 @@ export default async function init() {
 
     useConversationStore()
 
-    // register service worker
-    if (Reflect.has(window.navigator, 'serviceWorker') && typeof window.navigator.serviceWorker.register === 'function') {
-        window.navigator.serviceWorker.register('/sw.js', {
-            scope: '/',
-        });
-    }
 };

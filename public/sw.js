@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-importScripts('/init_config.js?v=1770526123');
+importScripts('/assets/init_config.js?v=1770562834'); // update v if the external file is changed (in order to bust the cache); no need to update v if sw.js itself changed
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
 const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
@@ -54,6 +54,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         const cache = await caches.open(CACHE_NAME);
         const cachedResponse = await cache.match(req);
         if (cachedResponse) try {
+            // check if the object is immutable
             const pathname = new URL(req.url).pathname;
             for (const i of appInitConfig.IMMUTABLE_CACHE_FILE_MATCH) {
                 if (i.test(pathname)) {
@@ -61,6 +62,8 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
                     return cachedResponse;
                 }
             }
+            // check if we have internet connection
+            if (!global.navigator.onLine) return cachedResponse;
             // not immutable, check the latest version first
             // try to get ETag, or Last-Modified header
             const etag = cachedResponse.headers.get('ETag');
@@ -95,6 +98,9 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             return cachedResponse; // fallback when failure, e.g., network error
         } // end `if (cachedResponse) try`
         // the request was not cached, fetch it from network
+        // the following fetch might fail; this is expected
+        // if the network is not working
+        // instead of returning a fake response, we choose throw the error to the invoker
         const resp = await fetch(req);
         if (resp.ok) {
             const clone = resp.clone(); // clone first
@@ -109,7 +115,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
  * @type {Record<string, (event: FetchEvent, isSimple: boolean) => boolean>}
  */
 var rewriteMap = {
-    "/w/running"(event, isSimple) {
+    "/internal/w/running"(event, isSimple) {
         if (!isSimple) return false; // not simple request, ignore
         event.respondWith(Promise.resolve(new Response(new Blob(["true"], { type: "application/json" }))));
         return true; // rewrite done
