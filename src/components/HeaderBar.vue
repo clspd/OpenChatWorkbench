@@ -2,12 +2,12 @@
     <div class="header-bar">
         <template v-if="windowState.isLargeScreen">
             <!-- 大屏幕显示对话标题和对话设置按钮 -->
-            <div class="s-tl-extra" :style="{ visibility: appState.sidebarCollapsed ? 'visible' : 'hidden' }">
+            <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }">
                 <AppLogo :size="16" />
                 <div class="btn-group">
                     <!-- 浮动的“展开”按钮（桌面端） -->
                     <a-button type="text" shape="circle"
-                        @click="appState.sidebarCollapsed = !appState.sidebarCollapsed">
+                        @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
                         <CaretRightFilled />
                     </a-button>
                     <!-- 新对话（桌面端） -->
@@ -43,7 +43,7 @@
         </template>
         <template v-else>
             <!-- 小屏幕显示（常驻）菜单展开按钮和新建对话按钮 -->
-            <a-button shape="circle" type="text" @click="appState.sidebarCollapsed = !appState.sidebarCollapsed">
+            <a-button shape="circle" type="text" @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
                 <CaretRightFilled />
             </a-button>
             <div class="flexible-space"></div>
@@ -61,12 +61,14 @@
 <script setup lang="ts">
 import { useAppStateStore } from '@/stores/appState';
 import { useWindowStateStore } from '@/stores/windowState';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { message } from 'ant-design-vue';
 import confirm from 'ant-design-vue/es/modal/confirm';
 import { useRouter } from 'vue-router';
 
 const appState = useAppStateStore();
 const windowState = useWindowStateStore();
+const appStatePersist = useAppStatePersistStore();
 
 const router = useRouter();
 

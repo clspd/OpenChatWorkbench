@@ -5,6 +5,7 @@ import { fs } from '@/userdata'
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
         modelChooserScrollPos: 0,
+        sidebarCollapsed: false,
     }),
     actions: {
         initAutoSave() {

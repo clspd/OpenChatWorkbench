@@ -1,12 +1,12 @@
 <template>
     <template v-if="windowState.isLargeScreen">
-        <a-layout-sider class="a-sider sidebar-container" :style="{ backgroundColor: 'var(--layout-sider-bg)' }" :width="250" :collapsedWidth="0" :collapsed="appState.sidebarCollapsed">
+        <a-layout-sider class="a-sider sidebar-container" :style="{ backgroundColor: 'var(--layout-sider-bg)' }" :width="250" :collapsedWidth="0" :collapsed="appStatePersist.sidebarCollapsed">
             <div class="sidebar-header">
                 <div style="display: flex; align-items: center;">
                     <AppLogo :size="16" />
                 </div>
                 <div class="flexible-space"></div>
-                <a-button type="text" shape="circle" @click="appState.sidebarCollapsed = !appState.sidebarCollapsed">
+                <a-button type="text" shape="circle" @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
                     <CaretLeftFilled />
                 </a-button>
             </div>
@@ -21,8 +21,8 @@
             :headerStyle="{ padding: '0.5em 1em', border: '0' }"
             :bodyStyle="{ padding: 0, display: 'flex', flexDirection: 'column' }"
             placement="left"
-            :open="!appState.sidebarCollapsed"
-            @close="appState.sidebarCollapsed = true"
+            :open="!appStatePersist.sidebarCollapsed"
+            @close="appStatePersist.sidebarCollapsed = true"
         >
             <template #title>
                 <div style="display: flex; align-items: center;">
@@ -30,7 +30,7 @@
                 </div>
             </template>
             <template #extra>
-                <a-button type="text" shape="circle" @click="appState.sidebarCollapsed = !appState.sidebarCollapsed">
+                <a-button type="text" shape="circle" @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
                     <CaretLeftFilled />
                 </a-button>
             </template>
@@ -60,6 +60,7 @@
 import { useAppStateStore } from '@/stores/appState';
 import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStateSessionStore } from '@/stores/appStateSession';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { onMounted, ref, watch } from 'vue'
 import AppLogo from './AppLogo.vue'
 import { useRouter } from 'vue-router';
@@ -70,34 +71,35 @@ const router = useRouter()
 const appState = useAppStateStore()
 const windowState = useWindowStateStore()
 const appStateSession = useAppStateSessionStore()
+const appStatePersist = useAppStatePersistStore()
 
 const convListContainer = ref<HTMLDivElement>()
 
 onMounted(() => {
-    appState.sidebarCollapsed = windowState.isLargeScreen ? false : true
+    if (!windowState.isLargeScreen && !appStatePersist.sidebarCollapsed) appStatePersist.sidebarCollapsed = true
 })
 
 const newChat = () => {
     router.push('/chat')
     if (!windowState.isLargeScreen) {
-        appState.sidebarCollapsed = true
+        appStatePersist.sidebarCollapsed = true
     }
 }
 const goSettings = () => {
     router.push('/settings/')
     if (!windowState.isLargeScreen) {
-        appState.sidebarCollapsed = true
+        appStatePersist.sidebarCollapsed = true
     }
 }
 const goAbout = () => {
     router.push('/about/')
     if (!windowState.isLargeScreen) {
-        appState.sidebarCollapsed = true
+        appStatePersist.sidebarCollapsed = true
     }
 }
 
 const handleConvListScroll = (e: Event) => {
-    if (appState.sidebarCollapsed) {
+    if (appStatePersist.sidebarCollapsed) {
         return
     }
     const target = e.target as HTMLElement
@@ -108,7 +110,7 @@ watch(() => appStateSession.conversationListScrollPos, (newVal, oldVal) => {
     restoreScrollPos()
 })
 
-watch(() => appState.sidebarCollapsed, (newVal, oldVal) => {
+watch(() => appStatePersist.sidebarCollapsed, (newVal, oldVal) => {
     if (!newVal) setTimeout(() => restoreScrollPos(), 200);
 })
 

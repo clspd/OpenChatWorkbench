@@ -30,7 +30,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { groupConversationsByTime, formatConversationTime } from '@/utils/conversationGroup'
 import type { ConversationGroup } from '@/utils/conversationGroup'
 import { useWindowStateStore } from '@/stores/windowState'
-import { useAppStateStore } from '@/stores/appState'
+import { useAppStatePersistStore } from '@/stores/appStatePersist'
 
 const router = useRouter()
 const route = useRoute()
@@ -44,7 +44,7 @@ const conversationGroups = computed<ConversationGroup[]>(() => {
 const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
     if (!useWindowStateStore().isLargeScreen) {
-        useAppStateStore().sidebarCollapsed = true
+        useAppStatePersistStore().sidebarCollapsed = true
     }
 }
 

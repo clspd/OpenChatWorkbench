@@ -31,7 +31,7 @@ export function groupConversationsByTime(
 
     if (pinnedConversations.length > 0) {
         groups.push({
-            label: '已置顶',
+            label: 'Pinned',
             conversations: pinnedConversations.sort((a, b) => b.updated_at - a.updated_at)
         })
     }
@@ -78,7 +78,7 @@ export function groupConversationsByTime(
 
 export function formatConversationTime(
     timestamp: number,
-    locale: string = 'zh-cn'
+    locale: string = 'en'
 ): string {
     dayjs.locale(locale)
     const now = dayjs()
