@@ -1,6 +1,6 @@
 globalThis.appInitConfig = {
     CACHE_PREFIX: 'openchatworkbench_web_cache-',
-    CACHE_VERSION: 1,
+    CACHE_VERSION: 2,
     IMMUTABLE_CACHE_FILE_MATCH: [
         /^\/assets\/([^/]+?)\.s\.[\w$]+$/,
         /^\/vendor\/npm\/([\w-]+?)@(\d+?\.\d+?\.\d+?)\//,

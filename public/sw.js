@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-importScripts('/init_config.js?v=1770519452');
+importScripts('/init_config.js?v=1770526123');
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
 const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
