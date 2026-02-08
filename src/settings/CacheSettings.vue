@@ -61,7 +61,9 @@
             <div>Downloading <b>{{cacheDownloadStat.current}}</b> of <b>{{cacheDownloadStat.total}} objects</b></div>
             <div>Current: <b>{{cacheDownloadStat.currentName}}</b></div>
             <template #footer>
-                <a-button type="primary" danger :disabled="!cacheDownloadStat.abortController" @click="cacheDownloadStat.abortController?.abort()">Cancel</a-button>
+                <div style="text-align: right;">
+                    <a-button type="primary" danger :disabled="!cacheDownloadStat.abortController" @click="cacheDownloadStat.abortController?.abort()">Cancel</a-button>
+                </div>
             </template>
         </DialogView>
     </div>
@@ -129,6 +131,7 @@ const cacheAllResources = async () => {
         const cacheName = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
         const cache = await caches.open(cacheName);
         cacheDownloadStat.value.total = urls.length;
+        cacheDownloadStat.value.current = 0;
         showCacheProgressDlg.value = true;
         for (const url of urls) {
             ++cacheDownloadStat.value.current;
