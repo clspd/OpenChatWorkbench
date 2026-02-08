@@ -40,4 +40,11 @@ export default async function init() {
     })
 
     useConversationStore()
+
+    // register service worker
+    if (Reflect.has(window.navigator, 'serviceWorker') && typeof window.navigator.serviceWorker.register === 'function') {
+        window.navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+        });
+    }
 };

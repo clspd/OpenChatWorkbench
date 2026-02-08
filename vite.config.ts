@@ -25,5 +25,12 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    rolldownOptions: {
+      output: {
+        entryFileNames: 'assets/[name]-[hash].s.js',
+        chunkFileNames: 'assets/[name]-[hash].s.js',
+        assetFileNames: 'assets/[name]-[hash].s.[ext]',
+      },
+    },
   },
 })

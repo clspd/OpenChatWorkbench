@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "Open Chat Workbench",
+  "short_name": "ChatWorkbench",
+  "description": "A modern, open source chat workbench application",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["tabbed", "standalone"],
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+        "src": "/assets/icon_256.png",
+        "sizes": "256x256",
+        "type": "image/png",
+        "purpose": "any"
+    },
+    {
+        "src": "/assets/icon_512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+    },
+    {
+        "src": "/assets/icon_192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Chat",
+      "short_name": "New",
+      "description": "Start a new chat",
+      "url": "/#/",
+      "icons": [{ "src": "/assets/icon_96.png", "sizes": "96x96" }, { "src": "/assets/icon_192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "description": "Application settings",
+      "url": "/#/settings",
+      "icons": [{ "src": "/assets/icon_96.png", "sizes": "96x96" }, { "src": "/assets/icon_192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": [
+    "ai",
+    "productivity",
+    "communication",
+    "utilities",
+    "llm",
+    "chatbot"
+  ],
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "screenshots": []
+}
