@@ -38,10 +38,7 @@
                 :pagination="false"
             >
                 <template #bodyCell="{ column, record }">
-                    <template v-if="column.key === 'max_tokens'">
-                        {{ record.max_tokens }}
-                    </template>
-                    <template v-else-if="column.key === 'enabled'">
+                    <template v-if="column.key === 'enabled'">
                         <a-switch 
                             v-model:checked="record.enabled" 
                             @change="handleToggleEnabled(record)"
@@ -82,15 +79,6 @@
 
                 <a-form-item label="Model ID" name="id">
                     <a-input v-model:value="formData.id" placeholder="e.g., gpt-4, deepseek-chat" />
-                </a-form-item>
-
-                <a-form-item label="Max Tokens" name="max_tokens">
-                    <a-input-number 
-                        v-model:value="formData.max_tokens" 
-                        :min="1" 
-                        :max="1 * 1024 * 1024 * 1024" 
-                        style="width: 100%" 
-                    />
                 </a-form-item>
 
                 <a-form-item label="Enabled" name="enabled">
@@ -202,7 +190,6 @@ const searchKeyword = ref('')
 const formData = reactive<Partial<ModelConfig>>({
     id: '',
     provider_id: '',
-    max_tokens: 4096,
     enabled: true
 })
 
@@ -211,11 +198,6 @@ const columns = [
         title: 'Model ID',
         dataIndex: 'id',
         key: 'id'
-    },
-    {
-        title: 'Max Tokens',
-        dataIndex: 'max_tokens',
-        key: 'max_tokens'
     },
     {
         title: 'Enabled',
@@ -247,22 +229,11 @@ const conflictColumns = [
         key: 'new_provider',
         width: 150
     },
-    {
-        title: 'Existing Max Tokens',
-        key: 'existing_max_tokens',
-        width: 120
-    },
-    {
-        title: 'New Max Tokens',
-        key: 'new_max_tokens',
-        width: 120
-    }
 ]
 
 const rules = {
     provider_id: [{ required: true, message: 'Please select a provider!' }],
-    id: [{ required: true, message: 'Please input model ID!' }],
-    max_tokens: [{ required: true, message: 'Please input max tokens!' }]
+    id: [{ required: true, message: 'Please input model ID!' }]
 }
 
 const enabledProviders = computed(() => {
@@ -361,8 +332,7 @@ const handleOverwriteConflicts = () => {
     for (const conflict of conflictModels.value) {
         configStore.updateModel(conflict.id, {
             ...conflict.existing,
-            provider_id: selectedProvider.value.id,
-            max_tokens: 1024 * 1024 * 1024
+            provider_id: selectedProvider.value.id
         })
     }
 
@@ -417,7 +387,7 @@ const handleFetchOk = async () => {
         const data = await response.json()
         
         if (data.data && Array.isArray(data.data)) {
-            const newModels: Array<{ id: string, provider_id: string, max_tokens: number, enabled: boolean }> = []
+            const newModels: Array<{ id: string, provider_id: string, enabled: boolean }> = []
             const conflicts: Array<{ id: string, existing: ModelConfig, new: any }> = []
 
             for (const modelData of data.data) {
@@ -435,7 +405,6 @@ const handleFetchOk = async () => {
                     newModels.push({
                         id: modelId,
                         provider_id: provider.id,
-                        max_tokens: 1024 * 1024 * 1024,
                         enabled: true
                     })
                 }

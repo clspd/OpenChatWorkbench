@@ -10,7 +10,6 @@ export interface ProviderConfig {
 export interface ModelConfig {
     id: string
     provider_id: string
-    max_tokens: number
     enabled: boolean
 }
 
