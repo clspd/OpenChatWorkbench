@@ -8,6 +8,7 @@ globalThis.appInitConfig = {
     FILES_TO_CACHE_ON_STARTUP: [
         '/',
     ],
+    MANIFEST_FILE: '/internal/manifest.json',
     SKIP_CACHE_DOMAIN: [
         'localhost',
         '127.0.0.1',

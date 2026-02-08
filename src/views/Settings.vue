@@ -12,9 +12,8 @@
                 </template>
             </a-list>
         </template>
-        <ProviderSettings v-else-if="settingId === 'providers'"></ProviderSettings>
-        <ModelSettings v-else-if="settingId === 'models'"></ModelSettings>
-        <template v-else>
+        <component v-if="currentComponent" :is="currentComponent" />
+        <template v-if="!isValidPage">
             <h2 style="margin-top: 0;">Error</h2>
             <p>SettingId: {{ settingId }} does not exist.</p>
         </template>
@@ -22,13 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, markRaw, ref, watch } from 'vue';
 import { defineAsyncComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStateStore } from '@/stores/appState'
 
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
 const ModelSettings = defineAsyncComponent(() => import('@/settings/ModelSettings.vue'))
+const CacheSettings = defineAsyncComponent(() => import('@/settings/CacheSettings.vue'))
 
 const props = defineProps({
     settingId: {
@@ -38,15 +38,23 @@ const props = defineProps({
 })
 
 const router = useRouter();
-
+const currentComponent = ref<any>(null);
+const isValidPage = computed(() => (props.settingId === '' || pages.value.find((item: any) => item.id === props.settingId)));
 const pages = ref([
     {
         id: 'providers',
         title: 'Providers',
+        component: markRaw(ProviderSettings),
     },
     {
         id: 'models',
         title: 'Models',
+        component: markRaw(ModelSettings),
+    },
+    {
+        id: 'cache',
+        title: 'Cache',
+        component: markRaw(CacheSettings),
     },
     {
         id: 'about',
@@ -60,9 +68,15 @@ onMounted(() => {
 })
 
 const goSetting = (item: { id: string; anotherPage?: string }) => {
-    if (item.anotherPage) router.push(item.anotherPage)
-    else router.push(`/settings/${item.id}`);
+    if (item.anotherPage) { router.push(item.anotherPage); return }
+    router.push(`/settings/${item.id}`);
 }
+watch(() => props.settingId, (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+        currentComponent.value = pages.value.find((item: any) => item.id === newVal)?.component;
+    }
+    if (props.settingId === '') useAppStateStore().setTitle('Settings')
+}, { immediate: true })
 </script>
 
 <style scoped>

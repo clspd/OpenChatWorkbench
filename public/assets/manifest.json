@@ -63,5 +63,15 @@
   "prefer_related_applications": false,
   "related_applications": [],
   "iarc_rating_id": "",
-  "screenshots": []
+  "screenshots": [
+    {
+      "src": "/assets/screenshot_wide.png",
+      "purpose": "any",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/assets/screenshot_mobile.png",
+      "purpose": "any"
+    }
+  ]
 }

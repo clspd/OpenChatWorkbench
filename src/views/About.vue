@@ -16,7 +16,7 @@
         <a-card title="Status" class="my-card">
             <div>
                 <b>Service Worker status:</b>
-                <span class="status-text" :data-status="isSwActive">{{ isSwActive ? 'Active' : 'Not Active' }}</span>
+                <StatusText :value="isSwActive" activeText="Active" inactiveText="Not Active" />
             </div>
         </a-card>
 
@@ -42,6 +42,7 @@ import { useRouter } from 'vue-router';
 import { FolderOpenOutlined } from '@ant-design/icons-vue';
 import { useAppStateStore } from '@/stores/appState'
 import { isServiceWorkerActive } from '@/utils/swApi';
+import StatusText from '@/components/StatusText.vue'
 
 const router = useRouter()
 
@@ -61,17 +62,6 @@ onMounted(async () => {
     margin-top: 1em;
 }
 .status-text {
-    display: inline-block;
-    padding: 0.2em 0.5em;
-    border-radius: 0.2em;
-    color: #fff;
-    font-size: 0.8em;
     margin-left: 0.5em;
-}
-.status-text[data-status="true"] {
-    background-color: #4caf50;
-}
-.status-text[data-status="false"] {
-    background-color: #f44336;
 }
 </style>
