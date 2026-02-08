@@ -25,6 +25,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    manifest: "internal/manifest.json",
     rolldownOptions: {
       output: {
         entryFileNames: 'assets/[name]-[hash].s.js',
