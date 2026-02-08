@@ -1,5 +1,6 @@
 import { watch } from "vue";
 import router from "./router";
+import { registerServiceWorker } from "./utils/swApi";
 import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
@@ -11,11 +12,7 @@ import '@/utils/appInstanceDetector'
 
 export default async function init() {
     // register service worker
-    if (Reflect.has(window.navigator, 'serviceWorker') && typeof window.navigator.serviceWorker.register === 'function') {
-        window.navigator.serviceWorker.register('/sw.js', {
-            scope: '/',
-        });
-    }
+    await registerServiceWorker()
 
     const onResize = () => {
         const { updateWindowSize } = useWindowStateStore()
