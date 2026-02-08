@@ -137,7 +137,10 @@ const cacheAllResources = async () => {
             ++cacheDownloadStat.value.current;
             try {
                 cacheDownloadStat.value.abortController = new AbortController();
-                const req = new Request(url), realReq = new Request(url, { signal: cacheDownloadStat.value.abortController.signal });
+                const req = new Request(url), realReq = new Request(url, {
+                    signal: cacheDownloadStat.value.abortController.signal,
+                    cache: 'no-cache',
+                });
                 cacheDownloadStat.value.currentName = url.pathname;
                 const res = await fetch(realReq);
                 if (!res.ok) throw new Error('Failed to fetch resource ' + url + ': HTTP ' + res.status + ' ' + res.statusText);

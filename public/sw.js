@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-importScripts('/internal/init_config.js?ts=202602090305+0800');
+importScripts('/internal/init_config.js?ts=202602090544+0800');
 // update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
@@ -50,6 +50,8 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
     if (!isSimple) return;
     // check if the domain is in the skip cache list
     if (appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname)) return;
+    // check if the rewuester wants to ignore cache
+    if (req.cache === 'no-cache' || req.cache === 'no-store') return;
     // handle the request
     event.respondWith((async () => {
         const cache = await caches.open(CACHE_NAME);
