@@ -123,16 +123,21 @@ const cacheAllResources = async () => {
     try {
         if (!isSwActive.value) return;
 
+        cacheDownloadStat.value.total = cacheDownloadStat.value.current = 0;
+        cacheDownloadStat.value.abortController = undefined;
+        cacheDownloadStat.value.currentName = 'Fetching manifest file...';
+        showCacheProgressDlg.value = true;
         const resp = await fetch(appInitConfig.MANIFEST_FILE);
         if (!resp.ok) throw new Error('Failed to fetch manifest file: HTTP ' + resp.status + ' ' + resp.statusText);
         const res = await resp.json();
         const urls = Object.values(res).map((item: any) => new URL(item.file, window.location.href));
+        showCacheProgressDlg.value = false;
         if (!await confirm('Are you sure cache all resources?', 'This action will download ' + urls.length + ' resources, which may take a while. Do you want to continue?')) return;
+        showCacheProgressDlg.value = true;
         const cacheName = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
         const cache = await caches.open(cacheName);
         cacheDownloadStat.value.total = urls.length;
         cacheDownloadStat.value.current = 0;
-        showCacheProgressDlg.value = true;
         for (const url of urls) {
             ++cacheDownloadStat.value.current;
             try {
