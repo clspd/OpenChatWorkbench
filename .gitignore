@@ -34,3 +34,6 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# Project-specific
+src/dynamic.ts

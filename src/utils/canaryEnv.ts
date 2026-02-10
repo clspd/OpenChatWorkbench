@@ -1,6 +1,7 @@
 import { Checkbox, Modal } from "ant-design-vue";
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref } from "vue";
 import { db } from '@/userdata';
+import { DYNDATA } from '@/dynamic'
 
 export async function showCanaryWarning() {
     const doNotShow = await db.get('kv', 'canaryWarning.doNotShowAgain');
@@ -107,3 +108,14 @@ export function addCanaryWatermark() {
     // @ts-ignore
     return () => (wm.parentNode?.host?.remove());
 }
+
+export function addRevHash() {
+    const wm = document.createElement('div');
+    wm.inert = true;
+    wm.innerText = '+' + DYNDATA.commithash;
+    wm.style.cssText = 'position: fixed; z-index: 3001; font-size: small; white-space: pre; user-select: none; bottom: 0; left: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis';
+    document.body.appendChild(document.createElement('div')).attachShadow({ mode: 'closed' }).append(wm);
+    // @ts-ignore
+    return () => (wm.parentNode?.host?.remove());
+}
+

@@ -7,10 +7,11 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "postinstall": "only-allow pnpm",
+    "postinstall": "only-allow pnpm && pnpm generate-dyndata",
     "dev": "only-allow pnpm && vite",
-    "build": "only-allow pnpm && run-p type-check \"build-only {@}\" --",
+    "build": "only-allow pnpm && pnpm generate-dyndata && run-p type-check \"build-only {@}\" --",
     "preview": "only-allow pnpm && vite preview",
+    "generate-dyndata": "node before-build.js",
     "build-only": "vite build",
     "type-check": "only-allow pnpm && vue-tsc --build",
     "typecheck": "only-allow pnpm && vue-tsc --build"
