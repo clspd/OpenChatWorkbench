@@ -5,7 +5,7 @@ import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
-import { app_name } from "./config";
+import { app_name, domain_name_canary } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 import '@/utils/appInstanceDetector'
@@ -46,5 +46,11 @@ export default async function init() {
     useConversationStore()
     
     fetch('/resource/offline@1.0.0.html').catch(() => {})
+
+    if (1||window.location.hostname === domain_name_canary) {
+        const { showCanaryWarning, addCanaryWatermark } = await import('./utils/canaryEnv');
+        showCanaryWarning();
+        window.removeCanaryWatermark = addCanaryWatermark();
+    }
 
 };

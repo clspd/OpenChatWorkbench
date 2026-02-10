@@ -4,7 +4,7 @@
         
         <a-card title="Source code" class="my-card">
             <p>OpenChatWorkbench is open-source software available on GitHub.</p>
-            <a-button type="link" href="https://github.com/clspd/OpenChatWorkbench" target="_blank">
+            <a-button type="link" :href="project_path" target="_blank">
                 View on GitHub
             </a-button>
         </a-card>
@@ -43,6 +43,7 @@ import { FolderOpenOutlined } from '@ant-design/icons-vue';
 import { useAppStateStore } from '@/stores/appState'
 import { isServiceWorkerActive } from '@/utils/swApi';
 import StatusText from '@/components/StatusText.vue'
+import { project_path } from '@/config';
 
 const router = useRouter()
 

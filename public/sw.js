@@ -144,7 +144,7 @@ var rewriteMap = {
             const url = new URL(event.request.url);
             const ts = url.searchParams.get('ts');
             if (!ts) return false;
-            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false })).then(resp => resp ?? fetch(event.request).then(resp => resp.ok ? (cache.put(event.request, resp.clone()).then(() => resp)) : resp)));
+            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false }).then(resp => resp ?? fetch(event.request).then(resp => resp.ok ? (cache.put(event.request, resp.clone()).then(() => resp)) : resp))));
             return true;
         } catch { return false }
     },
