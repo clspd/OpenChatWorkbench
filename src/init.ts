@@ -47,7 +47,7 @@ export default async function init() {
     
     fetch('/resource/offline@1.0.0.html').catch(() => {})
 
-    if (1||window.location.hostname === domain_name_canary) {
+    if (window.location.hostname === domain_name_canary) {
         const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');
         showCanaryWarning();
         // @ts-expect-error
