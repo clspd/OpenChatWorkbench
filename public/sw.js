@@ -109,7 +109,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         } // end `if (cachedResponse) try`
         // the request was not cached, fetch it from network
         if ((!global.navigator.onLine) && req.mode === 'navigate') { // fast fail
-            return (await cache.match(new Request('/resource/offline.html'))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
+            return (await cache.match(new Request('/resource/offline@1.0.0.html'))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
         }
         try {
             const resp = await fetch(req);
@@ -144,7 +144,7 @@ var rewriteMap = {
             const url = new URL(event.request.url);
             const ts = url.searchParams.get('ts');
             if (!ts) return false;
-            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false })).then(resp => resp ?? fetch(event.request)));
+            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false })).then(resp => resp ?? fetch(event.request).then(resp => resp.ok ? (cache.put(event.request, resp.clone()).then(() => resp)) : resp)));
             return true;
         } catch { return false }
     },
