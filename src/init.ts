@@ -44,5 +44,7 @@ export default async function init() {
     })
 
     useConversationStore()
+    
+    fetch('/resource/offline@1.0.0.html').catch(() => {})
 
 };

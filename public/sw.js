@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 const CONFIG_FILE = '/internal/init_config.js',
 // update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
-    CONFIG_FILE_TS = '202602110230+0800',
+    CONFIG_FILE_TS = '202602110341+0800',
     CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
 importScripts(CONFIG_FILE_URL);
 
@@ -108,7 +108,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             return cachedResponse; // fallback when failure, e.g., network error
         } // end `if (cachedResponse) try`
         // the request was not cached, fetch it from network
-        if (!global.navigator.onLine) { // fast fail
+        if ((!global.navigator.onLine) && req.mode === 'navigate') { // fast fail
             return (await cache.match(new Request('/resource/offline.html'))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
         }
         try {
@@ -120,7 +120,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             return resp;
         }
         catch (e) {
-            if (req.headers.get('sec-fetch-mode') === 'navigate') {
+            if (req.mode === 'navigate') {
                 return new Response(new Blob([failedNetworkErrorPageBuilder(String(e))], { type: 'text/html' }));
             }
             throw e; // this is expected
