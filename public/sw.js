@@ -142,15 +142,15 @@ var rewriteMap = {
         try {
             const url = new URL(event.request.url);
             const ts = url.searchParams.get('ts');
-            if (!ts || ts !== CONFIG_FILE_TS) return false;
-            e.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(resp => resp ?? fetch(event.request)));
+            if (!ts || ts !== decodeURIComponent(CONFIG_FILE_TS)) return false;
+            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(resp => resp ?? fetch(event.request)));
             return true;
         } catch { return false }
     },
 };
 
 var getSafeText = function (dangerous) {
-    return (new DOMParser()).parseFromString(dangerous).body.innerText;
+    return (new DOMParser()).parseFromString(dangerous, "text/html").body.innerText;
 };
 
 var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;
