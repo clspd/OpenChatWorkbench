@@ -9,7 +9,7 @@ globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.fr
     ],
     FILES_TO_CACHE_ON_STARTUP: [
         '/',
-        '/resource/offline.html',
+        '/resource/offline@1.0.0.html',
     ],
     MANIFEST_FILE: '/internal/manifest.json',
     SKIP_CACHE_DOMAIN: [
