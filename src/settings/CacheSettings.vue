@@ -122,6 +122,7 @@ const cacheDownloadStat = ref({
 const cacheAllResources = async () => {
     try {
         if (!isSwActive.value) return;
+        if (process.env.NODE_ENV === 'development') throw "This is not available in development environment.";
 
         cacheDownloadStat.value.total = cacheDownloadStat.value.current = 0;
         cacheDownloadStat.value.abortController = undefined;

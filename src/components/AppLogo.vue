@@ -1,5 +1,5 @@
 <template>
-    <img src="/favicon.ico" alt="App" :width="size" :height="size" />
+    <img src="../assets/icon.png" alt="App" :width="size" :height="size" />
 </template>
 
 <script setup lang="ts">

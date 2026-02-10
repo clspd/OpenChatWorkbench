@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
-importScripts('/internal/init_config.js?ts=202602090544+0800');
+const CONFIG_FILE = '/internal/init_config.js',
 // update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
+    CONFIG_FILE_TS = '202602110230+0800';
+importScripts(CONFIG_FILE + '?ts=' + CONFIG_FILE_TS);
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
 const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
@@ -51,14 +53,15 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
     // check if the domain is in the skip cache list
     if (appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname)) return;
     // check if the rewuester wants to ignore cache
-    if (req.cache === 'no-cache' || req.cache === 'no-store') return;
+    if (req.cache === 'no-store') return;
     // handle the request
     event.respondWith((async () => {
         const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(req);
+        const cachedResponse = await cache.match(req, { ignoreSearch: false, ignoreMethod: false, });
         if (cachedResponse) try {
             // check if the object is immutable
             const pathname = new URL(req.url).pathname;
+            if (req.cache !== 'no-cache')
             for (const i of appInitConfig.IMMUTABLE_CACHE_FILE_MATCH) {
                 if (i.test(pathname)) {
                     // immutable cache file, return cached response directly
@@ -93,6 +96,9 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
                 const clone = resp.clone(); // clone first
                 await cache.put(req, clone);
                 return resp;
+            } else if (resp.status >= 500 && resp.status <= 599) {
+                // 5xx status, server error; fallback to cache
+                return cachedResponse;
             } else {
                 // other status
                 return resp;
@@ -101,15 +107,23 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             return cachedResponse; // fallback when failure, e.g., network error
         } // end `if (cachedResponse) try`
         // the request was not cached, fetch it from network
-        // the following fetch might fail; this is expected
-        // if the network is not working
-        // instead of returning a fake response, we choose throw the error to the invoker
-        const resp = await fetch(req);
-        if (resp.ok) {
-            const clone = resp.clone(); // clone first
-            await cache.put(req, clone);
+        if (!global.navigator.onLine) { // fast fail
+            return (await cache.match(new Request('/resource/offline.html'))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
         }
-        return resp;
+        try {
+            const resp = await fetch(req);
+            if (resp.ok) {
+                const clone = resp.clone(); // clone first
+                await cache.put(req, clone);
+            }
+            return resp;
+        }
+        catch (e) {
+            if (req.headers.get('sec-fetch-mode') === 'navigate') {
+                return new Response(new Blob([failedNetworkErrorPageBuilder(String(e))], { type: 'text/html' }));
+            }
+            throw e; // this is expected
+        }
     })());
 });
 
@@ -120,8 +134,25 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
 var rewriteMap = {
     "/internal/w/running"(event, isSimple) {
         if (!isSimple) return false; // not simple request, ignore
-        event.respondWith(Promise.resolve(new Response(new Blob(["true"], { type: "application/json" }))));
+        event.respondWith(new Response(new Blob(["true"], { type: "application/json" })));
         return true; // rewrite done
     },
-}
+    "/internal/init_config.js"(event, isSimple) {
+        if (!isSimple) return false;
+        try {
+            const url = new URL(event.request.url);
+            const ts = url.searchParams.get('ts');
+            if (!ts || ts !== CONFIG_FILE_TS) return false;
+            e.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(resp => resp ?? fetch(event.request)));
+            return true;
+        } catch { return false }
+    },
+};
+
+var getSafeText = function (dangerous) {
+    return (new DOMParser()).parseFromString(dangerous).body.innerText;
+};
+
+var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;
+var failedNetworkErrorPageBuilder = (errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${getSafeText(errMsg)}</div></body></html>`;
 
