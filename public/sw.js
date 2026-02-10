@@ -1,8 +1,9 @@
 /// <reference lib="webworker" />
 const CONFIG_FILE = '/internal/init_config.js',
 // update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
-    CONFIG_FILE_TS = '202602110230+0800';
-importScripts(CONFIG_FILE + '?ts=' + CONFIG_FILE_TS);
+    CONFIG_FILE_TS = '202602110230+0800',
+    CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
+importScripts(CONFIG_FILE_URL);
 
 const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
 const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
@@ -142,8 +143,8 @@ var rewriteMap = {
         try {
             const url = new URL(event.request.url);
             const ts = url.searchParams.get('ts');
-            if (!ts || ts !== decodeURIComponent(CONFIG_FILE_TS)) return false;
-            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(resp => resp ?? fetch(event.request)));
+            if (!ts) return false;
+            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false })).then(resp => resp ?? fetch(event.request)));
             return true;
         } catch { return false }
     },

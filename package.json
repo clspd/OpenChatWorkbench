@@ -13,8 +13,7 @@
     "preview": "only-allow pnpm && vite preview",
     "build-only": "vite build",
     "type-check": "only-allow pnpm && vue-tsc --build",
-    "typecheck": "only-allow pnpm && vue-tsc --build",
-    "prepare": "husky"
+    "typecheck": "only-allow pnpm && vue-tsc --build"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
@@ -44,7 +43,6 @@
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/tsconfig": "^0.8.1",
     "eslint": "^9.39.2",
-    "husky": "^9.1.7",
     "npm-run-all2": "^8.0.4",
     "only-allow": "^1.2.2",
     "typescript": "~5.9.3",
