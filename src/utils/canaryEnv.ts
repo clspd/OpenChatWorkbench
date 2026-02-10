@@ -104,5 +104,6 @@ export function addCanaryWatermark() {
     wm.innerText = 'CANARY BUILD';
     wm.style.cssText = 'position: fixed; z-index: -1; color: rgba(204, 204, 204, 0.5); font-size: 3rem; rotate: 45deg; left: 50%; top: 50%; transform: translate(-50%, -50%); user-select: none;';
     document.body.appendChild(document.createElement('div')).attachShadow({ mode: 'closed' }).append(wm);
-    return () => (wm.parentNode.host.remove());
+    // @ts-ignore
+    return () => (wm.parentNode?.host?.remove());
 }
