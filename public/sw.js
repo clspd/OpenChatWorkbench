@@ -104,6 +104,10 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             } else if (resp.status >= 500 && resp.status <= 599) {
                 // 5xx status, server error; fallback to cache
                 return cachedResponse;
+            } else if (resp.status >= 400 && resp.status <= 499) {
+                // 4xx status, client error; remove the cache
+                await cache.delete(req);
+                return resp;
             } else {
                 // other status
                 return resp;
