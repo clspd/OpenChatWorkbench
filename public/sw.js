@@ -121,7 +121,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         }
         catch (e) {
             if (req.mode === 'navigate') {
-                return new Response(new Blob([failedNetworkErrorPageBuilder(String(e))], { type: 'text/html' }));
+                return new Response(new Blob([failedNetworkErrorPageBuilder(String(e ? (e.stack ? (String(e) + '\n' + e.stack) : e) : e))], { type: 'text/html' }));
             }
             throw e; // this is expected
         }
