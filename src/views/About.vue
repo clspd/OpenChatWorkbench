@@ -9,8 +9,8 @@
             </a-button>
         </a-card>
 
-        <a-card title="Version" class="my-card">
-            <p>Commit: HEAD+{{ DYNDATA.commithash }}</p>
+        <a-card title="Version" class="my-card" style="overflow: hidden">
+            <p style="overflow: auto; white-space: nowrap;">Commit: HEAD+{{ DYNDATA.commithash }}</p>
         </a-card>
 
         <a-card title="License" class="my-card">
