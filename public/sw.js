@@ -150,10 +150,8 @@ var rewriteMap = {
     },
 };
 
-var getSafeText = function (dangerous) {
-    return (new DOMParser()).parseFromString(dangerous, "text/html").body.innerText;
-};
 
 var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;
-var failedNetworkErrorPageBuilder = (errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${getSafeText(errMsg)}</div></body></html>`;
+var failedNetworkErrorPageBuilder = (errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${(errMsg.replace(/\u003c|\u003e/g, match => match === '\u003c' ? '&lt;' : '&gt;'))}</div></body></html>`;
+
 
