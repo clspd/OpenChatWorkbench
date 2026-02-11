@@ -5,10 +5,14 @@ const CONFIG_FILE = '/internal/init_config.js',
     CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
 importScripts(CONFIG_FILE_URL);
 
-const global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : this;
-const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
+// @ts-ignore
+const /** @type {ServiceWorkerGlobalScope & typeof globalThis} */global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : (() => { throw new Error('Unable to locate global object') })();
+const /** @type {string} */CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
 
-global.addEventListener('install', (event) => {
+const /** @type {Record<string, string>} */HTML_SANITIZER_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', }, HTML_SANITIZER = new RegExp('[' + Object.keys(HTML_SANITIZER_MAP).join('') + ']', 'ig');
+const /** @type {(t: any) => string} */sanitizeHtml = t => ((t = String(t)), t.replace(HTML_SANITIZER, (/** @type {string} */match) => HTML_SANITIZER_MAP[match]));
+
+global.addEventListener('install', (/** @type {ExtendableEvent} */event) => {
     global.console.log("[sw]", 'install');
     global.skipWaiting();
     event.waitUntil(
@@ -18,7 +22,7 @@ global.addEventListener('install', (event) => {
     );
 });
 
-global.addEventListener('activate', (event) => {
+global.addEventListener('activate', (/** @type {ExtendableEvent} */event) => {
     global.console.log("[sw]", 'activate');
     event.waitUntil((async () => {
         await global.clients.claim();
@@ -45,7 +49,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
     // handle internal rewrites first
     for (const rewritePath of Reflect.ownKeys(rewriteMap)) {
         if (pathname === rewritePath) {
-            const isHandled = rewriteMap[rewritePath](event, isSimple);
+            const isHandled = rewriteMap[rewritePath]?.(event, isSimple);
             if (isHandled) return;
         }
     }
@@ -119,7 +123,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             }
             return resp;
         }
-        catch (e) {
+        catch (/** @type {any} */e) {
             if (req.mode === 'navigate') {
                 return new Response(new Blob([failedNetworkErrorPageBuilder(String(e ? (e.stack ? (String(e) + '\n' + e.stack) : e) : e))], { type: 'text/html' }));
             }
@@ -152,6 +156,6 @@ var rewriteMap = {
 
 
 var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;
-var failedNetworkErrorPageBuilder = (errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${(errMsg.replace(/\u003c|\u003e/g, match => match === '\u003c' ? '&lt;' : '&gt;'))}</div></body></html>`;
+var failedNetworkErrorPageBuilder = (/** @type {string} */ errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${sanitizeHtml(errMsg)}</div></body></html>`;
 
 
