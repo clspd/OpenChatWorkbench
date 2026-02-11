@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 const CONFIG_FILE = '/internal/init_config.js',
 // update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
-    CONFIG_FILE_TS = '202602110345+0800',
+    CONFIG_FILE_TS = '202602120630+0800',
     CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
 importScripts(CONFIG_FILE_URL);
 
