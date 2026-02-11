@@ -81,7 +81,7 @@ export async function showCanaryWarning() {
         okType: 'danger',
         okButtonProps: { disabled: true },
         cancelText: 'Use stable build',
-        style: 'position: fixed; inset: 10px; width: unset; overflow: auto;',
+        style: 'position: fixed; inset: 10px; width: unset; overflow: auto; max-width: 600px; margin: auto;',
         async onOk() {
             if (doNotShowAgain.value) {
                 await db.put('kv', true, 'canaryWarning.doNotShowAgain');
