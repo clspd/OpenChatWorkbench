@@ -9,8 +9,12 @@
             </a-button>
         </a-card>
 
+        <a-card title="Version" class="my-card">
+            <p>Commit: HEAD+{{ DYNDATA.commithash }}</p>
+        </a-card>
+
         <a-card title="License" class="my-card">
-            <p>GPL-3.0 License</p>
+            <p><a href="/resource/license.html" target=_blank>GPL-3.0</a> License</p>
         </a-card>
 
         <a-card title="Status" class="my-card">
@@ -44,6 +48,7 @@ import { useAppStateStore } from '@/stores/appState'
 import { isServiceWorkerActive } from '@/utils/swApi';
 import StatusText from '@/components/StatusText.vue'
 import { project_path } from '@/config';
+import { DYNDATA } from '@/dynamic';
 
 const router = useRouter()
 
