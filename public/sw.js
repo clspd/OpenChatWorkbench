@@ -11,6 +11,7 @@ const /** @type {string} */CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConf
 
 const /** @type {Record<string, string>} */HTML_SANITIZER_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', }, HTML_SANITIZER = new RegExp('[' + Object.keys(HTML_SANITIZER_MAP).join('') + ']', 'ig');
 const /** @type {(t: any) => string} */sanitizeHtml = t => ((t = String(t)), t.replace(HTML_SANITIZER, (/** @type {string} */match) => HTML_SANITIZER_MAP[match]));
+const REMOVE_CACHE_STAT = [0, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 26, 28, 31, 51];
 
 global.addEventListener('install', (/** @type {ExtendableEvent} */event) => {
     global.console.log("[sw]", 'install');
@@ -105,8 +106,9 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
                 // 5xx status, server error; fallback to cache
                 return cachedResponse;
             } else if (resp.status >= 400 && resp.status <= 499) {
-                // 4xx status, client error; remove the cache
-                await cache.delete(req);
+                // 4xx status, client error
+                if (REMOVE_CACHE_STAT.includes(resp.status - 400)) // remove the cache
+                    await cache.delete(req);
                 return resp;
             } else {
                 // other status
