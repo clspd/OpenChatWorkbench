@@ -32,7 +32,7 @@
     "lodash": "^4.17.21",
     "pinia": "^3.0.4",
     "vue": "^3.5.26",
-    "vue-dialog-view": "^1.5.2",
+    "vue-dialog-view": "^1.7.2",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {

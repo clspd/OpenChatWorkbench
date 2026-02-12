@@ -162,6 +162,12 @@ onMounted(() => {
     loadFiles()
 })
 
+const console = {
+    error(...args: any[]) {
+        console.error('[FileBrowser]', ...args)
+    }
+}
+
 const currentPath = ref('')
 const selectedRowKeys = ref<string[]>([])
 const fileList = ref<Array<{

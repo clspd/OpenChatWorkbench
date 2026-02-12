@@ -56,14 +56,14 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
     }
     // check if it is a "simple" request
     if (!isSimple) return;
-    // check if the domain is in the skip cache list
-    if (appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname)) return;
     // check if the rewuester wants to ignore cache
     if (req.cache === 'no-store') return;
     // handle the request
     event.respondWith((async () => {
         const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(req, { ignoreSearch: false, ignoreMethod: false, });
+        // check if the domain is in the skip cache list
+        const cachedResponse = (appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname)) ?
+            null : await cache.match(req, { ignoreSearch: false, ignoreMethod: false, });
         if (cachedResponse) try {
             // check if the object is immutable
             const pathname = new URL(req.url).pathname;
@@ -162,6 +162,6 @@ var rewriteMap = {
 
 
 var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;
-var failedNetworkErrorPageBuilder = (/** @type {string} */ errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The page you request couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${sanitizeHtml(errMsg)}</div></body></html>`;
+var failedNetworkErrorPageBuilder = (/** @type {string} */ errMsg) => `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>Unable to access page</h1><p>The requested page couldn't be loaded because of an error. Please check your Internet connection and try again. If the error continues to occur, please check the browser console.</p><div>Technical information:</div><div style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all">${sanitizeHtml(errMsg)}</div></body></html>`;
 
 

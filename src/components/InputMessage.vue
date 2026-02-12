@@ -210,3 +210,9 @@ const handleAttachMenuClick = ({ key = '' }) => {
     margin-right: 0.5em;
 }
 </style>
+
+<style scoped>
+.edit-message :deep(p) {
+    margin: 0;
+}
+</style>

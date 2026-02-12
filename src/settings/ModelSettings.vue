@@ -313,7 +313,7 @@ const handleOk = async () => {
         
         modalVisible.value = false
     } catch (error) {
-        console.error('Validation failed:', error)
+        console.error('[ModelSettings]', 'Validation failed:', error)
     }
 }
 

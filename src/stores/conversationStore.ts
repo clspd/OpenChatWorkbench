@@ -38,8 +38,7 @@ export const useConversationStore = defineStore('conversation', {
                 this.error = null
                 this.index = await getIndex()
             } catch (error) {
-                this.error = 'Failed to load conversations'
-                console.error('Failed to load conversations:', error)
+                this.error = 'Failed to load conversations: ' + error
             } finally {
                 this.loading = false
             }

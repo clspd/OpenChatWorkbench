@@ -16,10 +16,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                 try {
                     const json = JSON.stringify(state)
                     let windowId = window.sessionStorage.getItem(app_name_id + '@windowId')
-                    if (!windowId) {
-                        windowId = window.crypto.randomUUID()
-                        window.sessionStorage.setItem(app_name_id + '@windowId', windowId)
-                    }
+                    if (!windowId) windowId = this.createWindowId()
                     // window.sessionStorage.setItem(app_name_id + '@appStateSession', json)
                     await db.put('kv', json, 'sessionState_' + windowId)
                 } catch (error) {
@@ -27,6 +24,11 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                     // console.error('Error saving appStateSession to sessionStorage:', error)
                 }
             })
+        },
+        createWindowId() {
+            const windowId = window.crypto.randomUUID()
+            window.sessionStorage.setItem(app_name_id + '@windowId', windowId)
+            return windowId
         },
         async load() {
             try {
@@ -49,7 +51,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
             console.log('[appStateSession] [cleanup] isFirstInstance=', isFirstInstance)
             if (!isFirstInstance) return
             const allKeys = await db.getAllKeys('kv')
-            const currentWindowId = window.sessionStorage.getItem(app_name_id + '@windowId')
+            const currentWindowId = window.sessionStorage.getItem(app_name_id + '@windowId') ?? this.createWindowId()
             for (const key of allKeys) {
                 if (typeof key === 'string' && key.startsWith('sessionState_') && key !== ('sessionState_' + currentWindowId)) {
                     await db.delete('kv', key)

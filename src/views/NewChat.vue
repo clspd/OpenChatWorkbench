@@ -115,8 +115,7 @@ const handleSendMessage = async () => {
             userMessageConfig.value
         )
     } catch (error) {
-        console.error('Failed to send message:', error)
-        message.error('Failed to send message: ' + (error as Error).message)
+        message.error('Failed to send message: ' + error)
     } finally {
         isSending.value = false
     }
