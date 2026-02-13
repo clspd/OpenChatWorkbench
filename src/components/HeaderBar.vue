@@ -1,5 +1,5 @@
 <template>
-    <div class="header-bar">
+    <div class="header-bar" :class="{'large-screen': windowState.isLargeScreen}">
         <template v-if="windowState.isLargeScreen">
             <!-- 大屏幕显示对话标题和对话设置按钮 -->
             <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }">
@@ -17,29 +17,10 @@
                 </div>
             </div>
 
-            <template v-if="appState.page === 'chat'">
-                <div class="flexible-space"></div>
-                <div class="title"></div>
-                <div class="flexible-space"></div>
-                <a-button shape="circle" type="text" @click="newChat">
-                    <PlusCircleOutlined />
-                </a-button>
-                <!-- 对话设置按钮 -->
-                <a-dropdown :trigger="['click']">
-                    <template #overlay>
-                        <a-menu @click="handleMenuClick">
-                            <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
-                                <DeleteOutlined />
-                                Delete
-                            </a-menu-item>
-                        </a-menu>
-                    </template>
-                    <a-button shape="circle" type="text">
-                        <EllipsisOutlined />
-                    </a-button>
-                </a-dropdown>
-            </template>
-            <div v-else class="flexible-space title-text">{{ appState.title }}</div>
+            <div class="flexible-space"></div>
+            <div class="title-text">{{ appState.title }}</div>
+            <div class="flexible-space"></div>
+            <HeaderMoreOptions />
         </template>
         <template v-else>
             <!-- 小屏幕显示（常驻）菜单展开按钮和新建对话按钮 -->
@@ -50,10 +31,7 @@
             <a-button shape="circle" type="text" @click="newChat">
                 <PlusCircleOutlined />
             </a-button>
-            <!-- 对话设置按钮 -->
-            <a-button shape="circle" type="text">
-                <EllipsisOutlined />
-            </a-button>
+            <HeaderMoreOptions />
         </template>
     </div>
 </template>
@@ -62,9 +40,8 @@
 import { useAppStateStore } from '@/stores/appState';
 import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import { message } from 'ant-design-vue';
-import confirm from 'ant-design-vue/es/modal/confirm';
 import { useRouter } from 'vue-router';
+import HeaderMoreOptions from './HeaderMoreOptions.vue';
 
 const appState = useAppStateStore();
 const windowState = useWindowStateStore();
@@ -76,29 +53,16 @@ const newChat = () => {
     router.push('/')
 }
 
-const handleMenuClick = ({ key }: { key: string }) => {
-    if (key === 'delete') {
-        // 确认删除？
-        confirm({
-            title: 'Are you sure delete this conversation?',
-            okText: 'Yes',
-            okType: 'danger',
-            cancelText: 'No',
-            
-            onOk: () => {
-                message.error('Not implemented yet');
-            },
-            onCancel: () => {},
-        });
-    }
-}
 </script>
 
 <style scoped>
 .header-bar {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 0.5em;
+}
+.header-bar.large-screen {
+    padding: 1em;
 }
 .s-tl-extra {
     position: absolute;

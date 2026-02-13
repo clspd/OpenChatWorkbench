@@ -167,11 +167,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
 import { message } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
+import { useAppStateStore } from '@/stores/appState'
 
 const configStore = useConfigStore()
 
@@ -235,6 +236,10 @@ const rules = {
     provider_id: [{ required: true, message: 'Please select a provider!' }],
     id: [{ required: true, message: 'Please input model ID!' }]
 }
+
+onMounted(() => {
+    useAppStateStore().setTitle('Model Settings')
+})
 
 const enabledProviders = computed(() => {
     return configStore.providers.filter(p => p.enabled)

@@ -51,6 +51,7 @@ declare module 'vue' {
     ExclamationCircleTwoTone: typeof import('@ant-design/icons-vue')['ExclamationCircleTwoTone']
     FileImageOutlined: typeof import('@ant-design/icons-vue')['FileImageOutlined']
     HeaderBar: typeof import('./src/components/HeaderBar.vue')['default']
+    HeaderMoreOptions: typeof import('./src/components/HeaderMoreOptions.vue')['default']
     InputMessage: typeof import('./src/components/InputMessage.vue')['default']
     LinkOutlined: typeof import('@ant-design/icons-vue')['LinkOutlined']
     ModelChooser: typeof import('./src/components/ModelChooser.vue')['default']

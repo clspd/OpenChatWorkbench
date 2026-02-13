@@ -29,6 +29,7 @@ import { useAppStateStore } from '@/stores/appState'
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
 const ModelSettings = defineAsyncComponent(() => import('@/settings/ModelSettings.vue'))
 const CacheSettings = defineAsyncComponent(() => import('@/settings/CacheSettings.vue'))
+const DataManagementSettings = defineAsyncComponent(() => import('@/settings/DataManagementSettings.vue'))
 
 const props = defineProps({
     settingId: {
@@ -55,6 +56,11 @@ const pages = ref([
         id: 'cache',
         title: 'Cache',
         component: markRaw(CacheSettings),
+    },
+    {
+        id: 'data-management',
+        title: 'Data Management',
+        component: markRaw(DataManagementSettings),
     },
     {
         id: 'about',

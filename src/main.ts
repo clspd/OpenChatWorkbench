@@ -8,7 +8,7 @@ import './userdata'
 
 await new Promise<void>((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = '/internal/init_config.js?ts=202602120630+0800';
+    s.src = '/internal/init_config.js?ts=202602131405+0800';
     s.onload = () => resolve(), s.onerror = reject;
     document.head.append(s);
 })

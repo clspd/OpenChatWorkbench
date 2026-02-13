@@ -6,7 +6,8 @@ globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.fr
         /^\/assets\/.+\.s\.[\w$]+?$/,
         /^\/vendor\/npm\/([\w-]+?)@(\d+?\.\d+?\.\d+?)\//,
         /^\/resource\/([^\/]+?)@(\d+?\.\d+?\.\d+?)\.([\w$]+?)$/,
-    ],
+        ],
+    NEVER_CACHE_FILE_MATCH: [],
     FILES_TO_CACHE_ON_STARTUP: [
         '/',
         '/resource/offline@1.0.0.html',

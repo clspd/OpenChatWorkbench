@@ -75,11 +75,14 @@ import { onMounted, ref } from 'vue';
 import StatusText from '@/components/StatusText.vue'
 import { message, Modal } from 'ant-design-vue';
 import { DialogView } from 'vue-dialog-view';
+import { useAppStateStore } from '@/stores/appState';
 
 const isSwActive = ref<boolean>(false);
 const cachedCount = ref<number>(0);
 
 onMounted(async () => {
+    useAppStateStore().setTitle('Cache Settings')
+
     await checkSw();
     await checkCacheStatus();
 })
