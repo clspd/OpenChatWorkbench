@@ -1,25 +1,42 @@
 /**
- * general Service Worker implementation
+ * Generic Service Worker implementation
 MIT License, Copyright (c) 2026 [@chcs1013](https://github.com/chcs1013)
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
 /// <reference lib="webworker" />
-const CONFIG_FILE = '/internal/init_config.js',
-// update ts if the external file is changed (in order to bust the cache); no need to update ts if sw.js itself changed
-    CONFIG_FILE_TS = '202602131405+0800',
-    CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
-importScripts(CONFIG_FILE_URL);
-
 // @ts-ignore
 const /** @type {ServiceWorkerGlobalScope & typeof globalThis} */global = (typeof globalThis !== 'undefined' && globalThis !== null) ? globalThis : (typeof self !== 'undefined' && self !== null) ? self : (() => { throw new Error('Unable to locate global object') })();
-const /** @type {string} */CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
+
+/** CONFIG REGION START */
+// Add or edit your own configuration here
+
+// update ts if the external file is changed (in order to bust the cache);
+// no need to update ts if sw.js itself changed
+const CONFIG_FILE = '/internal/init_config.js';
+const CONFIG_FILE_TS = '202602132101+0800';
+const REWRITES_FILE = '/internal/swRewrites.js';
+const REWRITES_FILE_TS = '202602132101+0800';
+const OFFLINE_PAGE_FILE = '/resource/offline@1.0.0.html';
+const /** @type {import('./internal/init_config.js').AppInitConfig} */ appInitConfig = (/** @type {any} */(global)).appInitConfig;
+
+/** CONFIG REGION END */
+
+// sw code start
+const CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
+const REWRITES_FILE_URL = REWRITES_FILE + '?ts=' + REWRITES_FILE_TS;
+const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
+const REMOVE_CACHE_STAT = [0, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 26, 28, 31, 51];
+
+importScripts(CONFIG_FILE_URL);
+importScripts(REWRITES_FILE_URL);
 
 const /** @type {Record<string, string>} */HTML_SANITIZER_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', }, HTML_SANITIZER = new RegExp('[' + Object.keys(HTML_SANITIZER_MAP).join('') + ']', 'ig');
 const /** @type {(t: any) => string} */sanitizeHtml = t => ((t = String(t)), t.replace(HTML_SANITIZER, (/** @type {string} */match) => HTML_SANITIZER_MAP[match]));
-const REMOVE_CACHE_STAT = [0, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 26, 28, 31, 51];
+
+/** @typedef {{ path: string | RegExp, handler: (event: FetchEvent, isSimple: boolean) => boolean }} RewriteRule */
+/** @type {RewriteRule[]} */ const RewriteMap = (/** @type {any} */(global)).RewriteMap;
 
 global.addEventListener('install', (/** @type {ExtendableEvent} */event) => {
     global.console.log("[sw]", 'install');
@@ -47,27 +64,37 @@ global.addEventListener('activate', (/** @type {ExtendableEvent} */event) => {
 });
 
 global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
-    const req = event.request; let origin, pathname, hostname;
+    const req = event.request;
+    let origin, pathname, hostname, /** @type {URLSearchParams} */searchParams, isSameOrigin = false;
     try {
-        ({ origin, pathname, hostname } = new URL(req.url));
-        if (origin !== global.location.origin) return; // not same origin, ignore
+        ({ origin, pathname, hostname, searchParams } = new URL(req.url));
+        isSameOrigin = (origin === global.location.origin);
+        if ((!isSameOrigin) && (appInitConfig.CROSS_ORIGIN_REQUEST_MODE !== 'ignore' && appInitConfig.CROSS_ORIGIN_REQUEST_MODE !== 'normal')) return; // not same origin, bypass
     } catch {
         return; // invalid url, ignore
     }
     const isSimple = req.method === 'GET' && !req.headers.has('range');
     // handle internal rewrites first
-    for (const rewritePath of Reflect.ownKeys(rewriteMap)) {
-        if (pathname === rewritePath) {
-            const isHandled = rewriteMap[rewritePath]?.(event, isSimple);
-            if (isHandled) return;
+    for (const rule of RewriteMap) {
+        if (rule.path) {
+            if (typeof rule.path === 'string') {
+                if (rule.path === pathname) {
+                    if (rule.handler(event, isSimple)) return;
+                }
+            } else if (rule.path instanceof RegExp) {
+                if (rule.path.test(pathname)) {
+                    if (rule.handler(event, isSimple)) return;
+                }
+            }
         }
+        // extendable: can add more match rules here...
     }
     // check if it is a "simple" request
     if (!isSimple) return;
     // check if the requester wants to ignore cache
     for (const i of appInitConfig.NEVER_CACHE_FILE_MATCH)
         if (i.test(pathname)) return; // return directly to go to the network
-    const shouldIgnoreCache = appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname);
+    const shouldIgnoreCache = ((!isSameOrigin) && (appInitConfig.CROSS_ORIGIN_REQUEST_MODE === 'ignore')) || appInitConfig.SKIP_CACHE_DOMAIN.includes(hostname);
     if (req.cache === 'no-store') return;
     // handle the request
     event.respondWith((async () => {
@@ -78,11 +105,16 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         if (cachedResponse) try {
             // check if the object is immutable
             const pathname = new URL(req.url).pathname;
-            if (req.cache !== 'no-cache')
-            for (const i of appInitConfig.IMMUTABLE_CACHE_FILE_MATCH) {
-                if (i.test(pathname)) {
+            if (req.cache !== 'no-cache') {
+                for (const i of appInitConfig.IMMUTABLE_CACHE_FILE_MATCH) {
                     // immutable cache file, return cached response directly
-                    return cachedResponse;
+                    if (i.test(pathname)) return cachedResponse;
+                }
+                if (searchParams.has('ts')) for (const i of appInitConfig.CACHE_BY_TS_QUERY_FILE_MATCH) {
+                    // immutable cache file by ts argument
+                    // since we've already used `ignoreSearch: false`, the ts argument has been included in the cache,
+                    // so the matched file's ts is the same as the request's
+                    if (i.test(pathname)) return cachedResponse;
                 }
             }
             // check if we have internet connection
@@ -130,7 +162,7 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         } // end `if (cachedResponse) try`
         // the request was not cached, fetch it from network
         if ((!global.navigator.onLine) && req.mode === 'navigate') { // fast fail
-            return (await cache.match(new Request('/resource/offline@1.0.0.html'))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
+            return (await cache.match(new Request(OFFLINE_PAGE_FILE))) || new Response(new Blob([offlineNetworkErrorPage], { type: 'text/html' }));
         }
         try {
             const resp = await fetch(req);
@@ -148,28 +180,6 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
         }
     })());
 });
-
-
-/**
- * @type {Record<string, (event: FetchEvent, isSimple: boolean) => boolean>}
- */
-var rewriteMap = {
-    "/internal/w/running"(event, isSimple) {
-        if (!isSimple) return false; // not simple request, ignore
-        event.respondWith(new Response(new Blob(["true"], { type: "application/json" })));
-        return true; // rewrite done
-    },
-    [CONFIG_FILE](event, isSimple) {
-        if (!isSimple) return false;
-        try {
-            const url = new URL(event.request.url);
-            const ts = url.searchParams.get('ts');
-            if (!ts) return false;
-            event.respondWith(caches.open(CACHE_NAME).then(cache => cache.match(event.request, { ignoreSearch: false }).then(resp => resp ?? fetch(event.request).then(resp => resp.ok ? (cache.put(event.request, resp.clone()).then(() => resp)) : resp))));
-            return true;
-        } catch { return false }
-    },
-};
 
 
 var offlineNetworkErrorPage = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Error</title></head><body><h1>You are offline</h1><p>The page you request couldn't be loaded because you are offline. Please connect to the Internet and reload the page.</p></body></html>`;

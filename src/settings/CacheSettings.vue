@@ -79,6 +79,7 @@ import { useAppStateStore } from '@/stores/appState';
 
 const isSwActive = ref<boolean>(false);
 const cachedCount = ref<number>(0);
+const appInitConfig = globalThis.appInitConfig;
 
 onMounted(async () => {
     useAppStateStore().setTitle('Cache Settings')
