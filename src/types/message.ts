@@ -5,20 +5,20 @@ export enum SchemaVersion {
 
 // Message types
 export enum MessageRole {
-  USER = 'USER',
-  ASSISTANT = 'ASSISTANT',
-  SYSTEM = 'SYSTEM'
+  USER = 'user',
+  ASSISTANT = 'assistant',
+  SYSTEM = 'system'
 }
 
 export enum MessageStatus {
-  FINISHED = 'FINISHED',
-  WIP = 'WIP'
+  FINISHED = 'finished',
+  WIP = 'wip'
 }
 
 export enum MessageFeedback {
-  NOT_PROVIDED = "NOT_PROVIDED",
-  POSITIVE = 'POSITIVE',
-  NEGATIVE = 'NEGATIVE',
+  NOT_PROVIDED = '',
+  POSITIVE = '+',
+  NEGATIVE = '-',
 }
 
 export interface FileAttachmentInfo {
@@ -29,31 +29,33 @@ export interface FileAttachmentInfo {
 export interface MessageFragment {
   id: number;
   type: "REQUEST" | "THINK" | "RESPONSE";
-  elapsed: number; // 消耗的秒数
+  elapsed: number; // elapsed time in seconds
   content: MessageContent;
 }
 
 export type MessageContent = string;
 
+// This stores the features of the message, e.g. thinking enabled
+export interface MessageFeatureItem {
+  type: string;
+  value: MessageFeature;
+}
+
 export interface Message {
-  id: number; // 从 1 开始
-  parent_id: number | null; // null表示根消息
+  id: number; // start from 1
+  parent_id: number | null; // null if root message
   accumulated_token_usage: number;
   model: string; // modelId
   provider: string; // providerId
   providerName: string;
-  thinking_enabled: boolean; 
+  // thinking_enabled: boolean;
+  features: MessageFeatureItem[];
   role: MessageRole;
   feedback: MessageFeedback;
   status: MessageStatus; // finished or work in progress
   files: FileAttachmentInfo[];
   fragments: MessageFragment[];
   has_pending_fragment: boolean;
-}
-
-export interface MessageRequest {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
 }
 
 // Conversation types
@@ -97,7 +99,8 @@ export interface ConversationGroup {
 }
 
 export class MessageEditConfig {
-  thinking_enabled: boolean = false;
+  // thinking_enabled: boolean = false;
+  features: MessageFeatureItem[] = [];
   files: FileAttachmentInfo[] = [];
 }
 
