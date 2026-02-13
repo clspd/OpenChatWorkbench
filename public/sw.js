@@ -19,18 +19,20 @@ const CONFIG_FILE_TS = '202602132101+0800';
 const REWRITES_FILE = '/internal/swRewrites.js';
 const REWRITES_FILE_TS = '202602132101+0800';
 const OFFLINE_PAGE_FILE = '/resource/offline@1.0.0.html';
-const /** @type {import('./internal/init_config.js').AppInitConfig} */ appInitConfig = (/** @type {any} */(global)).appInitConfig;
+/** @typedef {import('./internal/init_config.js').AppInitConfig} AppInitConfig */ // You may need to edit this if you renamed or moved the init_config.js file
 
 /** CONFIG REGION END */
 
 // sw code start
 const CONFIG_FILE_URL = CONFIG_FILE + '?ts=' + CONFIG_FILE_TS;
 const REWRITES_FILE_URL = REWRITES_FILE + '?ts=' + REWRITES_FILE_TS;
-const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
 const REMOVE_CACHE_STAT = [0, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 26, 28, 31, 51];
 
 importScripts(CONFIG_FILE_URL);
 importScripts(REWRITES_FILE_URL);
+
+const /** @type {AppInitConfig} */ appInitConfig = (/** @type {any} */(global)).appInitConfig;
+const CACHE_NAME = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
 
 const /** @type {Record<string, string>} */HTML_SANITIZER_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', }, HTML_SANITIZER = new RegExp('[' + Object.keys(HTML_SANITIZER_MAP).join('') + ']', 'ig');
 const /** @type {(t: any) => string} */sanitizeHtml = t => ((t = String(t)), t.replace(HTML_SANITIZER, (/** @type {string} */match) => HTML_SANITIZER_MAP[match]));
