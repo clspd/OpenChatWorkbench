@@ -26,10 +26,6 @@
                 {
                     "key": "Reporting-Endpoints",
                     "value": "csp-report-collector-v1=\"https://csp-report-collector.openchatworkbench.com/csp-report\""
-                },
-                {
-                    "key": "Report-To",
-                    "value": "{\"group\":\"csp-report-collector-v1\",\"max_age\":60,\"endpoints\":[{\"url\":\"https://csp-report-collector.openchatworkbench.com/csp-report\"}]}"
                 }
             ]
         }

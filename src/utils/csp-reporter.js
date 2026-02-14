@@ -1,4 +1,3 @@
-// @ts-nocheck
 const ALLOWED_ORIGINS = [
     "https://openchatworkbench.com",
     "https://chat.openchatworkbench.com",
@@ -9,17 +8,26 @@ const VALID_JSON_TYPE = 'string,number,boolean'.split(',');
 const SERIALIZABLE_JSON_TYPE = 'string,number,boolean,object'.split(',');
 
 const { getSLSUrl, setSLSUrl } = (function () {
+    /**
+     * @type {string}
+     */
     let SLSUrl;
     return {
         getSLSUrl() {
             return SLSUrl;
         },
+        /**
+         * @param {string} url
+         */
         setSLSUrl(url) {
             SLSUrl = url;
         },
     };
 })();
 
+/**
+ * @param {object} data
+ */
 function transformCspReport(data) {
     const newData = Object.create(null);
     for (const k of Reflect.ownKeys(data)) {
@@ -32,6 +40,10 @@ function transformCspReport(data) {
     return newData;
 }
 
+/**
+ * @param {Request} request
+ * @param {string} origin
+ */
 async function handleCSPReport(request, origin) {
     try {
         // parse CSP report
@@ -95,15 +107,24 @@ async function handleCSPReport(request, origin) {
     }
 }
 
+/**
+ * @param {string} origin
+ */
 function buildBaseHeaders(origin) {
     return ({
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': '*',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
     });
 }
 
 export default {
+    /**
+     * @param {Request} request
+     * @param {any} env
+     * @param {any} ctx
+     */
     async fetch(request, env, ctx) {
         const url = new URL(request.url),
             origin = request.headers.get('origin');
