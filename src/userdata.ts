@@ -16,10 +16,14 @@ if (globalThis.document) {
 <div style="font-size: smaller; color: gray; font-family: monospace;" data-content></div>
 <div>
     <span>Please</span>
-    <a href="javascript:" onclick="globalThis.location.reload()">reload the page</a>
+    <a href="#">reload the page</a>
     <span>to continue.</span>
 </div>
 `;
+    el_dbExpired.querySelector('a')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        globalThis.location.reload();
+    });
     el_dbExpired.oncancel = () => false;
     (document.body || document.documentElement).append(el_dbExpired);
 }
