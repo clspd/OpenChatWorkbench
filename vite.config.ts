@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 // import vueDevTools from 'vite-plugin-vue-devtools'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+import { resolve } from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -23,10 +24,21 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
+  },
   build: {
     sourcemap: true,
     manifest: "internal/manifest.json",
     rolldownOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        webcontainers: resolve(__dirname, 'webcontainers.html'),
+      },
       output: {
         entryFileNames: 'assets/[name]-[hash].s.js',
         chunkFileNames: 'assets/[name]-[hash].s.js',

@@ -15,6 +15,7 @@ import Sidebar from './components/Sidebar.vue'
 import HeaderBar from './components/HeaderBar.vue'
 import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStateStore } from './stores/appState';
+import '@/utils/webcIPCMessage'
 
 const windowState = useWindowStateStore();
 const appState = useAppStateStore();
