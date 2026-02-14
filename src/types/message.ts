@@ -38,7 +38,7 @@ export type MessageContent = string;
 // This stores the features of the message, e.g. thinking enabled
 export interface MessageFeatureItem {
   type: string;
-  value: MessageFeature;
+  // value: MessageFeature;
 }
 
 export interface Message {
