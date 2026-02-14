@@ -32,7 +32,7 @@ function transformCspReport(data) {
     const newData = Object.create(null);
     for (const k of Reflect.ownKeys(data)) {
         const v = Reflect.get(data, k);
-        if (!v) newData[k] = null;
+        if (v == null) newData[k] = "";
         else if (VALID_JSON_TYPE.includes(typeof v)) newData[k] = String(v);
         else if (SERIALIZABLE_JSON_TYPE.includes(typeof v)) newData[k] = JSON.stringify(v);
         else newData[k] = String(v);
