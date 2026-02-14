@@ -1,3 +1,4 @@
+// @ts-nocheck
 const ALLOWED_ORIGINS = [
     "https://openchatworkbench.com",
     "https://chat.openchatworkbench.com",

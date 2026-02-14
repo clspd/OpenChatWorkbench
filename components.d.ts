@@ -46,8 +46,6 @@ declare module 'vue' {
     CaretRightFilled: typeof import('@ant-design/icons-vue')['CaretRightFilled']
     CheckOutlined: typeof import('@ant-design/icons-vue')['CheckOutlined']
     ConversationList: typeof import('./src/components/ConversationList.vue')['default']
-    DeleteOutlined: typeof import('@ant-design/icons-vue')['DeleteOutlined']
-    EllipsisOutlined: typeof import('@ant-design/icons-vue')['EllipsisOutlined']
     ExclamationCircleTwoTone: typeof import('@ant-design/icons-vue')['ExclamationCircleTwoTone']
     FileImageOutlined: typeof import('@ant-design/icons-vue')['FileImageOutlined']
     HeaderBar: typeof import('./src/components/HeaderBar.vue')['default']

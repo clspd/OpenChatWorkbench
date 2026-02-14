@@ -35,10 +35,14 @@ export interface MessageFragment {
 
 export type MessageContent = string;
 
+export enum MessageFeatureType {
+  THINKING = 'thinking',
+}
+
 // This stores the features of the message, e.g. thinking enabled
 export interface MessageFeatureItem {
-  type: string;
-  // value: MessageFeature;
+  type: MessageFeatureType;
+  value: MessageFeature;
 }
 
 export interface Message {
@@ -57,6 +61,10 @@ export interface Message {
   fragments: MessageFragment[];
   has_pending_fragment: boolean;
 }
+
+export type MessageFeature = boolean | string | number;
+
+// ----------
 
 // Conversation types
 export interface Conversation {

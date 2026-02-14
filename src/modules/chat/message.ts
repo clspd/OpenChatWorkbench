@@ -23,7 +23,7 @@ export function createMessage(
         model: model,
         provider: provider,
         providerName: providerName,
-        thinking_enabled: false,
+        features: [],
         role: role,
         feedback: MessageFeedback.NOT_PROVIDED,
         status,
@@ -109,7 +109,7 @@ export async function setThinkingEnabled(
 ): Promise<void> {
     const message = conversation.messages.find(msg => msg.id === messageId);
     if (message) {
-        message.thinking_enabled = enabled;
+        // message.thinking_enabled = enabled;
         await saveConversation(conversation);
     }
 }
