@@ -9,6 +9,7 @@ import { app_name, domain_name_canary } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 import '@/utils/appInstanceDetector'
+import { sendUsageReport } from "./utils/sendStatistics";
 
 export default async function init() {
     // register service worker
@@ -50,9 +51,9 @@ export default async function init() {
     if (window.location.hostname === domain_name_canary) {
         const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');
         showCanaryWarning();
-        // @ts-expect-error
-        window.removeCanaryWatermark = addCanaryWatermark();
+        (window as any).removeCanaryWatermark = addCanaryWatermark();
         addRevHash();
+        sendUsageReport('An user is using the canary version of OpenChatWorkbench.').catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
 
 };
