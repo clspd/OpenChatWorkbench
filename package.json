@@ -24,6 +24,7 @@
     "@tiptap/pm": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "@tiptap/vue-3": "^3.14.0",
+    "@webcontainer/api": "^1.6.1",
     "@zenfs/core": "^2.4.4",
     "@zenfs/dom": "^1.2.6",
     "ant-design-vue": "4.2.6",

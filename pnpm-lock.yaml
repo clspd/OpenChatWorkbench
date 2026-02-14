@@ -29,6 +29,9 @@ importers:
       '@tiptap/vue-3':
         specifier: ^3.14.0
         version: 3.14.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(vue@3.5.26(typescript@5.9.3))
+      '@webcontainer/api':
+        specifier: ^1.6.1
+        version: 1.6.1
       '@zenfs/core':
         specifier: ^2.4.4
         version: 2.4.4
@@ -849,6 +852,9 @@ packages:
         optional: true
       vue:
         optional: true
+
+  '@webcontainer/api@1.6.1':
+    resolution: {integrity: sha512-2RS2KiIw32BY1Icf6M1DvqSmcon9XICZCDgS29QJb2NmF12ZY2V5Ia+949hMKB3Wno+P/Y8W+sPP59PZeXSELg==}
 
   '@xterm/xterm@5.5.0':
     resolution: {integrity: sha512-hqJHYaQb5OptNunnyAnkHyM8aCjZ1MEIDTQu1iIbbTD/xops91NB5yq1ZK/dC2JDbVWtF23zUtl9JE2NqwT87A==}
@@ -3008,6 +3014,8 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
       vue: 3.5.26(typescript@5.9.3)
+
+  '@webcontainer/api@1.6.1': {}
 
   '@xterm/xterm@5.5.0':
     optional: true
