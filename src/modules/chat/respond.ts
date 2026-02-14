@@ -1,25 +1,14 @@
 import { useConfigStore } from "@/stores/configStore";
-import { MessageEditConfig, MessageRole, MessageStatus, type Conversation, type MessageRequest } from "@/types";
+import { MessageEditConfig, MessageRole, MessageStatus, type Conversation, type MessageFragment } from "@/types";
 import { GetProviderRequestUrl } from "@/utils/providerUrl";
 import { fetchEventSource } from "@microsoft/fetch-event-source"
 import { createMessage, createMessageFragment } from "./message";
 import { saveConversation } from "./conversation";
 
-export function createRequestMessagesArray(conversation: Conversation): MessageRequest[] {
-    const messages: MessageRequest[] = [];
-    
-    for (const msg of conversation.messages) {
-        if (msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT) {
-            for (const fragment of msg.fragments) {
-                if (fragment.type === "REQUEST" || fragment.type === "RESPONSE") {
-                    messages.push({
-                        role: msg.role === MessageRole.USER ? 'user' : 'assistant',
-                        content: fragment.content
-                    });
-                }
-            }
-        }
-    }
+export function createRequestMessagesArray(conversation: Conversation): MessageFragment[] {
+    const messages: MessageFragment[] = [];
+
+    throw new Error("TODO: not implemented")
     
     return messages;
 }
