@@ -1,0 +1,107 @@
+// IMPORTANT: This file is NOT finished and is NOT the final version,
+# Privacy Policy — Open Chat Workbench
+
+**Effective date:** February 15, 2026
+
+Thanks — we made this short, practical, and developer-friendly. This privacy policy explains what data the project collects, why, how we protect it, how long we keep it, and how you can opt out or request actions. The policy applies to the web app served from `*.openchatworkbench.com`.
+
+---
+
+## 1. Quick summary
+
+* Open Chat Workbench is an open-source frontend workbench for LLM conversations, tools, and MCP.
+* Most requests your browser makes are **local** (`'self'`) or go directly from your browser to the provider endpoint you configure (your LLM provider). We do **not** collect your provider API keys or Base URI on our servers.
+* We collect **minimal operational telemetry** (anonymized usage statistics and CSP/security reports) to keep the app stable and secure. These are collected to support the project’s legitimate interest in running, maintaining, and securing the service.
+* Raw logs are deleted after **30 days**; aggregated statistics may be stored longer. You can opt out in the app settings (`/#/settings/data-management`).
+
+---
+
+## 2. Who operates this project
+
+This project is the Open Chat Workbench team and community. The code and issue tracker live on GitHub; for administrative contact or to raise privacy or security concerns, open an issue at the project repository on GitHub - clspd/OpenChatWorkbench.
+
+---
+
+## 3. Data we collect and why
+
+### a. Required network/resource requests (`'self'`)
+
+* **What:** Browser requests to the same origin to fetch front-end assets (HTML, CSS, JS).
+* **Why:** These are required for the app to run. Legal basis: **performance/contractual necessity** for the app to function.
+
+### b. Provider configuration (Base URI / API key)
+
+* **What:** If you enter an LLM provider Base URI and API key in the UI, those values are kept **only in local storage** in your browser by default. They are **not** sent to our servers.
+* **Why & how used:** When you send a message, your browser calls the provider endpoint you configured directly to obtain the LLM response. We do **not** transmit, log, or store your provider credentials on our servers.
+
+> Note: providers you may point to (for example, OpenAI or Google) are external services; their privacy/security are governed by their own policies.
+
+### c. Analytics & operational telemetry (analytics.openchatworkbench.com)
+
+* **What:** Minimal usage statistics and operational telemetry such as:
+
+  * front-end error reports (stack traces, error types),
+  * truncated/hashed client network information (truncated IP),
+  * coarse user agent metadata (browser name + major version, OS name + major version, device type),
+  * timestamp with minute precision,
+  * country code (if available from edge provider).
+* **What we avoid:** we remove or avoid storing full IPs, full user-agent strings, referer query strings, unique request IDs, and any fields that would allow straightforward re-identification.
+* **Why:** Diagnose crashes, fix bugs, measure unstable releases, and prioritize engineering work.
+* **Legal basis:** **Legitimate interests** (ensuring reliability, security, and performance of the project). We record a Legitimate Interest Assessment internally and apply minimization.
+* **Retention:** raw logs are deleted automatically after **30 days**; aggregated, non-identifiable metrics may be retained longer.
+
+### d. CSP/security reports (csp-report-collector.openchatworkbench.com)
+
+* **What:** Browser CSP violation reports and other security telemetry. These reports may contain blocked resource URLs; we strip query strings and remove fragments before storage, and we do not store raw referer query strings.
+* **Why:** Investigate attempted policy violations and secure the app.
+* **Legal basis:** **Legitimate interests** for platform security and vulnerability mitigation.
+* **Retention & handling:** same minimization and retention rules as analytics (raw data kept up to 30 days, aggregates longer).
+
+### e. Other network requests
+
+* **Third-party trackers:** the project has **no built-in Google Analytics, Cloudflare Analytics, Google Tag Manager, or similar trackers**. Extra network requests may occur only if you install third-party browser extensions in your environment.
+
+---
+
+## 4. How we minimize risk & protect data
+
+* **Transport security:** All communications to our servers use HTTPS/TLS.
+* **Data minimization:** We truncate IPs, reduce User-Agent to coarse fields, strip URL query strings, and lower timestamp precision.
+* **Access controls:** Only authorized maintainers and build/ops systems have access to raw logs; access is audited.
+* **Aggregation:** Wherever possible we convert raw logs into aggregated metrics that do not identify users.
+* **Deletion:** Automatic deletion pipeline removes raw logs after **30 days**. Aggregates are retained only for product / reliability needs.
+* **No credentials retention:** Provider API keys / secret tokens you configure in the UI are stored locally and are not logged to our servers.
+
+---
+
+## 5. Your rights & choices
+
+* **Opt out of telemetry:** Use the in-app option at `/#/settings/data-management` to opt out of analytics and operational telemetry collection. After opting out, your browser will stop sending those telemetry events.
+* **Exercise GDPR rights (if applicable):** If you are a data subject in the EU/EEA and want to request access, rectification, deletion, restriction, or object to processing, contact us via the project repository on GitHub - clspd/OpenChatWorkbench describing your request and the relevant timeframe/details. We will verify requests and respond in accordance with applicable law.
+* **Security reports & vulnerability disclosure:** If you discover a security vulnerability, please open a private issue or follow the repository’s security disclosure instructions.
+
+---
+
+## 6. Legal basis (short)
+
+* Resource loading for app operation: **necessary** for the app to function.
+* Provider calls: **initiated by the user** from their browser to the provider endpoint — outside the project’s server processing.
+* Analytics and CSP/security telemetry: **legitimate interests** in maintaining, securing, and improving the app; we document LIA and mitigation measures.
+
+---
+
+## 7. Children
+
+The project is not intended for use by children. We do not knowingly collect personal data from children. If you believe we have inadvertently collected data from a child, contact the repository to request deletion.
+
+---
+
+## 8. Changes to this policy
+
+We may update this privacy policy occasionally (for example, if a desktop updater is added). We will publish the updated policy in the repository and indicate the effective date.
+
+---
+
+## 9. Contact & repository
+
+For questions, requests, or to raise privacy/security concerns, open an issue at the project repository on GitHub - clspd/OpenChatWorkbench.

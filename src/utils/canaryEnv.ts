@@ -49,7 +49,7 @@ export async function showCanaryWarning() {
                         ]),
                         h('li', null, [
                             h('b', null, 'Analyze Your Behaviors'),
-                            h('span', null, ': To test the latest development features, we will collect as many data as we could in the canary build. If continue, your data will be used solely for the purpose of improving the application. If you do not agree, please use the Stable Build, which has a user-friendly and privacy-focused policy.'),
+                            h('span', null, ': To test the latest development features, we will collect many data in the canary build. If continue, your data will be used solely for the purpose of improving the application. If you do not agree, please use the Stable Build, which has a user-friendly and privacy-focused policy.'),
                         ]),
                     ]),
                     h('div', { style: { fontWeight: 'bold' } }, 'Recommendation for Normal Users:'),
