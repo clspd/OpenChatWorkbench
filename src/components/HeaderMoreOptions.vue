@@ -2,7 +2,7 @@
     <a-dropdown :trigger="['click']">
         <template #overlay>
             <a-menu @click="handleMenuClick">
-                <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
+                <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);" v-if="appState.page === 'chat'">
                     <DeleteOutlined />
                     Delete
                 </a-menu-item>
@@ -24,8 +24,7 @@ import { DeleteOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/i
 import { useAppStateStore } from '@/stores/appState';
 import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import { message } from 'ant-design-vue';
-import confirm from 'ant-design-vue/es/modal/confirm';
+import { message, Modal } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 
 const appState = useAppStateStore();
@@ -38,8 +37,9 @@ const handleMenuClick = ({ key }: { key: string }) => {
     switch (key) {
         case 'delete':
             // 确认删除？
-            confirm({
-                title: 'Are you sure delete this conversation?',
+            Modal.confirm({
+                title: 'Delete Conversation',
+                content: 'Are you sure you want to delete this conversation?',
                 okText: 'Yes',
                 okType: 'danger',
                 cancelText: 'No',

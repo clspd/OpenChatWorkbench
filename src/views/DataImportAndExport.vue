@@ -25,8 +25,9 @@ exportTypes[k][1]">{{ exportTypes[k]?.[0] }}</a-checkbox>
             <p style="margin-bottom: 0;"><a-button type="primary" @click="exportData">Export</a-button></p>
         </div>
 
-        <DialogView v-model="inProgress" title="Operation In Progress" :closable="false">
-            <p>Please wait while the operation is in progress.</p>
+        <DialogView v-model="inProgress" :closable="false" style="margin: auto;">
+            <template #title>Operation In Progress</template>
+            <div>Please wait while the operation is in progress.</div>
         </DialogView>
     </div>
 </template>
@@ -34,7 +35,7 @@ exportTypes[k][1]">{{ exportTypes[k]?.[0] }}</a-checkbox>
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue';
 import { useAppStateStore } from '@/stores/appState'
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { DialogView } from 'vue-dialog-view';
 import { useConfigStore } from '@/stores/configStore';
 import { db, fs } from '@/userdata';
@@ -58,6 +59,7 @@ const importData = async function () {
     if (!fileInput.value) return message.error('Please select a file to import.');
 
     // TODO: Implement import data
+    message.error('Not implemented yet');
 }
 
 // --------
@@ -84,7 +86,18 @@ const exportSelectAll = computed({
 const exportData = async function () {
     if (!Object.values(exportTypes).some(v => !!v[1])) return message.error('Please select at least one category to export.');
 
+    if (exportTypes.providerApiKey?.[1]) if (!await new Promise(r => Modal.confirm({
+        title: 'Warning',
+        content: 'Exporting provider API keys may expose sensitive information. Are you sure?',
+        okText: 'Yes',
+        okType: 'danger',
+        cancelText: 'No',
+        onOk: () => r(true),
+        onCancel: () => r(false),
+    }))) return message.warning('Please manually uncheck "Provider API Key" if you do not want to export it and then restart the export process.');
+
     inProgress.value = true;
+    await new Promise(resolve => setTimeout(resolve, 1000)); // wait for UI update
     try {
         const files = Object.create(null);
 
@@ -145,6 +158,8 @@ const exportData = async function () {
 
         // create a zip
         const fflate = await import('fflate');
+        // add delay before heavy tasks
+        await new Promise(resolve => setTimeout(resolve, 2000));
         const zip = await new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
             fflate.zip(files, (err, data) => {
                 if (err) reject(err);
