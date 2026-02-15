@@ -124,10 +124,10 @@ watch(() => optOutUsageReport.value, async (newValue) => {
         const currentSetting = await db.get('config', 'user.privacy.optOutUsageReport');
         if (currentSetting === newValue) return;
         await db.put('config', newValue, 'user.privacy.optOutUsageReport');
-        message.success('Opt out of usage report successfully');
+        message.success('The operation has completed successfully.');
         window.location.reload();
     } catch (error) {
-        message.error('Failed to opt out of usage report');
+        message.error('Failed: ' + error);
     }
 })
 </script>
