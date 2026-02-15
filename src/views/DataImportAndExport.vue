@@ -24,6 +24,10 @@ exportTypes[k][1]">{{ exportTypes[k]?.[0] }}</a-checkbox>
             </div>
             <p style="margin-bottom: 0;"><a-button type="primary" @click="exportData">Export</a-button></p>
         </div>
+
+        <DialogView v-model="inProgress" title="Operation In Progress" :closable="false">
+            <p>Please wait while the operation is in progress.</p>
+        </DialogView>
     </div>
 </template>
 
@@ -31,10 +35,15 @@ exportTypes[k][1]">{{ exportTypes[k]?.[0] }}</a-checkbox>
 import { ref, onMounted, reactive, computed } from 'vue';
 import { useAppStateStore } from '@/stores/appState'
 import { message } from 'ant-design-vue';
+import { DialogView } from 'vue-dialog-view';
+import { useConfigStore } from '@/stores/configStore';
+import { db, fs } from '@/userdata';
 
 onMounted(() => {
     useAppStateStore().setTitle('Data Import and Export')
 })
+
+const inProgress = ref(false);
 
 // ----------
 // Import
@@ -56,10 +65,12 @@ const importData = async function () {
 
 const exportTypes = reactive<Record<string, [string, boolean]>>({
     providerConfig: ['Provider Config', true],
-    providerApiKey: ['Provider API Key (Sensitive)', false],
+    providerApiKey: ['-- Include Provider API Key (Sensitive)', false],
     modelConfig: ['Model Config', true],
     selectedProviderAndModel: ['Selected Provider and Model', false],
     modelChooserShowFavoriteOnly: ['Model Chooser: Show Favorite Only', false],
+    kvStorage: ['KV Storage', true],
+    fileSystem: ['Virtual File System Content', true],
 });
 const exportSelectAll = computed({
     get: () => {
@@ -73,7 +84,86 @@ const exportSelectAll = computed({
 const exportData = async function () {
     if (!Object.values(exportTypes).some(v => !!v[1])) return message.error('Please select at least one category to export.');
 
-    // TODO: Implement export data
+    inProgress.value = true;
+    try {
+        const files = Object.create(null);
+
+        const configStore = useConfigStore();
+        if (exportTypes.providerConfig?.[1]) {
+            let providers = JSON.parse(JSON.stringify(configStore.providers));
+            if (!exportTypes.providerApiKey?.[1]) {
+                // sanitize providers
+                for (const k of Object.keys(providers)) {
+                    if (providers[k].api_key) providers[k].api_key = '********';
+                }
+            }
+            files['providers.json'] = JSON.stringify(providers, null, 2);
+        }
+        if (exportTypes.modelConfig?.[1]) {
+            files['models.json'] = JSON.stringify(configStore.models, null, 2);
+        }
+        if (exportTypes.selectedProviderAndModel?.[1]) {
+            files['selectedProviderAndModel.json'] = JSON.stringify({
+                provider: configStore.selectedProviderId,
+                model: configStore.selectedModelId,
+            }, null, 2);
+        }
+        if (exportTypes.modelChooserShowFavoriteOnly?.[1]) {
+            files['modelChooserShowFavoriteOnly.json'] = JSON.stringify(configStore.modelChooser_showFavoritesOnly, null, 2);
+        }
+
+        // kv storage
+        if (exportTypes.kvStorage?.[1]) {
+            const storage = Object.create(null);
+            for (const k of (await db.getAllKeys('kv'))) {
+                storage[String(k)] = await db.get('kv', k);
+            }
+            files['kv.json'] = JSON.stringify(storage, null, 2);
+        }
+
+        // file system
+        if (exportTypes.fileSystem?.[1]) {
+            // export zenfs data
+            const storage = Object.create(null);
+            const processDir = async (dir: string) => {
+                for (const item of await fs.readdir(dir)) {
+                    const itemPath = `${dir}/${item}`;
+                    if (await fs.stat(itemPath).then(s => s.isDirectory())) {
+                        await processDir(itemPath);
+                    } else {
+                        storage[itemPath] = await fs.readFile(itemPath);
+                    }
+                }
+            }
+            await processDir('/');
+            files['fileSystem.json'] = JSON.stringify(storage, null, 2);
+        }
+
+        // create a zip
+        const fflate = await import('fflate');
+        const zip = await new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
+            fflate.zip(files, (err, data) => {
+                if (err) reject(err);
+                // @ts-ignore
+                else resolve(data);
+            });
+        });
+
+        // download the zip
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([zip], { type: 'application/zip' }));
+        a.download = 'OpenChatWorkbench_Data.zip';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        message.success('Data exported successfully.');
+    }
+    catch (e) {
+        console.error('[DataImportAndExport]', 'Failed to export data:', e);
+        message.error('Failed to export data: ' + e);
+    }
+    finally {
+        inProgress.value = false;
+    }
 }
 
 </script>
