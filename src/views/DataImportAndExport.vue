@@ -124,19 +124,23 @@ const exportData = async function () {
         // file system
         if (exportTypes.fileSystem?.[1]) {
             // export zenfs data
-            const storage = Object.create(null);
+            const prefix = 'filesystem';
             const processDir = async (dir: string) => {
                 for (const item of await fs.readdir(dir)) {
-                    const itemPath = `${dir}/${item}`;
+                    const itemPath = dir + item;
                     if (await fs.stat(itemPath).then(s => s.isDirectory())) {
-                        await processDir(itemPath);
+                        await processDir(itemPath + '/');
                     } else {
-                        storage[itemPath] = await fs.readFile(itemPath);
+                        files[prefix + itemPath] = await fs.readFile(itemPath);
                     }
                 }
             }
             await processDir('/');
-            files['fileSystem.json'] = JSON.stringify(storage, null, 2);
+        }
+
+        // pre process
+        for (const i in files) {
+            if (typeof files[i] === 'string') files[i] = new TextEncoder().encode(files[i]);
         }
 
         // create a zip
