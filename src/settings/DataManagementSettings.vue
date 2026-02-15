@@ -119,13 +119,16 @@ const cancelClearData = () => {
 }
 
 const optOutUsageReport = ref(false);
-watch(() => optOutUsageReport.value, (newValue) => {
-    db.put('config', newValue, 'user.privacy.optOutUsageReport').then(() => {
+watch(() => optOutUsageReport.value, async (newValue) => {
+    try {
+        const currentSetting = await db.get('config', 'user.privacy.optOutUsageReport');
+        if (currentSetting === newValue) return;
+        await db.put('config', newValue, 'user.privacy.optOutUsageReport');
         message.success('Opt out of usage report successfully');
         window.location.reload();
-    }).catch(() => {
+    } catch (error) {
         message.error('Failed to opt out of usage report');
-    })
+    }
 })
 </script>
 
