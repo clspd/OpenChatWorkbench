@@ -57,6 +57,11 @@ import { DialogView } from 'vue-dialog-view'
 
 onMounted(() => {
     useAppStateStore().setTitle('Data Management Settings')
+    db.get('config', 'user.privacy.optOutUsageReport').then((value) => {
+        optOutUsageReport.value = value ?? false;
+    }).catch(() => {
+        message.error('Failed to get opt out of usage report');
+    })
 })
 
 const cookieConsent = () => {
