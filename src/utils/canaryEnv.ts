@@ -47,10 +47,6 @@ export async function showCanaryWarning() {
                             h('b', null, 'DO NOT \u2060'),
                             h('span', null, 'use Canary builds for any critical work or with important data.'),
                         ]),
-                        h('li', null, [
-                            h('b', null, 'Analyze Your Behaviors'),
-                            h('span', null, ': To test the latest development features, we will collect many data in the canary build. If continue, your data will be used solely for the purpose of improving the application. If you do not agree, please use the Stable Build, which has a user-friendly and privacy-focused policy.'),
-                        ]),
                     ]),
                     h('div', { style: { fontWeight: 'bold' } }, 'Recommendation for Normal Users:'),
                     h('div', null, [
