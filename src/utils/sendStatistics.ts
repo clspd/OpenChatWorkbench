@@ -12,7 +12,7 @@ export async function sendUsageReport(data: string) {
     //     },
     //     body: data,
     // });
-    navigator.sendBeacon(new URL('./statistics-report', analytics_base_url), data);
+    navigator.sendBeacon(new URL('./usage-report', analytics_base_url), data);
 }
 
 
