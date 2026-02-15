@@ -47,7 +47,7 @@
             <b>Explaination:</b>
             <span>&nbsp;The application collects anonymous usage data to help improve the application. However, you can opt out of usage report if you want.</span>
             <span>&nbsp;If you opt out of usage report, the application will not collect any usage data.</span>
-            <span>&nbsp;To learn more, refer to the <a href="/resource/privacy.html" target="_blank">Privacy Policy</a>.</span>
+            <span>&nbsp;To learn more, refer to the <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>.</span>
         </div>
     </div>
 </template>
@@ -59,6 +59,7 @@ import { message, Modal } from 'ant-design-vue'
 import { db, db_name } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
+import { privacy_policy_href } from '@/config'
 
 const router = useRouter()
 
@@ -76,7 +77,7 @@ const cookieConsent = () => {
 }
 
 const privacyPolicy = () => {
-    window.open('/resource/privacy.html', '_blank');
+    window.open(privacy_policy_href, '_blank');
 }
 
 const portData = () => {

@@ -18,8 +18,13 @@
                 <br>
                 <b>To learn more</b>
                 <span>, please visit our </span>
-                <a href="/resource/privacy.html" target="_blank">Privacy Policy</a>
+                <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>
                 <span>.</span>
+                <template v-if="isUpdatedFromPrevious">
+                    <br>
+                    <b>Notice:&nbsp;</b>
+                    <span>Recently we have updated our privacy policy and that's why the consent dialog is shown again. Please <a :href="privacy_policy_href" target="_blank">review the privacy policy</a> and update your preferences below.</span>
+                </template>
             </div>
 
             <h2>Manage Consent Preferences</h2>
@@ -114,12 +119,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, toRaw, watch } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import { DialogView } from 'vue-dialog-view';
 import { useAppStateStore } from '@/stores/appState';
 import type { CookieConsent } from '@/types/cookieConsent';
 import { createBaseCookieConsent, getCookieConsent, setCookieConsent } from '@/utils/cookieConsent';
-import { analytics_base_url, cookie_consent_updated_at } from '@/config';
+import { analytics_base_url, cookie_consent_updated_at, privacy_policy_href } from '@/config';
 import { NON_EU_MAJOR } from '@/modules/statistics/NonEuMajor';
 
 const appState = useAppStateStore();
@@ -127,6 +132,7 @@ const appState = useAppStateStore();
 const activeKey = ref(['necessary', 'performance', 'functional', 'targeting']);
 const status = ref<CookieConsent>(createBaseCookieConsent());
 const isLoading = ref(true);
+const isUpdatedFromPrevious = computed(() => !!status.value.updatedAt);
 
 watch(() => appState.showCookieConsent, async (newValue: boolean) => {
     if (newValue) try {
@@ -169,6 +175,8 @@ const saveConsent = async (programmatically = false) => {
     value.updatedAt = cookie_consent_updated_at;
     console.log('[consent]', 'User save cookie consent:', value);
     await setCookieConsent(value);
+    // store a copy in HTTP COOKIE
+    document.cookie = `cookie_consent=n%3D${value.necessary}%2Cp%3D${value.performance}%2Cf%3D${value.functional}%2Ct%3D${value.targeting}%2Cts%3D${value.updatedAt}; path=/; max-age=31536000; secure`;
     window.location.reload();
 }
 const allowAll = async () => {

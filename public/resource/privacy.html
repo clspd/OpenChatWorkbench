@@ -9,37 +9,37 @@
 <body>
 
 <h1>Privacy Policy — Open Chat Workbench</h1>
-<p><strong>Effective date:</strong> February 15, 2026 (UTC+8)</p>
+<p><b>Effective date:</b> February 15, 2026 (UTC+8)</p>
 <p>Thanks — we made this short, practical, and developer-friendly. This privacy policy explains what data the project collects, why, how we protect it, how long we keep it, and how you can opt out or request actions. The policy applies to the web app served from <code>*.openchatworkbench.com</code>.</p>
 <hr>
 <h2>1. Quick summary</h2>
 <ul>
 <li>Open Chat Workbench is an open-source frontend workbench for LLM conversations, tools, and MCP.</li>
-<li>Most requests your browser makes are <strong>local</strong> (<code>'self'</code>) or go directly from your browser to the provider endpoint you configure (your LLM provider). We do <strong>not</strong> collect your provider API keys or Base URI on our servers.</li>
-<li>We collect <strong>minimal operational telemetry</strong> (anonymized usage statistics and CSP/security reports) to keep the app stable and secure. These are collected to support the project’s legitimate interest in running, maintaining, and securing the service.</li>
-<li>Raw logs are deleted after <strong>30 days</strong>; aggregated statistics may be stored longer. You can opt out in the app settings (<code>/#/settings/data-management</code>).</li>
+<li>Most requests your browser makes are <b>local</b> (<code>'self'</code>) or go directly from your browser to the provider endpoint you configure (your LLM provider). We do <b>not</b> collect your provider API keys or Base URI on our servers.</li>
+<li>We collect <b>minimal operational telemetry</b> (anonymized usage statistics and CSP/security reports) to keep the app stable and secure. These are collected to support the project's legitimate interest in running, maintaining, and securing the service.</li>
+<li>Raw logs are deleted after <b>30 days</b>; aggregated statistics may be stored longer. You can opt out in the <a href="/#/settings/data-management" target="_blank">app settings</a>.</li>
 </ul>
 <hr>
 <h2>2. Who operates this project</h2>
-<p>This project is the Open Chat Workbench team and community. The code and issue tracker live on GitHub; for administrative contact or to raise privacy or security concerns, open an issue at the project repository on GitHub - clspd/OpenChatWorkbench.</p>
+<p>This project is the Open Chat Workbench team and community. The code and issue tracker live on <a href="https://github.com/clspd/OpenChatWorkbench" target="_blank">GitHub</a>; for administrative contact or to raise privacy or security concerns, <a href="https://github.com/clspd/OpenChatWorkbench/issues/new" target="_blank">open an issue</a> at the project repository.</p>
 <hr>
 <h2>3. Data we collect and why</h2>
 <h3>a. Required network/resource requests (<code>'self'</code>)</h3>
 <ul>
-<li><strong>What:</strong> Browser requests to the same origin to fetch front-end assets (HTML, CSS, JS).</li>
-<li><strong>Why:</strong> These are required for the app to run. Legal basis: <strong>performance/contractual necessity</strong> for the app to function.</li>
+<li><b>What:</b> Browser requests to the same origin to fetch front-end assets (HTML, CSS, JS).</li>
+<li><b>Why:</b> These are required for the app to run. Legal basis: <b>performance/contractual necessity</b> for the app to function.</li>
 </ul>
 <h3>b. Provider configuration (Base URI / API key)</h3>
 <ul>
-<li><strong>What:</strong> If you enter an LLM provider Base URI and API key in the UI, those values are kept <strong>only in local storage</strong> in your browser by default. They are <strong>not</strong> sent to our servers.</li>
-<li><strong>Why &amp; how used:</strong> When you send a message, your browser calls the provider endpoint you configured directly to obtain the LLM response. We do <strong>not</strong> transmit, log, or store your provider credentials on our servers.</li>
+<li><b>What:</b> If you enter an LLM provider Base URI and API key in the UI, those values are kept <b>only in local storage</b> in your browser by default. They are <b>not</b> sent to our servers.</li>
+<li><b>Why &amp; how used:</b> When you send a message, your browser calls the provider endpoint you configured directly to obtain the LLM response. We do <b>not</b> transmit, log, or store your provider credentials on our servers.</li>
 </ul>
 <blockquote>
 <p>Note: providers you may point to (for example, OpenAI or Google) are external services; their privacy/security are governed by their own policies.</p>
 </blockquote>
 <h3>c. Analytics &amp; operational telemetry (analytics.openchatworkbench.com)</h3>
 <ul>
-<li><p><strong>What:</strong> Minimal usage statistics and operational telemetry such as:</p>
+<li><p><b>What:</b> Minimal usage statistics and operational telemetry such as:</p>
 <ul>
 <li>specific runtime data such as Country information for security reasons,</li>
 <li>front-end error reports (stack traces, error types),</li>
@@ -49,59 +49,59 @@
 <li>country code (if available from edge provider).</li>
 </ul>
 </li>
-<li><p><strong>What we avoid:</strong> we remove or avoid storing full IPs, full user-agent strings, referer query strings, unique request IDs, and any fields that would allow straightforward re-identification.</p>
+<li><p><b>What we avoid:</b> we remove or avoid storing full IPs, full user-agent strings, referer query strings, unique request IDs, and any fields that would allow straightforward re-identification.</p>
 </li>
-<li><p><strong>Why:</strong> Diagnose crashes, fix bugs, measure unstable releases, and prioritize engineering work.</p>
+<li><p><b>Why:</b> Diagnose crashes, fix bugs, measure unstable releases, and prioritize engineering work.</p>
 </li>
-<li><p><strong>Legal basis:</strong> <strong>Legitimate interests</strong> (ensuring reliability, security, and performance of the project). We record a Legitimate Interest Assessment internally and apply minimization.</p>
+<li><p><b>Legal basis:</b> <b>Legitimate interests</b> (ensuring reliability, security, and performance of the project). We record a Legitimate Interest Assessment internally and apply minimization.</p>
 </li>
-<li><p><strong>Retention:</strong> raw logs are deleted automatically after <strong>30 days</strong>; aggregated, non-identifiable metrics may be retained longer.</p>
+<li><p><b>Retention:</b> raw logs are deleted automatically after <b>30 days</b>; aggregated, non-identifiable metrics may be retained longer.</p>
 </li>
 </ul>
 <h3>d. CSP/security reports (csp-report-collector.openchatworkbench.com)</h3>
 <ul>
-<li><strong>What:</strong> Browser CSP violation reports and other security telemetry. These reports may contain blocked resource URLs; we strip query strings and remove fragments before storage, and we do not store raw referer query strings.</li>
-<li><strong>Why:</strong> Investigate attempted policy violations and secure the app.</li>
-<li><strong>Legal basis:</strong> <strong>Legitimate interests</strong> for platform security and vulnerability mitigation.</li>
-<li><strong>Retention &amp; handling:</strong> same minimization and retention rules as analytics (raw data kept up to 30 days, aggregates longer).</li>
+<li><b>What:</b> Browser CSP violation reports and other security telemetry. These reports may contain blocked resource URLs; we strip query strings and remove fragments before storage, and we do not store raw referer query strings.</li>
+<li><b>Why:</b> Investigate attempted policy violations and secure the app.</li>
+<li><b>Legal basis:</b> <b>Legitimate interests</b> for platform security and vulnerability mitigation.</li>
+<li><b>Retention &amp; handling:</b> same minimization and retention rules as analytics (raw data kept up to 30 days, aggregates longer).</li>
 </ul>
 <h3>e. Other network requests</h3>
 <ul>
-<li><strong>Third-party trackers:</strong> the project has <strong>no built-in Google Analytics, Cloudflare Analytics, Google Tag Manager, or similar trackers</strong>. Extra network requests may occur only if you install third-party browser extensions in your environment.</li>
+<li><b>Third-party trackers:</b> the project has <b>no built-in Google Analytics, Cloudflare Analytics, Google Tag Manager, or similar trackers</b>. Extra network requests may occur only if you install third-party browser extensions in your environment.</li>
 </ul>
 <hr>
 <h2>4. How we minimize risk &amp; protect data</h2>
 <ul>
-<li><strong>Transport security:</strong> All communications to our servers use HTTPS/TLS.</li>
-<li><strong>Data minimization:</strong> We truncate IPs, reduce User-Agent to coarse fields, strip URL query strings, and lower timestamp precision.</li>
-<li><strong>Access controls:</strong> Only authorized maintainers and build/ops systems have access to raw logs; access is audited.</li>
-<li><strong>Aggregation:</strong> Wherever possible we convert raw logs into aggregated metrics that do not identify users.</li>
-<li><strong>Deletion:</strong> Automatic deletion pipeline removes raw logs after <strong>30 days</strong>. Aggregates are retained only for product / reliability needs.</li>
-<li><strong>No credentials retention:</strong> Provider API keys / secret tokens you configure in the UI are stored locally and are not logged to our servers.</li>
+<li><b>Transport security:</b> All communications to our servers use HTTPS/TLS.</li>
+<li><b>Data minimization:</b> We truncate IPs, reduce User-Agent to coarse fields, strip URL query strings, and lower timestamp precision.</li>
+<li><b>Access controls:</b> Only authorized maintainers and build/ops systems have access to raw logs; access is audited.</li>
+<li><b>Aggregation:</b> Wherever possible we convert raw logs into aggregated metrics that do not identify users.</li>
+<li><b>Deletion:</b> Automatic deletion pipeline removes raw logs after <b>30 days</b>. Aggregates are retained only for product / reliability needs.</li>
+<li><b>No credentials retention:</b> Provider API keys / secret tokens you configure in the UI are stored locally and are not logged to our servers.</li>
 </ul>
 <hr>
 <h2>5. Your rights &amp; choices</h2>
 <ul>
-<li><strong>Opt out of telemetry:</strong> Use the in-app option at <code>/#/settings/data-management</code> to opt out of analytics and operational telemetry collection. After opting out, your browser will stop sending those telemetry events.</li>
-<li><strong>Exercise GDPR rights (if applicable):</strong> If you are a data subject in the EU/EEA and want to request access, rectification, deletion, restriction, or object to processing, contact us via the project repository on GitHub - clspd/OpenChatWorkbench describing your request and the relevant timeframe/details. We will verify requests and respond in accordance with applicable law.</li>
-<li><strong>Security reports &amp; vulnerability disclosure:</strong> If you discover a security vulnerability, please open a private issue or follow the repository’s security disclosure instructions.</li>
+<li><b>Opt out of telemetry:</b> Use the <a href="/#/settings/data-management" target="_blank">in-app option</a> to opt out of analytics and operational telemetry collection. After opting out, your browser will stop sending those telemetry events.</li>
+<li><b>Exercise GDPR rights (if applicable):</b> If you are a data subject in the EU/EEA and want to request access, rectification, deletion, restriction, or object to processing, contact us via <code>privacy@openchatworkbench.com</code> describing your request and the relevant timeframe/details. We will verify requests and respond in accordance with applicable law. <b>Please note that your sensitive data such as configuration, provider credentials, and chat historys are never sent to our servers, meaning that we will be unable to provide these datas.</b></li>
+<li><b>Security reports &amp; vulnerability disclosure:</b> If you discover a security vulnerability, please open a private issue or follow the repository's security disclosure instructions.</li>
 </ul>
 <hr>
 <h2>6. Legal basis (short)</h2>
 <ul>
-<li>Resource loading for app operation: <strong>necessary</strong> for the app to function.</li>
-<li>Provider calls: <strong>initiated by the user</strong> from their browser to the provider endpoint — outside the project’s server processing.</li>
-<li>Analytics and CSP/security telemetry: <strong>legitimate interests</strong> in maintaining, securing, and improving the app; we document LIA and mitigation measures.</li>
+<li>Resource loading for app operation: <b>necessary</b> for the app to function.</li>
+<li>Provider calls: <b>initiated by the user</b> from their browser to the provider endpoint — outside the project's server processing.</li>
+<li>Analytics and CSP/security telemetry: <b>legitimate interests</b> in maintaining, securing, and improving the app; we document LIA and mitigation measures.</li>
 </ul>
 <hr>
 <h2>7. Children</h2>
-<p>The project is not intended for use by children. We do not knowingly collect personal data from children. If you believe we have inadvertently collected data from a child, contact the repository to request deletion.</p>
+<p>The project is not intended for use by children. We do not knowingly collect personal data from children. If you believe we have inadvertently collected data from a child, contact us via <code>privacy@openchatworkbench.com</code> to request deletion.</p>
 <hr>
 <h2>8. Changes to this policy</h2>
-<p>We may update this privacy policy occasionally (for example, if a desktop updater is added). We will publish the updated policy in the repository and indicate the effective date.</p>
+<p>We may update this privacy policy occasionally. We will publish the updated policy in the repository, indicate the effective date and try our best to inform users about the changes.</p>
 <hr>
 <h2>9. Contact &amp; repository</h2>
-<p>For questions, requests, or to raise privacy/security concerns, open an issue at the project repository on GitHub - clspd/OpenChatWorkbench.</p>
+<p>For questions, requests, or to raise privacy/security concerns, <a href="https://github.com/clspd/OpenChatWorkbench/issues/new" target="_blank">open an issue</a> at the project repository or contact us via <code>privacy@openchatworkbench.com</code>.</p>
 
 </body>
 </html>
