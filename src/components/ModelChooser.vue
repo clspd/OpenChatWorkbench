@@ -9,7 +9,7 @@
             </span>
         </a-button>
 
-        <dialog-view v-model="modalVisible" style="max-width: 500px; width: calc(100% - 2em);">
+        <dialog-view v-model="modalVisible" :close-on-click-mask="true" style="max-width: 500px; width: calc(100% - 2em);">
             <template #title>
                 Select Model
             </template>

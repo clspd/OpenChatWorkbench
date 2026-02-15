@@ -1,6 +1,9 @@
+// appStatePersistStore: These datas are **persistent** data which stores the user's preferences.
+
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { fs } from '@/userdata'
+import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
@@ -10,6 +13,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
     actions: {
         initAutoSave() {
             this.$subscribe(async (mutation, state) => {
+                if (!await isFunctionalCookieConsented()) return;
                 try {
                     const json = JSON.stringify(state)
                     // ensure the directory exists
@@ -23,6 +27,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
             })
         },
         async load() {
+            if (!await isFunctionalCookieConsented()) return;
             try {
                 const json = new TextDecoder().decode(await fs.readFile('/data/config/appStatePersist.json'))
                 const state = JSON.parse(json)

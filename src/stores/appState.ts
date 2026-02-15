@@ -1,3 +1,5 @@
+// appStateStore: There are temporary datas which stores in the memory and losts when the page is reloaded.
+
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
@@ -6,6 +8,7 @@ export const useAppStateStore = defineStore('AppState', {
         page: 'unknown' as any,
         title: '',
         titleCustomize: false,
+        showCookieConsent: false,
     }),
     actions: {
         setPage(page: any) {

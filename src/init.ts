@@ -5,11 +5,13 @@ import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
-import { app_name, domain_name_canary } from "./config";
+import { app_name, cookie_consent_updated_at, domain_name_canary } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 import '@/utils/appInstanceDetector'
 import { sendUsageReport } from "./utils/sendStatistics";
+import { InitCookieConsent, isFunctionalCookieConsented } from "./utils/cookieConsent";
+import { db } from "./userdata";
 
 export default async function init() {
     // register service worker
@@ -27,26 +29,33 @@ export default async function init() {
         setPage(to.name)
     })
 
-    const { loadConfig, initAutoSave } = useConfigStore()
-    await loadConfig()
-    initAutoSave()
+    await InitCookieConsent(cookie_consent_updated_at);
+
+    const { loadConfig, initAutoSave } = useConfigStore();
+    await loadConfig();
+    initAutoSave();
+
+    if (!await isFunctionalCookieConsented()) { 
+        // clear the kv store, which stores user preferences
+        await db.clear('kv');
+    }
 
     const { load: loadAppStateAutoSave, initAutoSave: initAppStateAutoSave } = useAppStatePersistStore();
-    await loadAppStateAutoSave()
+    await loadAppStateAutoSave();
     initAppStateAutoSave();
 
     const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave, cleanup: cleanupAppStateSession } = useAppStateSessionStore()
-    await loadAppStateSession()
-    initAppStateSessionAutoSave()
-    cleanupAppStateSession()
+    await loadAppStateSession();
+    initAppStateSessionAutoSave();
+    cleanupAppStateSession();
 
     watch(() => useAppStateStore().title, (title) => {
         document.title = title ? (useAppStateStore().titleCustomize ? title : `${title} - ${app_name}`) : app_name
-    })
+    });
 
-    useConversationStore()
+    useConversationStore();
     
-    fetch('/resource/offline@1.0.0.html').catch(() => {})
+    fetch('/resource/offline@1.0.0.html').catch(() => {});
 
     if (window.location.hostname === domain_name_canary) {
         const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');

@@ -11,6 +11,10 @@ a:any-link:hover {
     text-decoration: underline;
 }
 
+a {
+    color: var(--link-color, blue);
+}
+
 .flexible-space {
     flex: 1;
 }

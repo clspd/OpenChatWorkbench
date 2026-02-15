@@ -1,5 +1,5 @@
 <template>
-    <div class="sub-settings-container">
+    <div class="sub-settings-container" v-if="isAvailable">
         <h2>Cache Settings</h2>
         <p>
             The application can cache some frontend resources to improve performance and allow offline access.
@@ -67,16 +67,22 @@
             </template>
         </DialogView>
     </div>
+    <div class="sub-settings-container" v-else>
+        <h2>Cache Settings</h2>
+        <p>The page is unavailable because you have rejected the usage of functional cookies. You can re-enable it by <a href="javascript:" @click.prevent="cookieConsent">changing your cookie consent</a>.</p>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { isServiceWorkerActive } from '@/utils/swApi';
 import { onMounted, ref } from 'vue';
+import { isFunctionalCookieConsented } from '@/utils/cookieConsent';
+import { isServiceWorkerActive } from '@/utils/swApi';
 import StatusText from '@/components/StatusText.vue'
 import { message, Modal } from 'ant-design-vue';
 import { DialogView } from 'vue-dialog-view';
 import { useAppStateStore } from '@/stores/appState';
 
+const isAvailable = ref(true);
 const isSwActive = ref<boolean>(false);
 const cachedCount = ref<number>(0);
 const appInitConfig = (globalThis as any).appInitConfig;
@@ -84,9 +90,12 @@ const appInitConfig = (globalThis as any).appInitConfig;
 onMounted(async () => {
     useAppStateStore().setTitle('Cache Settings')
 
+    isAvailable.value = await isFunctionalCookieConsented();
     await checkSw();
     await checkCacheStatus();
 })
+
+const cookieConsent = () => useAppStateStore().showCookieConsent = true;
 
 const confirm = (title: string, content: string, okText: string = 'Yes', cancelText: string = 'No') => new Promise(resolve =>
     Modal.confirm({

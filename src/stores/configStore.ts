@@ -1,7 +1,10 @@
+// configStore: There datas are **necessary** to run the application.
+
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
 import { db } from '@/userdata'
+import { isNecessaryCookieConsented } from '@/utils/cookieConsent'
 
 export const useConfigStore = defineStore('config', {
     state: () => ({
@@ -15,6 +18,7 @@ export const useConfigStore = defineStore('config', {
     actions: {
         initAutoSave() {
             this.$subscribe(async (mutation, state) => {
+                if (!await isNecessaryCookieConsented()) return;
                 try {
                     const data = JSON.parse(JSON.stringify(state))
                     for (const key in data) {
@@ -26,6 +30,7 @@ export const useConfigStore = defineStore('config', {
             })
         },
         async loadConfig() {
+            if (!await isNecessaryCookieConsented()) return;
             try {
                 // enum idb
                 const keys = await db.getAllKeys('config')

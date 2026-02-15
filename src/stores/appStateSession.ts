@@ -1,9 +1,12 @@
+// appStateSessionStore: These datas are **session** functionl data which stores the user's preferences.
+
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { app_name_id } from '@/config'
 import type { ChatEditBuffer } from '@/types'
 import { db } from '@/userdata'
 import { IsFirstInstance } from '@/utils/appInstanceDetector'
+import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 
 export const useAppStateSessionStore = defineStore('AppStateSession', {
     state: () => ({
@@ -13,6 +16,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
     actions: {
         initAutoSave() {
             this.$subscribe(async (mutation, state) => {
+                if (!await isFunctionalCookieConsented()) return;
                 try {
                     const json = JSON.stringify(state)
                     let windowId = window.sessionStorage.getItem(app_name_id + '@windowId')
@@ -31,6 +35,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
             return windowId
         },
         async load() {
+            if (!await isFunctionalCookieConsented()) return;
             try {
                 // const json = window.sessionStorage.getItem(app_name_id + '@appStateSession')
                 let windowId = window.sessionStorage.getItem(app_name_id + '@windowId')
