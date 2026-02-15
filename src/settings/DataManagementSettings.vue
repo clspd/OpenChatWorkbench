@@ -11,6 +11,10 @@
         </div>
 
         <div class="setting-item">
+            <a-button @click="exportData">Export All Data</a-button>
+        </div>
+
+        <div class="setting-item">
             <a-button @click="clearData" danger>Clear All Data</a-button>
         </div>
 
@@ -70,6 +74,10 @@ const cookieConsent = () => {
 
 const privacyPolicy = () => {
     window.open('/resource/privacy.html', '_blank');
+}
+
+const exportData = () => {
+    message.error("Export data is not implemented yet in the canary channel");
 }
 
 const clearDataState = ref<{

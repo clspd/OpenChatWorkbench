@@ -4,9 +4,10 @@
         :closable="false"
         class="cookie-consent"
     >
-        <template #title>We Value Your Privacy</template>
+        <template #title>{{ isLoading ? "Loading Data, Please Wait" : "We Value Your Privacy" }}</template>
 
         <div class="cookie-consent-container">
+            <div v-if="isLoading" class="loading-overlay"></div>
             <h2>Cookies Consent Center</h2>
 
             <div class="info">
@@ -117,19 +118,36 @@ import { onMounted, ref, toRaw, watch } from 'vue';
 import { DialogView } from 'vue-dialog-view';
 import { useAppStateStore } from '@/stores/appState';
 import type { CookieConsent } from '@/types/cookieConsent';
-import { createBaseCookieConsent, getSafeCookieConsent, setCookieConsent } from '@/utils/cookieConsent';
-import { cookie_consent_updated_at } from '@/config';
+import { createBaseCookieConsent, getCookieConsent, setCookieConsent } from '@/utils/cookieConsent';
+import { analytics_base_url, cookie_consent_updated_at } from '@/config';
+import { NON_EU_MAJOR } from '@/modules/statistics/NonEuMajor';
 
 const appState = useAppStateStore();
 
 const activeKey = ref(['necessary', 'performance', 'functional', 'targeting']);
 const status = ref<CookieConsent>(createBaseCookieConsent());
+const isLoading = ref(true);
 
 watch(() => appState.showCookieConsent, async (newValue: boolean) => {
-    if (newValue) {
-        status.value = await getSafeCookieConsent();
-    }
-})
+    if (newValue) try {
+        isLoading.value = true;
+        const stat = await getCookieConsent();
+        if (stat) status.value = stat;
+        else {
+            const base = createBaseCookieConsent();
+            const resp = await fetch(new URL("./country", analytics_base_url));
+            if (!resp.ok) throw new Error(`Failed to get country: ${resp.status}`);
+            const country = (await resp.text()).toUpperCase();
+            if (NON_EU_MAJOR.has(country)) {
+                // for non-europe users, enable all cookies by default (user can still edit the preferences)
+                base.performance = base.functional = base.targeting = true;
+                // for non-europe users, collapse all items by default
+                activeKey.value.length = 0;
+            }
+            status.value = base;
+        }
+    } catch { status.value = createBaseCookieConsent(); } finally { isLoading.value = false; }
+}, { immediate: true })
 
 const showConfirmDialog = ref(false);
 const dlg = ref<{
@@ -178,11 +196,21 @@ const quitApp = async () => {
 <style scoped>
 .cookie-consent {
     width: 640px;
-    height: 480px;
     word-break: normal;
 }
 
-.cookie-consent-container > * {
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 0;
+    z-index: 1;
+}
+
+.cookie-consent-container {
+    position: relative;
+}
+:where(.cookie-consent-container > *) {
     margin-top: 0;
     margin-bottom: 10px;
 }

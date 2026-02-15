@@ -5,13 +5,15 @@ import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
-import { app_name, cookie_consent_updated_at, domain_name_canary } from "./config";
+import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 import '@/utils/appInstanceDetector'
 import { sendUsageReport } from "./utils/sendStatistics";
 import { InitCookieConsent, isFunctionalCookieConsented } from "./utils/cookieConsent";
 import { db } from "./userdata";
+import { DYNDATA } from "./dynamic";
+import { setupErrorHandler } from "./utils/errorHandler";
 
 export default async function init() {
     // register service worker
@@ -39,6 +41,7 @@ export default async function init() {
         // clear the kv store, which stores user preferences
         await db.clear('kv');
     }
+    await setupErrorHandler();
 
     const { load: loadAppStateAutoSave, initAutoSave: initAppStateAutoSave } = useAppStatePersistStore();
     await loadAppStateAutoSave();
@@ -62,7 +65,11 @@ export default async function init() {
         showCanaryWarning();
         (window as any).removeCanaryWatermark = addCanaryWatermark();
         addRevHash();
-        sendUsageReport('An user is using the canary version of OpenChatWorkbench.').catch(e => console.log('[statistics] Failed to send usage report:' + e));
+        sendUsageReport('An user is using the canary version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
+    if (window.location.hostname === domain_name_stable) {
+        sendUsageReport('An user is using the stable version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
+    }
+    
 
 };
