@@ -49,10 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
-import { db_name } from '@/userdata'
+import { db, db_name } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 
 onMounted(() => {
@@ -114,7 +114,14 @@ const cancelClearData = () => {
 }
 
 const optOutUsageReport = ref(false);
-
+watch(() => optOutUsageReport.value, (newValue) => {
+    db.put('config', newValue, 'user.privacy.optOutUsageReport').then(() => {
+        message.success('Opt out of usage report successfully');
+        window.location.reload();
+    }).catch(() => {
+        message.error('Failed to opt out of usage report');
+    })
+})
 </script>
 
 <style scoped>
