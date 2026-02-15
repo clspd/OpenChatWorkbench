@@ -90,7 +90,7 @@
             <div class="info">Note: After changing your consent preferences, a page reload is required for the changes to take effect.</div>
 
             <div class="buttons-container">
-                <a-button type="primary" @click="saveConsent">Confirm my choices</a-button>
+                <a-button type="primary" @click="saveConsent(false)">Confirm my choices</a-button>
                 <a-button @click="allowAll">Allow All</a-button>
                 <a-button @click="necessaryOnly">Necessary Only</a-button>
                 <a-button danger @click="quitApp">Quit Application</a-button>
@@ -163,8 +163,8 @@ const confirm = () => new Promise<boolean>((resolve, reject) => {
     showConfirmDialog.value = true;
 })
 
-const saveConsent = async () => {
-    if (!status.value.functional) if (!await confirm()) return;
+const saveConsent = async (programmatically = false) => {
+    if (!programmatically && !status.value.functional) if (!await confirm()) return;
     const value = toRaw(status.value);
     value.updatedAt = cookie_consent_updated_at;
     console.log('[consent]', 'User save cookie consent:', value);
@@ -176,12 +176,12 @@ const allowAll = async () => {
     status.value.performance = true;
     status.value.functional = true;
     status.value.targeting = true;
-    saveConsent();
+    saveConsent(true);
 }
 const necessaryOnly = async () => {
     if (!await confirm()) return;
     status.value = createBaseCookieConsent();
-    saveConsent();
+    saveConsent(true);
 }
 const quitApp = async () => {
     if (!await confirm()) return;

@@ -34,6 +34,11 @@ const router = createRouter({
       component: () => import('@/views/About.vue'),
     },
     {
+      path: '/interop/data-import-and-export',
+      name: 'data-import-and-export',
+      component: () => import('@/views/DataImportAndExport.vue'),
+    },
+    {
       path: '/debug/file-browser',
       component: () => import('@/views/FileBrowser.vue'),
     },

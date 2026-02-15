@@ -58,7 +58,7 @@ export default async function init() {
 
     useConversationStore();
     
-    fetch('/resource/offline@1.0.0.html').catch(() => {});
+    if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 
     if (window.location.hostname === domain_name_canary) {
         const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');

@@ -11,7 +11,7 @@
         </div>
 
         <div class="setting-item">
-            <a-button @click="exportData">Export All Data</a-button>
+            <a-button @click="portData">Import &amp; Export Data</a-button>
         </div>
 
         <div class="setting-item">
@@ -58,6 +58,9 @@ import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
 import { db, db_name } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 onMounted(() => {
     useAppStateStore().setTitle('Data Management Settings')
@@ -76,8 +79,8 @@ const privacyPolicy = () => {
     window.open('/resource/privacy.html', '_blank');
 }
 
-const exportData = () => {
-    message.error("Export data is not implemented yet in the canary channel");
+const portData = () => {
+    router.push('/interop/data-import-and-export');
 }
 
 const clearDataState = ref<{
