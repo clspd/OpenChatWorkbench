@@ -21,6 +21,10 @@
                     "value": "SAMEORIGIN"
                 },
                 {
+                    "key": "Vary",
+                    "value": "Cookie"
+                },
+                {
                     "key": "X-App-Name",
                     "value": "Open Chat Workbench"
                 }

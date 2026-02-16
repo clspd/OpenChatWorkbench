@@ -1,7 +1,7 @@
 globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.freeze(
 /** @type {AppInitConfig} */({
     CACHE_PREFIX: 'openchatworkbench_web_cache-',
-    CACHE_VERSION: 2,
+    CACHE_VERSION: 3,
     IMMUTABLE_CACHE_FILE_MATCH: [
         /^\/assets\/.+\.s\.[\w$]+?$/,
         /^\/vendor\/npm\/([\w-]+?)@(\d+?\.\d+?\.\d+?)\//,
