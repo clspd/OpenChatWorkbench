@@ -128,9 +128,8 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             const headers = new Headers(req.headers);
             if (etag) headers.set('If-None-Match', etag);
             else if (lastModified) headers.set('If-Modified-Since', lastModified);
-            if ((!etag && !lastModified) || req.mode === 'navigate') {
+            if ((!etag && !lastModified)) {
                 // no ETag or Last-Modified header, 
-                // or the request type is Navigate (this is because some of document headers differs according to Cookies)
                 // we should fallback to network
                 const resp = await fetch(req);
                 if (resp.ok) {
