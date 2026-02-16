@@ -49,6 +49,16 @@
             <span>&nbsp;If you opt out of usage report, the application will not collect any usage data.</span>
             <span>&nbsp;To learn more, refer to the <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>.</span>
         </div>
+
+        <div class="setting-item">
+            <a-checkbox v-model:checked="optOutCSPReport">Opt out of CSP report (Not recommended)</a-checkbox>
+            <br>
+            <b>Explaination:</b>
+            <span>&nbsp;The application collects Content Security Policy (CSP) violation report data to ensure the security of the application.</span>
+            <span>&nbsp;If you opt out of CSP report, the application will not send CSP report data anymore.</span>
+            <span><br><b>Why not recommend to opt out?</b> CSP report data is used to identity the potential hacking attempts and improve the security of the application. It doesn't contain any personal or sensitive information.&nbsp;However, if you are very privacy-conscious, you can still opt out of CSP report.</span>
+            <span>&nbsp;To learn more, refer to the <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>.</span>
+        </div>
     </div>
 </template>
 
@@ -59,7 +69,7 @@ import { message, Modal } from 'ant-design-vue'
 import { db, db_name } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
-import { privacy_policy_href } from '@/config'
+import { domain_name_root, privacy_policy_href } from '@/config'
 
 const router = useRouter()
 
@@ -136,6 +146,25 @@ watch(() => optOutUsageReport.value, async (newValue) => {
         const currentSetting = await db.get('config', 'user.privacy.optOutUsageReport');
         if (currentSetting === newValue) return;
         await db.put('config', newValue, 'user.privacy.optOutUsageReport');
+        message.success('The operation has completed successfully.');
+        window.location.reload();
+    } catch (error) {
+        message.error('Failed: ' + error);
+    }
+})
+const optOutCSPReport = ref(false);
+watch(() => optOutCSPReport.value, async (newValue) => {
+    try {
+        const { parse } = await import('cookie');
+        const currentSetting = parse(document.cookie)['user.privacy.optOutCSPReport'] === 'true';
+        if (currentSetting === newValue) return;
+        if (newValue) {
+            // add the cookie
+            document.cookie = `user.privacy.optOutCSPReport=true; path=/; domain=${domain_name_root}; max-age=63072000; secure`;
+        } else {
+            // delete the cookie
+            document.cookie = `user.privacy.optOutCSPReport=; path=/; domain=${domain_name_root}; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure`;
+        }
         message.success('The operation has completed successfully.');
         window.location.reload();
     } catch (error) {

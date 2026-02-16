@@ -132,7 +132,7 @@ const appState = useAppStateStore();
 const activeKey = ref(['necessary', 'performance', 'functional', 'targeting']);
 const status = ref<CookieConsent>(createBaseCookieConsent());
 const isLoading = ref(true);
-const isUpdatedFromPrevious = computed(() => !!status.value.updatedAt);
+const isUpdatedFromPrevious = computed(() => (status.value.updatedAt !== cookie_consent_updated_at));
 
 watch(() => appState.showCookieConsent, async (newValue: boolean) => {
     if (newValue) try {
@@ -175,8 +175,6 @@ const saveConsent = async (programmatically = false) => {
     value.updatedAt = cookie_consent_updated_at;
     console.log('[consent]', 'User save cookie consent:', value);
     await setCookieConsent(value);
-    // store a copy in HTTP COOKIE
-    document.cookie = `cookie_consent=n%3D${value.necessary}%2Cp%3D${value.performance}%2Cf%3D${value.functional}%2Ct%3D${value.targeting}%2Cts%3D${value.updatedAt}; path=/; max-age=31536000; secure`;
     window.location.reload();
 }
 const allowAll = async () => {

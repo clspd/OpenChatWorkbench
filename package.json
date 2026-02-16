@@ -28,6 +28,7 @@
     "@zenfs/core": "^2.4.4",
     "@zenfs/dom": "^1.2.6",
     "ant-design-vue": "4.2.6",
+    "cookie": "^1.1.1",
     "dayjs": "^1.11.19",
     "fflate": "^0.8.2",
     "idb": "^8.0.3",

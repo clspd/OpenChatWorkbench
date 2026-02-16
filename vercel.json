@@ -1,4 +1,5 @@
 {
+    "$schema": "https://openapi.vercel.sh/vercel.json",
     "headers": [
         {
             "source": "/(.*)",
@@ -20,12 +21,44 @@
                     "value": "SAMEORIGIN"
                 },
                 {
+                    "key": "X-App-Name",
+                    "value": "Open Chat Workbench"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "missing": [
+                {
+                    "type": "cookie",
+                    "key": "user.privacy.optOutCSPReport",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
                     "key": "Content-Security-Policy",
                     "value": "frame-ancestors 'self'; base-uri 'self'; manifest-src 'self'; script-src-attr 'none'; report-uri https://csp-report-collector.openchatworkbench.com/csp-report"
                 },
                 {
                     "key": "Reporting-Endpoints",
                     "value": "csp-report-collector-v1=\"https://csp-report-collector.openchatworkbench.com/csp-report\""
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "user.privacy.optOutCSPReport",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "frame-ancestors 'self'; base-uri 'self'; manifest-src 'self'; script-src-attr 'none'"
                 }
             ]
         }
