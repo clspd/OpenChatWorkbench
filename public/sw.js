@@ -128,8 +128,10 @@ global.addEventListener('fetch', (/** @type {FetchEvent} */event) => {
             const headers = new Headers(req.headers);
             if (etag) headers.set('If-None-Match', etag);
             else if (lastModified) headers.set('If-Modified-Since', lastModified);
-            else {
-                // no ETag or Last-Modified header, we should fallback to network
+            if ((!etag && !lastModified) || req.mode === 'navigate') {
+                // no ETag or Last-Modified header, 
+                // or the request type is Navigate (this is because some of document headers differs according to Cookies)
+                // we should fallback to network
                 const resp = await fetch(req);
                 if (resp.ok) {
                     const clone = resp.clone(); // we must clone first, otherwise the body will be consumed

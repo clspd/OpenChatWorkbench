@@ -29,6 +29,7 @@ export async function getCookieConsent() {
     if (!value || !value.isCookieConsentType) return null;
     const typedValue = value as CookieConsent;
     consentCache = typedValue;
+    await setCookieConsent(typedValue); // only be called once in each session
     return typedValue;
 };
 
