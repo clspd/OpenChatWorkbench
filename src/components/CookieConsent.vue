@@ -132,7 +132,7 @@ const appState = useAppStateStore();
 const activeKey = ref(['necessary', 'performance', 'functional', 'targeting']);
 const status = ref<CookieConsent>(createBaseCookieConsent());
 const isLoading = ref(true);
-const isUpdatedFromPrevious = computed(() => (status.value.updatedAt !== cookie_consent_updated_at));
+const isUpdatedFromPrevious = computed(() => (!!status.value.updatedAt && status.value.updatedAt !== cookie_consent_updated_at));
 
 watch(() => appState.showCookieConsent, async (newValue: boolean) => {
     if (newValue) try {
