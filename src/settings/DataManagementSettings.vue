@@ -70,6 +70,7 @@ import { db, db_name } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
 import { domain_name_root, privacy_policy_href } from '@/config'
+import { parse } from 'cookie'
 
 const router = useRouter()
 
@@ -79,7 +80,8 @@ onMounted(() => {
         optOutUsageReport.value = value ?? false;
     }).catch(() => {
         message.error('Failed to get opt out of usage report');
-    })
+    });
+    if (parse(document.cookie)['user.privacy.optOutCSPReport'] === 'true') optOutCSPReport.value = true;
 })
 
 const cookieConsent = () => {
@@ -155,7 +157,6 @@ watch(() => optOutUsageReport.value, async (newValue) => {
 const optOutCSPReport = ref(false);
 watch(() => optOutCSPReport.value, async (newValue) => {
     try {
-        const { parse } = await import('cookie');
         const currentSetting = parse(document.cookie)['user.privacy.optOutCSPReport'] === 'true';
         if (currentSetting === newValue) return;
         if (newValue) {
