@@ -17,8 +17,8 @@
                                 Attach Image
                             </a-menu-item>
                             <a-menu-divider />
-                            <a-menu-item key="deepThink" :style="{ color: props.config.thinking_enabled ? 'var(--text-primary-color)' : '' }">
-                                <CheckOutlined :style="{ color: props.config.thinking_enabled ? 'var(--text-primary-color)' : 'transparent' }" />   
+                            <a-menu-item key="deepThink" :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : '' }">
+                                <CheckOutlined :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 Deep Think
                             </a-menu-item>
                         </a-menu>
@@ -44,38 +44,29 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
 import { safeParseJSON } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE } from '@/types'
+import { EMPTY_MESSAGE, type MessageFeatureItem } from '@/types/message'
 
-const props = defineProps({
-    modelValue: {
-        type: String,
-        default: ''
-    },
-    modelId: {
-        type: String,
-        default: ''
-    },
-    providerId: {
-        type: String,
-        default: ''
-    },
-    disabled: {
-        type: Boolean,
-        default: false
-    },
-    config: {
-        type: Object,
-        default: () => ({})
-    }
-})
-const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'update:config', 'sendMessage'])
+const props = withDefaults(defineProps<{
+    modelValue: string,
+    modelId: string,
+    providerId: string,
+    disabled?: boolean,
+    features: MessageFeatureItem[],
+}>(), {
+    modelValue: '',
+    modelId: '',
+    providerId: '',
+    disabled: false,
+    features: () => [],
+});
+const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'update:features', 'sendMessage'])
 
 const editor = ref<Editor>()
 
@@ -139,12 +130,27 @@ watch(() => props.disabled, (newValue) => {
     editor.value?.setEditable(!newValue)
 })
 
+const isDeepThinkEnabled = computed<boolean>({
+    get: () => {
+        return props.features.some((item) => item.type === 'thinking' && !!item.value);
+    },
+    set: (newVal: boolean) => {
+        const newFeatures = props.features.map((item) => {
+            if (item.type === 'thinking') {
+                item.value = newVal
+            }
+            return item
+        })
+        emit('update:features', newFeatures)
+    }
+})
+
 const handleAttachMenuClick = ({ key = '' }) => {
     if (props.disabled) {
         return
     }
     if (key === 'deepThink') {
-        emit('update:config', { ...props.config, thinking_enabled: !props.config.thinking_enabled })
+        isDeepThinkEnabled.value = !isDeepThinkEnabled.value
     }
     if (key === 'attachFile' || key === 'attachImage') {
         

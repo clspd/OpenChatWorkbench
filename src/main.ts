@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, h } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
@@ -15,12 +15,28 @@ await new Promise<void>((resolve, reject) => {
 
 import './styles/style.css'
 import './styles/vars.css'
+import { Modal } from 'ant-design-vue'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 
-await init()
+try { await init() }
+catch (e) {
+    console.error('[main]', 'Failed to initialize the application:', e);
+    Modal.error({
+        title: "Fatal Error",
+        content: h('div', {}, [
+            h('b', { style: { color: 'red' } }, 'Unable to initialize the application'),
+            h('div', {}, 'The application will not be able to work.'),
+            h('hr'),
+            h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, String(e) + '\n' + String(e && (e as any).stack)),
+        ]),
+        okText: "Reload page",
+        onOk: () => (location.reload(), new Promise(() => { })),
+    })
+    throw e;
+}
 
 app.mount(window.document.querySelector(':root > body > vue-app') ?? window.document.body.appendChild(window.document.createElement('vue-app')))

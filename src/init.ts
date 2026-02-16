@@ -1,5 +1,6 @@
 import { watch } from "vue";
 import router from "./router";
+import '@/utils/appInstanceDetector'
 import { registerServiceWorker } from "./utils/swApi";
 import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
@@ -8,12 +9,13 @@ import { useWindowStateStore } from "./stores/windowState"
 import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
-import '@/utils/appInstanceDetector'
 import { sendUsageReport } from "./utils/sendStatistics";
 import { InitCookieConsent, isFunctionalCookieConsented } from "./utils/cookieConsent";
 import { db } from "./userdata";
 import { DYNDATA } from "./dynamic";
 import { setupErrorHandler } from "./utils/errorHandler";
+import { createChatBaseStructure } from "./modules/chat/path";
+import { InitConvIndex } from "./modules/chat/convIndex";
 
 export default async function init() {
     // register service worker
@@ -43,6 +45,8 @@ export default async function init() {
     }
     await setupErrorHandler();
 
+    await createChatBaseStructure();
+
     const { load: loadAppStateAutoSave, initAutoSave: initAppStateAutoSave } = useAppStatePersistStore();
     await loadAppStateAutoSave();
     initAppStateAutoSave();
@@ -57,6 +61,8 @@ export default async function init() {
     });
 
     useConversationStore();
+
+    await InitConvIndex();
     
     if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 

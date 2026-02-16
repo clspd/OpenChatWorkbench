@@ -2,7 +2,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
+import type { ModelConfig, ProviderConfig } from '@/types/config'
 import { db } from '@/userdata'
 import { isNecessaryCookieConsented } from '@/utils/cookieConsent'
 

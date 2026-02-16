@@ -55,7 +55,7 @@ import { loadConversation, saveConversation } from '@/modules/chat/conversation'
 import { sendUserMessage } from '@/modules/chat/message'
 import { generateResponse } from '@/modules/chat/respond'
 import { tiptap2markdown } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE_JSON, MessageEditConfig, type Conversation } from '@/types/index.ts'
+import { EMPTY_MESSAGE_JSON, MessageEditConfig, type Conversation } from '@/types/message'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
 

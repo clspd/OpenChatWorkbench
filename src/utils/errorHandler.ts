@@ -3,6 +3,7 @@ import { sendStatisticsReport } from "./sendStatistics";
 
 export async function setupErrorHandler() {
     if (!await isPerformanceCookieConsented()) return;
+    if (['localhost', '127.0.0.1', '::1'].includes(location.hostname)) return; // do not send in development environment
     window.addEventListener("error", handleWindowError);
     window.addEventListener("unhandledrejection", handleWindowUnhandledRejection);
 }

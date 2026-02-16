@@ -5,6 +5,11 @@ import type { IDBPDatabase, IDBPTransaction } from 'idb';
 export const db_name = app_name_id + '_data'
 export const version = 2;
 
+let show_dbExpired_dialog = true;
+export function setShowDbExpiredDialog(show: boolean) {
+    show_dbExpired_dialog = show;
+}
+
 
 import { openDB, unwrap } from 'idb';
 
@@ -65,6 +70,7 @@ await new Promise<void>(function (resolve, reject) {
         },
         blocking(currentVersion, blockedVersion, event) {
             db.close();
+            if (!show_dbExpired_dialog) return;
             // @ts-ignore
             (el_dbExpired.querySelector('[data-content]') || {}).innerText = `currentVersion = ${currentVersion}, blockedVersion = ${blockedVersion}`;
             el_dbExpired.showModal();

@@ -1,165 +1,105 @@
-import { fs } from '@/userdata';
-import { SchemaVersion } from '@/types/index.ts';
-import type { Conversation } from '@/types/index.ts';
-import { addToIndex, updateInIndex, removeFromIndex, updateUserPref, updatePinnedStatus } from './convIndex';
-import { useConversationStore } from '@/stores/conversationStore';
+// conversation.ts: manage and load conversations.
+import { SchemaVersion, type Message } from "@/types/message";
+import type { Conversation, ConversationUserPref } from "@/types/conversation";
+import { fs } from "@/userdata";
+import { getConvPath, getConvPrefPath } from "./path";
+import { dumpConversationData, dumpConversationPref } from "./dumper";
+import { AddConversationToIndex, GetCurrentConvIndexId } from "./convIndex";
+import { useConversationStore } from "@/stores/conversationStore";
 
-// 对话文件存储路径
-const CONVERSATIONS_DIR = '/data/conversations/';
+export async function CreateConversation(title = "New Conversation"): Promise<string> {
+    const id = crypto.randomUUID(), ts = Date.now();
 
-// 确保对话目录存在
-async function ensureConversationsDirExists() {
-  try {
-    await fs.mkdir(CONVERSATIONS_DIR, { recursive: true });
-  } catch (error) {
-    console.error('Failed to create conversations directory:', error);
-    throw error;
-  }
-}
+    // create Preference File
+    const pref = {
+        schemaVersion: SchemaVersion.V1,
+        id,
+        current_message_id: 0,
+        pinned: false,
+        last_access_at: ts,
+    } as ConversationUserPref;
+    await fs.writeFile(getConvPrefPath(id), dumpConversationPref(pref));
 
-// 生成UUID
-function generateUUID(): string {
-  if (window.crypto && window.crypto.randomUUID) {
-    return window.crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+    // create Conversation File
+    const conv = {
+        schemaVersion: SchemaVersion.V1,
+        id,
+        session: {
+            created_at: ts,
+            updated_at: ts,
+            title,
+            title_type: "SYSTEM",
+        },
+        messages: [],
+    } as Conversation;
+    await fs.writeFile(getConvPath(id), dumpConversationData(conv));
 
-// 创建新对话
-export async function createNewConversation(): Promise<Conversation> {
-  await ensureConversationsDirExists();
-  
-  const now = Date.now();
-  const conversation: Conversation = {
-    schemaVersion: SchemaVersion.V1,
-    id: generateUUID(),
-    session: {
-      created_at: now,
-      updated_at: now,
-      title: 'New Conversation',
-      title_type: 'SYSTEM'
-    },
-    messages: []
-  };
-  
-  await addToIndex(conversation, false);
-  await updateUserPref(conversation.id, 0, false);
-  
-  const store = useConversationStore();
-  store.addConversation({
-    id: conversation.id,
-    created_at: conversation.session.created_at,
-    updated_at: conversation.session.updated_at,
-    title: conversation.session.title,
-    pinned: false
-  });
-  
-  return conversation;
-}
-
-// 保存对话
-export async function saveConversation(conversation: Conversation): Promise<void> {
-  await ensureConversationsDirExists();
-  
-  conversation.session.updated_at = Date.now();
-  
-  const filePath = `${CONVERSATIONS_DIR}${conversation.id}.json`;
-  try {
-    await fs.writeFile(filePath, JSON.stringify(conversation), 'utf-8');
-    await updateInIndex(conversation);
-    
-    const store = useConversationStore();
-    store.updateConversation(conversation.id, {
-      updated_at: conversation.session.updated_at,
-      title: conversation.session.title
+    // add conversation to index
+    await AddConversationToIndex(await GetCurrentConvIndexId(), {
+        id,
+        created_at: ts,
+        updated_at: ts,
+        title,
+        pinned: false,
     });
-  } catch (error) {
-    console.error(`Failed to save conversation ${conversation.id}:`, error);
-    throw error;
-  }
+
+    // returns conversation id
+    return id;
 }
 
-// 加载对话
-export async function loadConversation(conversationId: string): Promise<Conversation> {
-  const filePath = `${CONVERSATIONS_DIR}${conversationId}.json`;
-  
-  try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(content) as Conversation;
-  } catch (error) {
-    console.error(`Failed to load conversation ${conversationId}:`, error);
-    throw error;
-  }
+/**
+ * Load conversation data from file.
+ * @param id Conversation id
+ * @returns Conversation data
+ */
+export async function LoadConversationRaw(id: string): Promise<Conversation> {
+    if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
+
+    const data = await fs.readFile(getConvPath(id));
+    return JSON.parse(new TextDecoder().decode(data)) as Conversation;
 }
 
-// 获取对话列表
-export async function getConversationList(): Promise<Conversation[]> {
-  await ensureConversationsDirExists();
-  
-  try {
-    const files = await fs.readdir(CONVERSATIONS_DIR, { withFileTypes: true });
-    const conversationFiles = files.filter(file => file.isFile() && file.name.endsWith('.json'));
-    
-    const conversations: Conversation[] = [];
-    for (const file of conversationFiles) {
-      const filePath = `${CONVERSATIONS_DIR}${file.name}`;
-      const content = await fs.readFile(filePath, 'utf-8');
-      const conversation = JSON.parse(content) as Conversation;
-      conversations.push(conversation);
+/**
+ * Load conversation data from memory cache or file.
+ * @param id Conversation id
+ * @returns Conversation reference, which can be edited in place
+ */
+export async function LoadConversation(id: string): Promise<Conversation> {
+    const conv = useConversationStore().conversations.get(id);
+    if (conv) return conv;
+    const convRaw = await LoadConversationRaw(id);
+    useConversationStore().conversations.set(id, convRaw);
+    return convRaw;
+}
+
+export async function UpdateConversation(id: string, data: Conversation) {
+    if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
+    await fs.writeFile(getConvPath(id), dumpConversationData(data));
+}
+
+export async function UpdateConversationInfo(id: string, title?: string, pinned?: boolean) {
+    throw new Error("Not implemented")
+    try {
+
+        return true;
     }
-    
-    // 按更新时间降序排序
-    conversations.sort((a, b) => b.session.updated_at - a.session.updated_at);
-    
-    return conversations;
-  } catch (error) {
-    console.error('Failed to get conversation list:', error);
-    return [];
-  }
+    catch { return false }
 }
 
-// 删除对话
-export async function deleteConversation(conversationId: string): Promise<void> {
-  const filePath = `${CONVERSATIONS_DIR}${conversationId}.json`;
-  
-  try {
-    await fs.unlink(filePath);
-    await removeFromIndex(conversationId);
-    
-    const store = useConversationStore();
-    store.removeConversation(conversationId);
-  } catch (error) {
-    console.error(`Failed to delete conversation ${conversationId}:`, error);
-    throw error;
-  }
+export async function InsertMessageToConversation(id: string, message: Message) {
+    // load conversation
+    let conv = await LoadConversation(id);
+    // append message
+    conv.messages.push(message);
 }
 
-// 更新对话标题
-export async function updateConversationTitle(conversationId: string, title: string, titleType: 'USER' | 'SYSTEM'): Promise<void> {
-  try {
-    const conversation = await loadConversation(conversationId);
-    conversation.session.title = title;
-    conversation.session.title_type = titleType;
-    conversation.session.updated_at = Date.now();
-    await saveConversation(conversation);
-  } catch (error) {
-    console.error(`Failed to update conversation title ${conversationId}:`, error);
-    throw error;
-  }
+export async function EditMessageInConversation(id: string, msgId: number, newMsg: Message) {
+    // load conversation
+    let conv = await LoadConversation(id);
+    // find message
+    const index = conv.messages.findIndex(m => m.id === msgId);
+    if (index === -1) throw new Error("The message specified does not exist.");
+    // update message
+    conv.messages[index] = newMsg;
 }
 
-export async function updateConversationPinned(conversationId: string, pinned: boolean): Promise<void> {
-  try {
-    await updatePinnedStatus(conversationId, pinned);
-    await updateUserPref(conversationId, 0, pinned);
-    
-    const store = useConversationStore();
-    store.updatePinnedStatus(conversationId, pinned);
-  } catch (error) {
-    console.error(`Failed to update conversation pinned status ${conversationId}:`, error);
-    throw error;
-  }
-}

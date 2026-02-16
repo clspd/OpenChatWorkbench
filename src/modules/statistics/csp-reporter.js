@@ -1,6 +1,3 @@
-// src/modules/statistics/csp-reporter.js
-/* eslint-disable no-undef */
-
 /**
  * @typedef {Object} UAInfo
  * @property {string} browser
@@ -14,11 +11,11 @@
  * CSP report collector — SLS-safe single-layer string values
  */
 
-const ALLOWED_ORIGINS = [
-    "https://openchatworkbench.com",
-    "https://chat.openchatworkbench.com",
-    "https://canary.openchatworkbench.com",
-];
+// const ALLOWED_ORIGINS = [
+//     "https://openchatworkbench.com",
+//     "https://chat.openchatworkbench.com",
+//     "https://canary.openchatworkbench.com",
+// ];
 
 const VALID_JSON_TYPE = ['string', 'number', 'boolean'];
 const SERIALIZABLE_JSON_TYPE = ['string', 'number', 'boolean', 'object'];
@@ -335,9 +332,9 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const origin = String(request.headers.get('origin') || '');
-        if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
-            return new Response(null, { status: 403, headers: { 'X-Blocked-Reason': 'Invalid-Origin' } });
-        }
+        // if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+        //     return new Response(null, { status: 403, headers: { 'X-Blocked-Reason': 'Invalid-Origin' } });
+        // }
         SLSUrl = env && env.SLS_URL ? String(env.SLS_URL) : '';
         if (url.pathname !== '/csp-report') {
             return new Response('Not Found', { status: 404, headers: buildBaseHeaders(origin) });

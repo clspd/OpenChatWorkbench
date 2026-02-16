@@ -25,17 +25,29 @@
                 <b style="color: red;">ALL DATA</b>
                 of the application and reset the application to its initial state!
             </div>
-            <div style="color: red; font-weight: bold;">THIS OPERATION CANNOT BE UNDONE!</div>
+            <div v-if="clearDataState.deleting" style="color: red; font-weight: bold;">Deleting all data...</div>
+            <div v-else style="color: red; font-weight: bold;">THIS OPERATION CANNOT BE UNDONE!</div>
             <hr style="width: 100%;">
             <div>If you want to continue anyway, please type <b style="color: red; user-select: all;">{{ clearDataState.expect }}</b> in the input box below:</div>
 
             <a-input style="margin: 0.5em 0;" v-model:value="clearDataState.input" :placeholder="`Type '${clearDataState.expect}' to confirm`" :disabled="clearDataState.deleting" />
 
             <div class="btn-group">
-                <a-button @click="confirmClearData" danger type="primary" :disabled="(clearDataState.input !== clearDataState.expect) || clearDataState.deleting">
+                <a-button @click="confirmClearData" danger type="primary" :disabled="(clearDataState.input !== clearDataState.expect) || clearDataState.deleting" :loading="clearDataState.deleting">
                     {{ clearDataState.deleting ? 'Deleting...' : 'Confirm' }}
                 </a-button>
                 <a-button @click="clearDataState.show = false" :disabled="clearDataState.deleting">Cancel</a-button>
+            </div>
+        </DialogView>
+
+        <DialogView v-model="clearDataState.deleted" style="width: 400px;" :closable="false">
+            <template #title>Data Deleted</template>
+            <div style="margin-bottom: 1em;">
+                All data has been deleted permanently.
+            </div>
+            <div class="btn-group">
+                <a-button @click="closeApp" type="primary">Close Application</a-button>
+                <a-button @click="reloadApp">Reload Application</a-button>
             </div>
         </DialogView>
 
@@ -51,7 +63,7 @@
         </div>
 
         <div class="setting-item">
-            <a-checkbox v-model:checked="optOutCSPReport">Opt out of CSP report (Not recommended)</a-checkbox>
+            <a-checkbox v-model:checked="optOutCSPReport">Opt out of CSP report</a-checkbox>
             <br>
             <b>Explaination:</b>
             <span>&nbsp;The application collects Content Security Policy (CSP) violation report data to ensure the security of the application.</span>
@@ -66,7 +78,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
-import { db, db_name } from '@/userdata'
+import { db, db_name, setShowDbExpiredDialog } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
 import { domain_name_root, privacy_policy_href } from '@/config'
@@ -103,11 +115,13 @@ const clearDataState = ref<{
     input: string;
     expect: string;
     deleting: boolean;
+    deleted: boolean;
 }>({
     show: false,
     input: '',
     expect: 'delete all data',
     deleting: false,
+    deleted: false,
 });
 const clearData = async () => {
     if (!await new Promise(r => Modal.confirm({
@@ -125,13 +139,14 @@ const clearData = async () => {
     if (!result) return;
     clearDataState.value.deleting = true;
 
+    setShowDbExpiredDialog(false);
     const req = indexedDB.deleteDatabase(db_name);
     await new Promise((resolve, reject) => {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    window.location.reload();
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    clearDataState.value.deleted = true;
 }
 const confirmClearData = () => {
     if (clearDataState.value.input !== clearDataState.value.expect) return message.error('Input does not match');
@@ -141,6 +156,17 @@ const confirmClearData = () => {
 const cancelClearData = () => {
     clearDataState.value.resolver?.(false);
     clearDataState.value.resolver = undefined;
+}
+const reloadApp = () => {
+    window.location.reload();
+}
+const closeApp = () => {
+    document.open();
+    // @ts-ignore
+    document.write("<h1>Please close the tab.");
+    setTimeout(w => w?.close(), 100, window.open('about:blank', '_self'));
+    window.close();
+    document.close();
 }
 
 const optOutUsageReport = ref(false);

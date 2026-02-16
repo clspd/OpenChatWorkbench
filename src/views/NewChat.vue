@@ -5,7 +5,7 @@
             v-model="userMessage"
             v-model:modelId="modelId"
             v-model:providerId="providerId"
-            v-model:config="userMessageConfig"
+            v-model:features="userMessageFeatures"
             @send-message="handleSendMessage" />
     </div>
 </template>
@@ -17,17 +17,16 @@ import InputMessage from '@/components/InputMessage.vue'
 import { useAppStateStore } from '@/stores/appState'
 import { watch } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
-import { createNewConversation, saveConversation } from '@/modules/chat/conversation'
-import { sendUserMessage } from '@/modules/chat/message'
-import { generateResponse } from '@/modules/chat/respond'
 import { tiptap2markdown } from '@/utils/parseTiptap'
 import { message } from 'ant-design-vue'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
-import { EMPTY_MESSAGE_JSON, MessageEditConfig } from '@/types'
+import { EMPTY_MESSAGE_JSON, type MessageFeatureItem } from '@/types/message'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
+import { CreateConversation } from '@/modules/chat/conversation'
+import { AddConversationToIndex, GetCurrentConvIndexId } from '@/modules/chat/convIndex'
 
 const userMessage = ref('')
-const userMessageConfig = ref(new MessageEditConfig())
+const userMessageFeatures = ref<MessageFeatureItem[]>([])
 const modelId = ref('')
 const providerId = ref('')
 const router = useRouter()
@@ -40,10 +39,10 @@ onMounted(() => {
     const buffer = useAppStateSessionStore().chatEditBuffer["_"]
     if (buffer) {
         userMessage.value = buffer.content
-        userMessageConfig.value = buffer?.config || new MessageEditConfig()
+        userMessageFeatures.value = buffer?.features || []
     } else {
         userMessage.value = EMPTY_MESSAGE_JSON
-        userMessageConfig.value = new MessageEditConfig()
+        userMessageFeatures.value = []
     }
 })
 
@@ -58,15 +57,15 @@ watch(() => userMessage.value, (newVal) => {
     if (newVal) {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: newVal,
-            config: userMessageConfig.value
+            features: userMessageFeatures.value
         }
     }
 })
-watch(() => userMessageConfig.value, (newVal) => {
+watch(() => userMessageFeatures.value, (newVal) => {
     if (newVal) {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: userMessage.value,
-            config: newVal
+            features: newVal
         }
     }
 }, { deep: true })
@@ -87,33 +86,16 @@ const handleSendMessage = async () => {
             return
         }
 
-        const userMessageJson = userMessage.value
-        const userMessageMd = tiptap2markdown(userMessageJson)
+        const msg = tiptap2markdown(userMessage.value)
+
+        const cid = await CreateConversation();
+        if (!cid) {
+            message.error('Failed to create conversation')
+            return
+        }
+
+        // add a REQUEST to conversation
         
-        const conversation = await createNewConversation()
-        
-        const userMsg = await sendUserMessage(
-            conversation,
-            userMessageMd,
-            modelId.value,
-            providerId.value,
-            provider.name
-        )
-        
-        await saveConversation(conversation)
-        
-        userMessage.value = ''
-        delete useAppStateSessionStore().chatEditBuffer["_"]
-        
-        router.push(`/chat/c/${conversation.id}`)
-        
-        await generateResponse(
-            conversation,
-            userMsg.id,
-            providerId.value,
-            modelId.value,
-            userMessageConfig.value
-        )
     } catch (error) {
         message.error('Failed to send message: ' + error)
     } finally {

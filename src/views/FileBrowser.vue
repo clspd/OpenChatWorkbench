@@ -486,7 +486,7 @@ const handleRowClick = async (record: any) => {
         navigateToPath(newPath)
     } else {
         const fileName = record.name.toLowerCase()
-        const isTextFile = fileName.endsWith('.txt') || fileName.endsWith('.json')
+        const isTextFile = true;
         const maxSize = 128 * 1024
         
         if (isTextFile && record.size <= maxSize) {

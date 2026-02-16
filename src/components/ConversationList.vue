@@ -1,7 +1,7 @@
 <template>
     <div class="message-list">
-        <div v-if="conversationStore.loading" class="loading">Loading...</div>
-        <div v-else-if="conversationGroups.length === 0" class="empty">
+        <!-- <div v-if="conversationStore.loading" class="loading">Loading...</div> -->
+        <div v-if="conversationGroups.length === 0" class="empty">
             No conversations
         </div>
         <div v-else class="conversation-groups">
@@ -38,7 +38,8 @@ const conversationStore = useConversationStore()
 const emit = defineEmits(['initialized'])
 
 const conversationGroups = computed<ConversationGroup[]>(() => {
-    return groupConversationsByTime(conversationStore.sortedConversations)
+    return []
+    // return groupConversationsByTime(conversationStore.sortedConversations)
 })
 
 const handleConversationClick = (conversationId: string) => {
@@ -63,7 +64,7 @@ const isActive = (conversationId: string): boolean => {
 }
 
 onMounted(async () => {
-    await conversationStore.loadIndex()
+    // await conversationStore.loadIndex()
     emit('initialized')
 })
 </script>
