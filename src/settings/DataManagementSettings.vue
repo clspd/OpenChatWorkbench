@@ -71,6 +71,7 @@ import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
 import { domain_name_root, privacy_policy_href } from '@/config'
 import { parse } from 'cookie'
+import { isServiceWorkerActive } from '@/utils/swApi'
 
 const router = useRouter()
 
@@ -166,32 +167,46 @@ watch(() => optOutCSPReport.value, async (newValue) => {
             // delete the cookie
             document.cookie = `user.privacy.optOutCSPReport=; path=/; domain=${domain_name_root}; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure`;
         }
-        location.reload()
-        // Modal.confirm({
-        //     title: 'Success',
-        //     content: "We've updated your preference about CSP report. However, the Content Security Policy is a HTTP header (to learn more, refer to https://en.wikipedia.org/wiki/HTTP#message-header-field) and browsers often cache the response provided by the server. This means that you need to Clear Browser Cache (often shown as 'Cached images and files'; do NOT clear 'Website Data & Cookies'!) to have your preference take effect.",
-        //     okText: 'Show me how',
-        //     cancelText: 'Reload the page now',
-        //     onOk() {
-        //         let browserType = /(edg|chrome|firefox|safari|opr)/i.exec(navigator.userAgent)?.[0].toLowerCase();
-        //         if (navigator.userAgent.includes('Edg')) browserType = 'edg'; // Edge's ua after Chrome, leading to misidentification, so we need to manually set it
-        //         else if (navigator.userAgent.includes('OPR')) browserType = 'opera'; // ditto.
-        //         const helperLinks = {
-        //             'chrome': 'https://support.google.com/chrome/answer/2392709',
-        //             'firefox': 'https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox',
-        //             'safari': 'https://support.apple.com/en-us/HT201265',
-        //             'opera': 'https://help.opera.com/en/latest/web-preferences/#cookies',
-        //             'edg': 'https://www.bing.com/search?q=how+to+clear+cache+in+edge',
-        //             'default': 'https://www.google.com/search?q=how+to+clear+browser+cache',
-        //         } as Record<string, string>;
-        //         window.open(helperLinks[browserType ?? 'default'], '_blank');
-        //         return new Promise(() => { });
-        //     },
-        //     onCancel() {
-        //         window.location.reload();
-        //         return new Promise(() => { });
-        //     }
-        // })
+        if (await isServiceWorkerActive()) {
+            message.info("Processing, please wait...");
+            const c = (window as any).appInitConfig;
+            const cache = await caches.open(c.CACHE_PREFIX + c.CACHE_VERSION);
+            const u = new URL("/", window.location.href);
+            await cache.delete(u, { ignoreSearch: true });
+            const newResp = await fetch(u, { cache: 'no-store' });
+            await cache.put(u, newResp);
+            message.success('The operation has completed successfully.');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            return;
+        }
+        
+        Modal.confirm({
+            title: 'Success',
+            content: "We've updated your preference about CSP report. However, the Content Security Policy is a HTTP header (to learn more, refer to https://en.wikipedia.org/wiki/HTTP#message-header-field) and browsers often cache the response provided by the server. This means that you need to Clear Browser Cache (often shown as 'Cached images and files'; do NOT clear 'Website Data & Cookies'!) to have your preference take effect.",
+            okText: 'Show me how',
+            cancelText: 'Reload the page now',
+            onOk() {
+                let browserType = /(edg|chrome|firefox|safari|opr)/i.exec(navigator.userAgent)?.[0].toLowerCase();
+                if (navigator.userAgent.includes('Edg')) browserType = 'edg'; // Edge's ua after Chrome, leading to misidentification, so we need to manually set it
+                else if (navigator.userAgent.includes('OPR')) browserType = 'opera'; // ditto.
+                const helperLinks = {
+                    'chrome': 'https://support.google.com/chrome/answer/2392709',
+                    'firefox': 'https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox',
+                    'safari': 'https://support.apple.com/en-us/HT201265',
+                    'opera': 'https://help.opera.com/en/latest/web-preferences/#cookies',
+                    'edg': 'https://www.bing.com/search?q=how+to+clear+cache+in+edge',
+                    'default': 'https://www.google.com/search?q=how+to+clear+browser+cache',
+                } as Record<string, string>;
+                window.open(helperLinks[browserType ?? 'default'], '_blank');
+                return new Promise(() => { });
+            },
+            onCancel() {
+                window.location.reload();
+                return new Promise(() => { });
+            }
+        })
     } catch (error) {
         message.error('Failed: ' + error);
     }

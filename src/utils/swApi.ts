@@ -18,6 +18,7 @@ export async function registerServiceWorker() {
 
 export async function isServiceWorkerActive() {
     try { 
+        if (!await isFunctionalCookieConsented()) return false;
         return await (await fetch('/internal/w/running')).json();
     }
     catch {
