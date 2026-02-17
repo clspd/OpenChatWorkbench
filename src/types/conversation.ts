@@ -1,4 +1,4 @@
-import type { Message, MessageFeatureItem, FileAttachmentInfo, MessageContent } from "./message";
+import type { Message, MessageFeatureItem, FileAttachmentInfo, MessageContent, MessageContentType } from "./message";
 
 // Conversation types
 export type ConversationTitleType = "USER" | "SYSTEM";
@@ -42,13 +42,17 @@ export interface ConversationGroup {
     conversations: ConversationIndexItem[];
 }
 
-export class MessageEditConfig {
-    // thinking_enabled: boolean = false;
-    features: MessageFeatureItem[] = [];
-    files: FileAttachmentInfo[] = [];
+export type ChatEditBuffer = Record<string, {
+    contentType: MessageContentType;
+    content: MessageContent<MessageContentType>;
+    features: MessageFeatureItem[];
+}>
+
+export interface PendingMessageRequest {
+    convId: string;
+    reqId: number;
+    respId: number;
+    opened: boolean;
+    cancelToken?: AbortController;
 }
 
-export type ChatEditBuffer = Record<string, {
-    content: MessageContent;
-    config: MessageEditConfig;
-}>

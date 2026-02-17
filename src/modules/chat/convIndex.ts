@@ -24,26 +24,32 @@ export async function SetCurrentConvIndexId(indexId: number) {
     useConversationStore().currentIndexId = indexId;
 }
 
-export async function LoadConvIndex(indexId?: number, ignoreCache = false) {
+// this function returns reference, not value
+export async function LoadConvIndex(indexId?: number, ignoreCache = false): Promise<ConversationIndex | null> {
     const { index: cachedIndex, currentIndexId: cachedCurrentIndexId } = useConversationStore();
 
     if ((indexId != undefined) && cachedIndex.has(indexId) && !ignoreCache) {
-        return cachedIndex.get(indexId);
+        const v = cachedIndex.get(indexId);
+        if (v) return v;
     }
 
     let content;
     try {
         if (indexId == undefined) {
             indexId = cachedCurrentIndexId;
-            if (!indexId) indexId = await GetCurrentConvIndexId();
+            if (!indexId) {
+                indexId = await GetCurrentConvIndexId();
+            }
         }
     
         // load index
-        content = await fs.readFile(chatIndexCurrentFile);
+        content = await fs.readFile(getChatIndexPath(indexId));
     }
     catch { return null }
 
     content = JSON.parse(new TextDecoder().decode(content)) as ConversationIndex;
+    if (typeof content !== 'object' || !content || !content.schemaVersion || content.schemaVersion !== SchemaVersion.V1)
+        throw new Error("The conversation index file is invalid.");
     cachedIndex.set(indexId, content);
     return content;
 }
@@ -67,7 +73,7 @@ export async function AddConversationToIndex(indexId: number, item: Conversation
     if (!index) throw new Error("The conversation index specified does not exist.");
     // TODO: automatically expand the index file if it is full
     index.conversations.push(item);
-    await fs.writeFile(getChatIndexPath(indexId), new TextEncoder().encode(JSON.stringify(index)));
+    useConversationStore().saveConvIndex(indexId);
 }
 
 

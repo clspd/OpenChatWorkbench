@@ -3,7 +3,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { app_name_id } from '@/config'
-import type { ChatEditBuffer } from '@/types'
+import type { ChatEditBuffer } from '@/types/conversation'
 import { db } from '@/userdata'
 import { IsFirstInstance } from '@/utils/appInstanceDetector'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
@@ -24,8 +24,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                     // window.sessionStorage.setItem(app_name_id + '@appStateSession', json)
                     await db.put('kv', json, 'sessionState_' + windowId)
                 } catch (error) {
-                    //Log error
-                    // console.error('Error saving appStateSession to sessionStorage:', error)
+                    console.error('[AppStateSession]', "Error saving appStateSession: " + error);
                 }
             })
         },
@@ -39,16 +38,13 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
             try {
                 // const json = window.sessionStorage.getItem(app_name_id + '@appStateSession')
                 let windowId = window.sessionStorage.getItem(app_name_id + '@windowId')
-                if (!windowId) return
+                if (!windowId) return;
                 const json = await db.get('kv', 'sessionState_' + windowId)
-                if (!json) {
-                    return
-                }
+                if (!json) return;
                 const state = JSON.parse(json)
                 this.$patch(state)
             } catch (error) {
-                //Log error
-                // console.error('Error loading appStateSession from sessionStorage:', error)
+                console.error('[AppStateSession]', "Error loading appStateSession: " + error);
             }
         },
         async cleanup() {

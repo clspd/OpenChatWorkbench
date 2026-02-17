@@ -11,22 +11,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { h, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import InputMessage from '@/components/InputMessage.vue'
 import { useAppStateStore } from '@/stores/appState'
 import { watch } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import { tiptap2markdown } from '@/utils/parseTiptap'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
-import { EMPTY_MESSAGE_JSON, type MessageFeatureItem } from '@/types/message'
+import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
-import { CreateConversation } from '@/modules/chat/conversation'
+import { CreateConversation, GetConvNextMessageId, InsertMessageToConversation } from '@/modules/chat/conversation'
 import { AddConversationToIndex, GetCurrentConvIndexId } from '@/modules/chat/convIndex'
+import { CreateUserMessage } from '@/modules/chat/message'
+import { GenerateResponse } from '@/modules/chat-request/respond'
+import { TraceErrorAndGetString } from '@/utils/errorTrace'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
+const userMessageFiles = ref<FileAttachmentInfo[]>([])
 const modelId = ref('')
 const providerId = ref('')
 const router = useRouter()
@@ -57,6 +61,7 @@ watch(() => userMessage.value, (newVal) => {
     if (newVal) {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: newVal,
+            contentType: MessageContentType.Text,
             features: userMessageFeatures.value
         }
     }
@@ -65,6 +70,7 @@ watch(() => userMessageFeatures.value, (newVal) => {
     if (newVal) {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: userMessage.value,
+            contentType: MessageContentType.Text,
             features: newVal
         }
     }
@@ -94,9 +100,36 @@ const handleSendMessage = async () => {
             return
         }
 
-        // add a REQUEST to conversation
-        
+        // add user request to conversation
+        const reqId = await GetConvNextMessageId(cid);
+        await InsertMessageToConversation(cid, CreateUserMessage(
+            reqId,
+            null,
+            MessageRole.User,
+            MessageContentType.Text,
+            msg,
+            userMessageFiles.value
+        ));
+
+        // Send request
+        GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value).then(msgId => {
+            console.log('[debug]', 'Response message id:', msgId); // DELETEME: delete debug log
+        }).catch(e => {
+            Modal.error({
+                title: "Failed to generate response",
+                content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
+                okText: "Learn more",
+                onOk() { console.error(e) },
+            });
+        });
+
+        // clear send buffer
+        delete useAppStateSessionStore().chatEditBuffer["_"];
+
+        // go to conversation
+        router.push(`/chat/c/${cid}`);
     } catch (error) {
+        console.error('[NewChat]', "Error sending message:", error);
         message.error('Failed to send message: ' + error)
     } finally {
         isSending.value = false

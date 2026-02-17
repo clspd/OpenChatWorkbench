@@ -25,7 +25,7 @@ export const useConfigStore = defineStore('config', {
                         await db.put('config', data[key], key)
                     }
                 } catch (error) {
-                    //Log error
+                    console.error('[configStore]', 'Unable to save config:' + error)
                 }
             })
         },
@@ -42,8 +42,7 @@ export const useConfigStore = defineStore('config', {
                     }
                 }
             } catch (error) {
-                //Log error
-                console.error('[configStore]', 'Unable to load config', error)
+                console.error('[configStore]', 'Unable to load config:' + error)
             }
         },
         addProvider(provider: ProviderConfig) {

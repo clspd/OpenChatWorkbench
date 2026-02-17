@@ -7,6 +7,9 @@ import { dumpConversationData, dumpConversationPref } from "./dumper";
 import { AddConversationToIndex, GetCurrentConvIndexId } from "./convIndex";
 import { useConversationStore } from "@/stores/conversationStore";
 
+export const CONVERSATION_MAX_MESSAGE_COUNT = 2500;
+export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
+
 export async function CreateConversation(title = "New Conversation"): Promise<string> {
     const id = crypto.randomUUID(), ts = Date.now();
 
@@ -65,16 +68,16 @@ export async function LoadConversationRaw(id: string): Promise<Conversation> {
  * @returns Conversation reference, which can be edited in place
  */
 export async function LoadConversation(id: string): Promise<Conversation> {
-    const conv = useConversationStore().conversations.get(id);
+    const conv = useConversationStore().getConvFromStore(id);
     if (conv) return conv;
     const convRaw = await LoadConversationRaw(id);
-    useConversationStore().conversations.set(id, convRaw);
+    useConversationStore().addConvToStore(id, convRaw);
     return convRaw;
 }
 
 export async function UpdateConversation(id: string, data: Conversation) {
     if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
-    await fs.writeFile(getConvPath(id), dumpConversationData(data));
+    await useConversationStore().updateConvInStore(id, data);
 }
 
 export async function UpdateConversationInfo(id: string, title?: string, pinned?: boolean) {
@@ -91,6 +94,13 @@ export async function InsertMessageToConversation(id: string, message: Message) 
     let conv = await LoadConversation(id);
     // append message
     conv.messages.push(message);
+    // update conversation
+    await useConversationStore().updateConvInStore(id, conv);
+}
+
+export async function GetConvNextMessageId(cid: string) {
+    const conv = await LoadConversation(cid);
+    return conv.messages.length + 1;
 }
 
 export async function EditMessageInConversation(id: string, msgId: number, newMsg: Message) {
@@ -101,5 +111,7 @@ export async function EditMessageInConversation(id: string, msgId: number, newMs
     if (index === -1) throw new Error("The message specified does not exist.");
     // update message
     conv.messages[index] = newMsg;
+    // update conversation
+    await useConversationStore().updateConvInStore(id, conv);
 }
 

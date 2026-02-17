@@ -8,15 +8,18 @@ import { h } from "vue";
 export const chatBasePath = "data/";
 export const chatIndexBasePath = chatBasePath + "index/";
 export const chatIndexCurrentFile = chatIndexBasePath + "current";
+export const chatAttachmentBasePath = chatBasePath + "attachment/";
 export const getConvPath = (id: string) => chatBasePath + 'conversation/' + id;
 export const getConvPrefPath = (id: string) => chatBasePath + 'conv_pref/' + id;
 export const getChatIndexPath = (n: number) => chatIndexBasePath + n;
+export const getChatAttachmentPath = (id: string, aid: string) => chatAttachmentBasePath + id + '_' + aid;
 
 export async function createChatBaseStructure() {
     const ensureDir = async (path: string) => (((await fs.exists(path)) && (await fs.stat(path)).isDirectory()) || await fs.mkdir(path));
     try {
         await ensureDir(chatBasePath);
         await ensureDir(chatIndexBasePath);
+        await ensureDir(chatAttachmentBasePath);
         await ensureDir(getConvPath(''));
         await ensureDir(getConvPrefPath(''));
     }

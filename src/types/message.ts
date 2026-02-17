@@ -5,20 +5,20 @@ export enum SchemaVersion {
 
 // Message types
 export enum MessageRole {
-    USER = 'user',
-    ASSISTANT = 'assistant',
-    SYSTEM = 'system'
+    User = 'USER',
+    Assistant = 'ASSISTANT',
+    System = 'SYSTEM'
 }
 
 export enum MessageStatus {
-    FINISHED = 'finished',
-    WIP = 'wip'
+    Finished = 'FINISHED',
+    WIP = 'WIP'
 }
 
 export enum MessageFeedback {
-    NOT_PROVIDED = '',
-    POSITIVE = '+',
-    NEGATIVE = '-',
+    NotProvided = '',
+    Positive = '+',
+    Negative = '-',
 }
 
 export interface FileAttachmentInfo {
@@ -30,15 +30,26 @@ export interface MessageFragment {
     id: number;
     type: MessageFragmentType;
     elapsed?: number; // elapsed time in seconds
-    content: MessageContent;
+    contentType: MessageContentType;
+    content: MessageContent<this['contentType']>;
 }
 
-export type MessageFragmentType = "REQUEST" | "THINK" | "RESPONSE";
 
-export type MessageContent = string;
+export enum MessageFragmentType {
+    Request = 'REQUEST',
+    Think = 'THINK',
+    Response = 'RESPONSE',
+}
+
+export enum MessageContentType {
+    Text = 'text',
+}
+
+export type MessageContent<T extends MessageContentType> =
+    T extends MessageContentType.Text ? string : never;
 
 export enum MessageFeatureType {
-    THINKING = 'thinking',
+    Thinking = 'thinking',
 }
 
 // This stores the features of the message, e.g. thinking enabled
