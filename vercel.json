@@ -65,6 +65,39 @@
                     "value": "frame-ancestors 'self'; base-uri 'self'; manifest-src 'self'; script-src-attr 'none'"
                 }
             ]
+        },
+        {
+            "source": "/",
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.cookies.enabled=true; Path=/; Max-Age=31536000; Secure"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "sys.operation.clearCache",
+                    "value": "yes"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.operation.clearCache=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, must-revalidate"
+                },
+                {
+                    "key": "Clear-Site-Data",
+                    "value": "\"cache\""
+                }
+            ]
         }
     ]
 }
