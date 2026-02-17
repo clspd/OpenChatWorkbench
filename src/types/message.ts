@@ -7,12 +7,14 @@ export enum SchemaVersion {
 export enum MessageRole {
     User = 'USER',
     Assistant = 'ASSISTANT',
-    System = 'SYSTEM'
+    System = 'SYSTEM',
+    Tool = 'TOOL',
 }
 
 export enum MessageStatus {
     Finished = 'FINISHED',
-    WIP = 'WIP'
+    WIP = 'WIP',
+    Error = 'ERROR',
 }
 
 export enum MessageFeedback {

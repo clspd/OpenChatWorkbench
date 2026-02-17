@@ -53,63 +53,71 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
     }
 
     // send request.
-    await fetchEventSource(new Request(new URL(GetProviderUrl(providerInfo))), {
-        method: "POST",
-        headers: {
-            "authorization": `Bearer ${providerInfo.api_key}`,
-            "accept": "text/event-stream",
-            "content-type": "application/json",
-        },
-        body: JSON.stringify(req),
-        signal: cancelToken.signal,
-        openWhenHidden: true,
+    try {
+        await fetchEventSource(new Request(new URL(GetProviderUrl(providerInfo))), {
+            method: "POST",
+            headers: {
+                "authorization": `Bearer ${providerInfo.api_key}`,
+                "accept": "text/event-stream",
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(req),
+            signal: cancelToken.signal,
+            openWhenHidden: true,
 
-        async onopen(response) {
-            if (!response.ok) {
-                const text = await response.clone().text();
+            async onopen(response) {
+                if (!response.ok) {
+                    const text = await response.clone().text();
 
-                throw new Error(`Remote API Error: ${response.status} ${response.statusText}\n\n${text}`);
-            }
-            const ct = response.headers.get('content-type') || '';
-            if (!ct.startsWith('text/event-stream'))
-                throw new Error("Server returned unexpected content type: " + ct);
+                    throw new Error(`Remote API Error: ${response.status} ${response.statusText}\n\n${text}`);
+                }
+                const ct = response.headers.get('content-type') || '';
+                if (!ct.startsWith('text/event-stream'))
+                    throw new Error("Server returned unexpected content type: " + ct);
 
-            pendingReq.opened = true;
+                pendingReq.opened = true;
 
-            // add fragment to message
-            respMsg.fragments.push(frag);
-            conversationStore.updateConvInStore(conv.id, conv);
-        },
-
-        onerror(err) {
-            throw new Error("Unexpected error during streaming response", { cause: err });
-        },
-
-        onclose() {
-            respMsg.has_pending_fragment = false;
-            conversationStore.updateConvInStore(conv.id, conv);
-        },
-
-        onmessage(ev) {
-            const data = ev.data;
-            if (!data || data === '[DONE]') return;
-
-            try {
-                const json = JSON.parse(data) as ChatCompletionChunk;
-                if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
-                AppendMessageFragmentChunk(respMsg, frag.id, json, false);
+                // add fragment to message
+                respMsg.fragments.push(frag);
                 conversationStore.updateConvInStore(conv.id, conv);
-            }
-            catch (err) {
-                throw new Error("Error parsing streaming response", { cause: err });
-            }
-        },
-    });
+            },
 
-    // update conversation status
-    respMsg.status = MessageStatus.Finished;
-    conversationStore.updateConvInStore(conv.id, conv);
+            onerror(err) {
+                throw new Error("Unexpected error during streaming response", { cause: err });
+            },
 
-    // remove the pending request data from store
-    conversationStore.requestsInProgress.delete(conv.id);
+            onclose() {
+                respMsg.has_pending_fragment = false;
+                conversationStore.updateConvInStore(conv.id, conv);
+            },
+
+            onmessage(ev) {
+                const data = ev.data;
+                if (!data || data === '[DONE]') return;
+
+                try {
+                    const json = JSON.parse(data) as ChatCompletionChunk;
+                    if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
+                    AppendMessageFragmentChunk(respMsg, frag.id, json, false);
+                    conversationStore.updateConvInStore(conv.id, conv);
+                }
+                catch (err) {
+                    throw new Error("Error parsing streaming response", { cause: err });
+                }
+            },
+        });
+
+        // update conversation status
+        respMsg.status = MessageStatus.Finished;
+    }
+    catch (err) {
+        respMsg.status = MessageStatus.Error;
+        respMsg.has_pending_fragment = false;
+    }
+    finally {
+        // update conversation status
+        conversationStore.updateConvInStore(conv.id, conv);
+        // remove the pending request data from store
+        conversationStore.requestsInProgress.delete(conv.id);
+    }
 }

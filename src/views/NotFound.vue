@@ -3,8 +3,8 @@
     <div class="icon">
       <ExclamationCircleTwoTone />
     </div>
-    <h1>页面不存在</h1>
-    <a-button type="primary" @click="goToNewChat">新对话</a-button>
+    <h1>Page Not Found</h1>
+    <a-button type="primary" @click="goToNewChat">New Chat</a-button>
   </div>
 </template>
 

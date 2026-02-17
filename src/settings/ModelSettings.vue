@@ -169,7 +169,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
-import type { ModelConfig, ProviderConfig } from '@/types/index.ts'
+import type { ModelConfig, ProviderConfig } from '@/types/config'
 import { message } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 import { useAppStateStore } from '@/stores/appState'

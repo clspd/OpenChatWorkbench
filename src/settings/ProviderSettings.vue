@@ -90,7 +90,7 @@ import { message } from 'ant-design-vue'
 import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons-vue'
 import { useConfigStore } from '@/stores/configStore'
 import { useAppStateStore } from '@/stores/appState'
-import type { ProviderConfig } from '@/types/index.ts'
+import type { ProviderConfig } from '@/types/config'
 
 onMounted(() => {
     useAppStateStore().setTitle('Provider Settings')
