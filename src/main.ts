@@ -1,10 +1,10 @@
 import { createApp, h } from 'vue'
-import { createPinia } from 'pinia'
+
+import './cookiesTest'
 
 import App from './App.vue'
 import router from './router'
 import init from './init'
-import './userdata'
 
 await new Promise<void>((resolve, reject) => {
     const s = document.createElement('script');
@@ -13,12 +13,15 @@ await new Promise<void>((resolve, reject) => {
     document.head.append(s);
 })
 
+await import('./userdata')
+
 import './styles/style.css'
 import './styles/vars.css'
 import { Modal } from 'ant-design-vue'
 
 const app = createApp(App)
 
+const { createPinia } = await import('pinia')
 app.use(createPinia())
 app.use(router)
 

@@ -53,7 +53,7 @@ const dbUpgrade: Record<number, UpgradeFunction> = {
 
 /**@type {import('idb').IDBPDatabase} */
 let db!: import('idb').IDBPDatabase;
-await new Promise<void>(function (resolve, reject) {
+await (new Promise<void>(function (resolve, reject) {
     openDB(db_name, version, {
         // @ts-ignore
         upgrade(db: IDBPDatabase, oldVersion: number, newVersion: number | null, transaction: IDBPTransaction, event: IDBVersionChangeEvent) {
@@ -86,6 +86,14 @@ await new Promise<void>(function (resolve, reject) {
     .catch(reject);
     
     setTimeout(() => reject('Timeout while opening idb'), 10000);
+})).catch(e => { 
+    queueMicrotask(async () => {
+        const { createApp } = await import('vue');
+        const CookiesDisabledView = await import('@/views/CookiesDisabledView.vue');
+        createApp(CookiesDisabledView.default).mount(document.body.appendChild(document.createElement('div')));
+    })
+
+    throw e
 });
 
 
