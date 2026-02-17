@@ -145,8 +145,11 @@ const clearData = async () => {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    clearDataState.value.deleted = true;
+    document.cookie = `sys.operation.clearAllData=true; path=/; max-age=3600; secure`;
+    await fetch('/', { cache: 'no-store' }).catch(() => { });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    // clearDataState.value.deleted = true;
+    location.href = '/resource/cleared.html';
 }
 const confirmClearData = () => {
     if (clearDataState.value.input !== clearDataState.value.expect) return message.error('Input does not match');
@@ -214,33 +217,6 @@ watch(() => optOutCSPReport.value, async (newValue) => {
         setTimeout(() => {
             window.location.reload();
         }, 1000);
-        return;
-        
-        // Modal.confirm({
-        //     title: 'Success',
-        //     content: "We've updated your preference about CSP report. However, the Content Security Policy is a HTTP header (to learn more, refer to https://en.wikipedia.org/wiki/HTTP#message-header-field) and browsers often cache the response provided by the server. This means that you need to Clear Browser Cache (often shown as 'Cached images and files'; do NOT clear 'Website Data & Cookies'!) to have your preference take effect.",
-        //     okText: 'Show me how',
-        //     cancelText: 'Reload the page now',
-        //     onOk() {
-        //         let browserType = /(edg|chrome|firefox|safari|opr)/i.exec(navigator.userAgent)?.[0].toLowerCase();
-        //         if (navigator.userAgent.includes('Edg')) browserType = 'edg'; // Edge's ua after Chrome, leading to misidentification, so we need to manually set it
-        //         else if (navigator.userAgent.includes('OPR')) browserType = 'opera'; // ditto.
-        //         const helperLinks = {
-        //             'chrome': 'https://support.google.com/chrome/answer/2392709',
-        //             'firefox': 'https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox',
-        //             'safari': 'https://support.apple.com/en-us/HT201265',
-        //             'opera': 'https://help.opera.com/en/latest/web-preferences/#cookies',
-        //             'edg': 'https://www.bing.com/search?q=how+to+clear+cache+in+edge',
-        //             'default': 'https://www.google.com/search?q=how+to+clear+browser+cache',
-        //         } as Record<string, string>;
-        //         window.open(helperLinks[browserType ?? 'default'], '_blank');
-        //         return new Promise(() => { });
-        //     },
-        //     onCancel() {
-        //         window.location.reload();
-        //         return new Promise(() => { });
-        //     }
-        // })
     } catch (error) {
         message.error('Failed: ' + error);
     }

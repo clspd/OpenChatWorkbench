@@ -93,6 +93,30 @@
                     "value": "\"cache\""
                 }
             ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "sys.operation.clearAllData",
+                    "value": "yes"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.operation.clearAllData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, must-revalidate"
+                },
+                {
+                    "key": "Clear-Site-Data",
+                    "value": "\"cache\", \"cookies\", \"storage\""
+                }
+            ]
         }
     ]
 }

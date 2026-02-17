@@ -1,4 +1,4 @@
-// adapter for other OpenAI-compatible providers
+// adapter for OpenAI
 
 import { useConfigStore } from "@/stores/configStore";
 import type { Conversation, PendingMessageRequest } from "@/types/conversation";
@@ -6,7 +6,7 @@ import { MessageContentType, MessageFeatureType, MessageFragmentType, MessageSta
 import { BuildOpenAICompatibleRequestMessages } from "@/modules/chat-request/requestBuilder";
 import type { ChatCompletionChunk, ChatCompletionCreateParamsStreaming } from "openai/resources";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { GetProviderUrl, GetResponseChunkFragmentType } from "../provider";
+import { GetProviderUrl } from "../provider";
 import { useConversationStore } from "@/stores/conversationStore";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 
@@ -60,9 +60,15 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
         throw new Error("There is an ongoing request for this conversation");
     conversationStore.requestsInProgress.set(conv.id, pendingReq);
 
-    let currentFragment: MessageFragment | null = null;
-    let lastResponseChunkType: MessageFragmentType | null = null;
-    
+    // OpenAI only outputs content, no reasoning content is provided
+    // so it is not possible to show reasoning effort in OpenAI
+    const frag: MessageFragment = {
+        id: respMsg.fragments.length + 1,
+        type: MessageFragmentType.Response,
+        contentType: MessageContentType.Text,
+        content: "",
+    };
+
     // send request.
     try {
         await fetchEventSource(new Request(new URL(GetProviderUrl(providerInfo))), {
@@ -87,6 +93,10 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                     throw new Error("Server returned unexpected content type: " + ct);
 
                 pendingReq.opened = true;
+
+                // add fragment to message
+                respMsg.fragments.push(frag);
+                conversationStore.updateConvInStore(conv.id, conv);
             },
 
             onerror(err) {
@@ -105,25 +115,8 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                 try {
                     const json = JSON.parse(data) as ChatCompletionChunk;
                     if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
-
-                    // distinct reasoning content from content
-                    const type = GetResponseChunkFragmentType(json, 0);
-                    if (type !== lastResponseChunkType) {
-                        lastResponseChunkType = type;
-                        currentFragment = type ? {
-                            id: respMsg.fragments.length + 1,
-                            type: type,
-                            contentType: MessageContentType.Text,
-                            content: "",
-                        } : null;
-                        if (currentFragment) respMsg.fragments.push(currentFragment);
-                    }
-
-                    // append data
-                    if (currentFragment) {
-                        AppendMessageFragmentChunk(respMsg, currentFragment.id, json, false);
-                        conversationStore.updateConvInStore(conv.id, conv);
-                    }
+                    AppendMessageFragmentChunk(respMsg, frag.id, json, false);
+                    conversationStore.updateConvInStore(conv.id, conv);
                 }
                 catch (err) {
                     throw new Error("Error parsing streaming response", { cause: err });

@@ -44,14 +44,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch, type PropType } from 'vue'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
 import { safeParseJSON } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE, type MessageFeatureItem } from '@/types/message'
+import { EMPTY_MESSAGE, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -135,8 +135,15 @@ const isDeepThinkEnabled = computed<boolean>({
         return props.features.some((item) => item.type === 'thinking' && !!item.value);
     },
     set: (newVal: boolean) => {
+        if (isDeepThinkEnabled.value === newVal) return;
+        if (!props.features.some((item) => item.type === MessageFeatureType.Thinking)) {
+            const newArray = structuredClone(toRaw(props.features));
+            newArray.push({ type: MessageFeatureType.Thinking, value: newVal });
+            emit('update:features', newArray);
+            return;
+        }
         const newFeatures = props.features.map((item) => {
-            if (item.type === 'thinking') {
+            if (item.type === MessageFeatureType.Thinking) {
                 item.value = newVal
             }
             return item

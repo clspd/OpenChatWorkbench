@@ -57,10 +57,10 @@ export enum MessageFeatureType {
 // This stores the features of the message, e.g. thinking enabled
 export interface MessageFeatureItem {
     type: MessageFeatureType;
-    value: MessageFeature;
+    value: MessageFeatureValue;
 }
 
-export type MessageFeature = boolean | string | number;
+export type MessageFeatureValue = boolean | string | number;
 
 export interface MessageUsage {
     total_tokens: number;

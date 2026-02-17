@@ -3,8 +3,8 @@ import type { MessageFeatureItem, FileAttachmentInfo, Message } from "@/types/me
 
 export const MessageStreamer = {
     other: async () => (await import('./other')).stream,
-    // "api.openai.com": async () => (await import('./openai')).stream,
-    // "api.deepseek.com": async () => (await import('./deepseek')).stream,
+    "api.openai.com": async () => (await import('./openai')).stream,
+    "api.deepseek.com": async () => (await import('./deepseek')).stream,
 } as Record<string, () => Promise<(
     conv: Conversation,
     req: Message,

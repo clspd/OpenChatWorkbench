@@ -36,13 +36,8 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
     // process features
     if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
         case MessageFeatureType.Thinking:
-            if (i.value === true) req.reasoning_effort = 'high';
-            else if (typeof i.value === 'string' && (
-                i.value === 'none' ||
-                i.value === 'low' ||
-                i.value === 'medium' ||
-                i.value === 'high'
-            )) req.reasoning_effort = i.value;
+            // reference: https://api-docs.deepseek.com/zh-cn/api/create-chat-completion
+            if (i.value === true) (req as any).thinking = { type: 'enabled' };
             break;
         default: ; // ignore unknown feature type
     }

@@ -6,6 +6,7 @@
             v-model:modelId="modelId"
             v-model:providerId="providerId"
             v-model:features="userMessageFeatures"
+            v-model:files="userMessageFiles"
             @send-message="handleSendMessage" />
     </div>
 </template>
@@ -23,7 +24,6 @@ import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
 import { CreateConversation, GetConvNextMessageId, InsertMessageToConversation } from '@/modules/chat/conversation'
-import { AddConversationToIndex, GetCurrentConvIndexId } from '@/modules/chat/convIndex'
 import { CreateUserMessage } from '@/modules/chat/message'
 import { GenerateResponse } from '@/modules/chat-request/respond'
 import { TraceErrorAndGetString } from '@/utils/errorTrace'
@@ -77,8 +77,12 @@ watch(() => userMessageFeatures.value, (newVal) => {
 }, { deep: true })
 
 const handleSendMessage = async () => {
-    if (userMessage.value === '' || isSending.value) {
+    if (userMessage.value === '') {
         message.error('Please enter a message')
+        return
+    }
+    if (isSending.value) {
+        message.error('Please wait for the previous message to be sent')
         return
     }
     

@@ -7,6 +7,20 @@
                 <div><a-button type="primary" @click="router.push('/')">Go to Home</a-button></div>
             </div>
         </div>
+
+        <template v-else>
+            <div class="messages-container">
+
+            </div>
+
+            <InputMessage
+                v-model="messageEditorState.content"
+                v-model:providerId="messageEditorState.providerId"
+                v-model:modelId="messageEditorState.modelId"
+                v-model:features="messageEditorState.features"
+                v-model:files="messageEditorState.files"
+                @send-message="handleSendMessage" />
+        </template>
     </div>
 </template>
 
@@ -16,8 +30,11 @@ import { LoadConversation } from '@/modules/chat/conversation';
 import { useAppStateStore } from '@/stores/appState';
 import type { Conversation } from '@/types/conversation';
 import { CloseCircleFilled } from '@ant-design/icons-vue';
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import InputMessage from '@/components/InputMessage.vue'
+import type { FileAttachmentInfo, MessageFeatureItem } from '@/types/message';
+import { message } from 'ant-design-vue';
 
 const router = useRouter()
 const props = defineProps({
@@ -59,6 +76,45 @@ async function LoadChat() {
     }
 }
 
+// --------
+
+const messageEditorState = reactive<{
+    content: string,
+    modelId: string,
+    providerId: string,
+    features: MessageFeatureItem[],
+    files: FileAttachmentInfo[],
+    isSending: boolean,
+}>({
+    content: '',
+    modelId: '',
+    providerId: '',
+    features: [],
+    files: [],
+    isSending: false,
+})
+
+const handleSendMessage = async function () {
+    if (messageEditorState.content === '') {
+        message.error('Please enter a message')
+        return
+    }
+    if (messageEditorState.isSending) {
+        message.error('Please wait for the previous message to be sent')
+        return
+    }
+
+    messageEditorState.isSending = true
+    try {
+
+    }
+    catch (e) {
+
+    }
+    finally {
+        messageEditorState.isSending = false
+    }
+}
 
 </script>
 
