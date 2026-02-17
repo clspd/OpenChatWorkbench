@@ -145,7 +145,7 @@ const clearData = async () => {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
-    document.cookie = `sys.operation.clearAllData=true; path=/; max-age=3600; secure`;
+    document.cookie = `sys.operation.clearAllData=yes; path=/; max-age=3600; secure`;
     await fetch('/', { cache: 'no-store' }).catch(() => { });
     await new Promise(resolve => setTimeout(resolve, 2000));
     // clearDataState.value.deleted = true;
