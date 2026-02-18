@@ -8,6 +8,8 @@ export async function InitCookieConsent(updatedAt: number) {
     cookieConsentUpdatedAt = updatedAt;
 
     if (!(await isCookieConsentValid())) useAppStateStore().showCookieConsent = true;
+    
+    queueMicrotask(() => refreshUserPrivacyCookies().catch(e => console.error('[cookieConsent]', 'Unable to refresh user privacy cookies:', e)));
 }
 
 let consentCache: CookieConsent | null = null;
@@ -93,6 +95,13 @@ export const loadCookieConsentFromHttpCookie = async () => {
 
 export async function getSafeCookieConsent() { 
     return (await getCookieConsent()) ?? createBaseCookieConsent();
+}
+
+export async function refreshUserPrivacyCookies() {
+    const { parse } = await import('cookie');
+    const cookies = parse(globalThis.document.cookie);
+    const optOutCSPReport = cookies["user.privacy.optOutCSPReport"];
+    if (optOutCSPReport === 'true') document.cookie = `user.privacy.optOutCSPReport=true; path=/; domain=${domain_name_root}; max-age=63072000; secure`;
 }
 
 // --------
