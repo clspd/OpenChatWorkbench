@@ -3,6 +3,7 @@ import type { FileAttachmentInfo, MessageFeatureItem } from "@/types/message";
 import { streamResponse } from "../chat-remotes/streamResponse";
 import { LoadConversation } from "../chat/conversation";
 import { useConfigStore } from "@/stores/configStore";
+import { useAppStatePersistStore } from "@/stores/appStatePersist";
 
 /**
  * Generate a response message for the given request message.
@@ -12,6 +13,7 @@ import { useConfigStore } from "@/stores/configStore";
  * @param provider The provider name.
  * @param features The message features.
  * @param files The file attachment infos.
+ * @param updateUserPreference Whether to update user preference.
  * @returns the response message id
  */
 export async function GenerateResponse(
@@ -21,6 +23,7 @@ export async function GenerateResponse(
     provider: string,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
+    updateUserPreference = true,
 ): Promise<number> {
     const conversation = await LoadConversation(convId);
     if (!conversation) throw new Error("Conversation not found");
@@ -29,6 +32,12 @@ export async function GenerateResponse(
     if (!providerCfg) throw new Error("Provider not found");
     const modelCfg = useConfigStore().getModelById(model);
     if (!modelCfg) throw new Error("Model not found");
+
+    if (updateUserPreference) {
+        // save features to user preference
+        const appStatePersist = useAppStatePersistStore();
+        appStatePersist.userSendMsgDefaultFeatures = features;
+    }
 
     return await streamResponse(conversation, reqId, providerCfg, modelCfg, features, files);
 }

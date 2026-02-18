@@ -41,13 +41,20 @@
     <teleport :to="content" v-if="content">
         <div class="sidebar-content">
             <div class="row" style="padding: 0 0.5em;">
-                <a-button type="dashed" @click="newChat">New Chat</a-button>
+                <a-button v-if="appStatePersist.sidebarActiveTab === 'chat'" type="dashed" @click="go('/')">New Chat</a-button>
+                <a-button v-if="appStatePersist.sidebarActiveTab === 'workspace'" type="dashed" @click="go('/workspace/new')">New Workspace</a-button>
+            </div>
+            <div class="row">
+                <a-tabs v-model:activeKey="appStatePersist.sidebarActiveTab" size="small" class="app-conv-type-choose">
+                    <a-tab-pane key="chat" tab="Chat"></a-tab-pane>
+                    <a-tab-pane key="workspace" tab="Workspace"></a-tab-pane>
+                </a-tabs>
             </div>
             <div class="message-list-container" @scroll.passive="handleConvListScroll" ref="convListContainer">
-                <ConversationList @initialized="restoreScrollPos" />
+                <ConversationList :type="appStatePersist.sidebarActiveTab" @initialized="restoreScrollPos" />
             </div>
             <div class="user-and-settings">
-                <div class="row"><a-button type="text" @click="goSettings">
+                <div class="row"><a-button type="text" @click="go('/settings/')">
                     <SettingOutlined />
                     <span>Settings</span>
                 </a-button></div>
@@ -64,6 +71,7 @@ import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { onMounted, ref, watch } from 'vue'
 import AppLogo from './AppLogo.vue'
 import { useRouter } from 'vue-router';
+import ConversationList from './ConversationList.vue'
 
 const content = ref()
 const router = useRouter()
@@ -79,20 +87,8 @@ onMounted(() => {
     if (!windowState.isLargeScreen && !appStatePersist.sidebarCollapsed) appStatePersist.sidebarCollapsed = true
 })
 
-const newChat = () => {
-    router.push('/')
-    if (!windowState.isLargeScreen) {
-        appStatePersist.sidebarCollapsed = true
-    }
-}
-const goSettings = () => {
-    router.push('/settings/')
-    if (!windowState.isLargeScreen) {
-        appStatePersist.sidebarCollapsed = true
-    }
-}
-const goAbout = () => {
-    router.push('/about/')
+const go = (path: string) => {
+    router.push(path)
     if (!windowState.isLargeScreen) {
         appStatePersist.sidebarCollapsed = true
     }
@@ -146,6 +142,12 @@ const restoreScrollPos = () => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+.app-conv-type-choose > :deep(.ant-tabs-nav) {
+    margin: 0;
+}
+.app-conv-type-choose :deep(.ant-tabs-nav-wrap > .ant-tabs-nav-list) {
+    margin: 0 auto;
 }
 .message-list-container {
     flex: 1;

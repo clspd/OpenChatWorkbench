@@ -38,15 +38,15 @@ const isSending = ref(false)
 
 onMounted(() => {
     useAppStateStore().setTitle('')
-    modelId.value = useConfigStore().selectedModelId
     providerId.value = useConfigStore().selectedProviderId
+    modelId.value = useConfigStore().selectedModelId
     const buffer = useAppStateSessionStore().chatEditBuffer["_"]
     if (buffer) {
         userMessage.value = buffer.content
-        userMessageFeatures.value = buffer?.features || []
+        userMessageFeatures.value = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
     } else {
         userMessage.value = EMPTY_MESSAGE_JSON
-        userMessageFeatures.value = []
+        userMessageFeatures.value = useAppStatePersistStore().userSendMsgDefaultFeatures
     }
 })
 

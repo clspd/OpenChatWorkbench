@@ -1,8 +1,8 @@
 <template>
     <div class="message-list">
-        <!-- <div v-if="conversationStore.loading" class="loading">Loading...</div> -->
+        <div v-if="props.type === 'workspace'">Workspace not implemented!!!</div>
         <div v-if="conversationGroups.length === 0" class="empty">
-            No conversations
+            <a-empty />
         </div>
         <div v-else class="conversation-groups">
             <div v-for="group in conversationGroups" :key="group.label" class="group">
@@ -38,6 +38,12 @@ import { useAppStatePersistStore } from '@/stores/appStatePersist'
 const router = useRouter()
 const route = useRoute()
 const conversationStore = useConversationStore()
+const props = defineProps({
+    type: {
+        type: String,
+        default: 'chat'
+    },
+})
 const emit = defineEmits(['initialized'])
 
 const conversationGroupsData = computed(() => {

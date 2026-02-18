@@ -4,11 +4,14 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { fs } from '@/userdata'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
+import type { MessageFeatureItem } from '@/types/message'
 
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
         modelChooserScrollPos: 0,
         sidebarCollapsed: false,
+        sidebarActiveTab: 'chat' as 'chat' | 'workspace',
+        userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
     }),
     actions: {
         initAutoSave() {
