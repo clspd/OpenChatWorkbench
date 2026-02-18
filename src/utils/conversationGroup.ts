@@ -54,7 +54,7 @@ export function groupConversationsByTime(
             if (!isDateA && isDateB) return -1
 
             return 0
-        })
+        }).reverse()
 
     groups.push(...sortedTimeGroups)
 
