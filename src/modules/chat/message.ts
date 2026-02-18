@@ -49,7 +49,7 @@ export async function AppendMessageFragmentChunk(msg: Message, fragmentId: numbe
     else {
         const choice = chunk.choices[0];
         if (!choice) return null;
-        if ((choice.delta as any).reasoning_content !== undefined) {
+        if (typeof (choice.delta as any).reasoning_content === 'string') {
             fragment.content += String((choice.delta as any).reasoning_content);
         }
         else if (choice.delta.content) {
