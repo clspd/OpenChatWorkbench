@@ -66,6 +66,8 @@ export async function InitConvIndex() {
             previous: indexId - 1,
         }) as ConversationIndex)));
     }
+    // load latest index
+    await LoadConvIndex(indexId);
 }
 
 export async function AddConversationToIndex(indexId: number, item: ConversationIndexItem) {

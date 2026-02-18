@@ -19,6 +19,10 @@
                     </div>
                 </a>
             </div>
+
+            <div v-if="conversationGroupsData.has_more" class="has-more">
+                Has more data (TODO: implement loading more data)
+            </div>
         </div>
     </div>
 </template>
@@ -27,8 +31,7 @@
 import { computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useConversationStore } from '@/stores/conversationStore'
-import { groupConversationsByTime, formatConversationTime } from '@/utils/conversationGroup'
-import type { ConversationGroup } from '@/utils/conversationGroup'
+import { formatConversationTime } from '@/utils/conversationGroup'
 import { useWindowStateStore } from '@/stores/windowState'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 
@@ -37,10 +40,12 @@ const route = useRoute()
 const conversationStore = useConversationStore()
 const emit = defineEmits(['initialized'])
 
-const conversationGroups = computed<ConversationGroup[]>(() => {
-    return []
-    // return groupConversationsByTime(conversationStore.sortedConversations)
-})
+const conversationGroupsData = computed(() => {
+    return conversationStore.groupedConversationsList
+});
+const conversationGroups = computed(() => {
+    return conversationGroupsData.value.groups
+});
 
 const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
@@ -48,12 +53,6 @@ const handleConversationClick = (conversationId: string) => {
         useAppStatePersistStore().sidebarCollapsed = true
     }
 }
-
-// const handleDragStart = (conversationId: string, event: DragEvent) => {
-//     if (!event.dataTransfer) return
-//     event.dataTransfer.setData('text/plain', conversationStore.getConversationById(conversationId)?.title || 'Untitled')
-//     event.dataTransfer.setData('text/uri-list', new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href)
-// }
 
 const getConversationUrl = (conversationId: string): string => {
     return new URL(router.resolve(`/chat/c/${conversationId}`).href, new URL(router.options.history.base, window.location.href)).href

@@ -1,28 +1,13 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import 'dayjs/locale/zh-cn'
 import 'dayjs/locale/en'
+import type { ConversationIndexItem, ConversationGroup } from '@/types/conversation'
 
 dayjs.extend(relativeTime)
 
-export interface ConversationGroup {
-    label: string;
-    conversations: ConversationIndexItem[];
-}
-
-export interface ConversationIndexItem {
-    id: string;
-    created_at: number;
-    updated_at: number;
-    title: string;
-    pinned: boolean;
-}
-
 export function groupConversationsByTime(
-    conversations: ConversationIndexItem[],
-    locale: string = 'en'
+    conversations: ConversationIndexItem[]
 ): ConversationGroup[] {
-    dayjs.locale(locale)
     const now = dayjs()
     const groups: ConversationGroup[] = []
 
@@ -77,10 +62,8 @@ export function groupConversationsByTime(
 }
 
 export function formatConversationTime(
-    timestamp: number,
-    locale: string = 'en'
+    timestamp: number
 ): string {
-    dayjs.locale(locale)
     const now = dayjs()
     const date = dayjs(timestamp)
     const diffDays = now.diff(date, 'day')
