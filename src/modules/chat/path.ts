@@ -9,7 +9,7 @@ export const chatBasePath = "data/";
 export const chatIndexBasePath = chatBasePath + "index/";
 export const chatIndexCurrentFile = chatIndexBasePath + "current";
 export const chatAttachmentBasePath = chatBasePath + "attachment/";
-export const getConvPath = (id: string) => chatBasePath + 'conversation/' + id;
+export const getConvPath = (id: string) => chatBasePath + 'conversations/' + id;
 export const getConvPrefPath = (id: string) => chatBasePath + 'conv_pref/' + id;
 export const getChatIndexPath = (n: number) => chatIndexBasePath + n;
 export const getChatAttachmentPath = (id: string, aid: string) => chatAttachmentBasePath + id + '_' + aid;
