@@ -38,6 +38,7 @@ export interface MessageFragment {
 
 
 export enum MessageFragmentType {
+    Error = 'ERROR',
     Request = 'REQUEST',
     Think = 'THINK',
     Response = 'RESPONSE',

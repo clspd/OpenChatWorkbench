@@ -11,6 +11,7 @@ import { GetProviderUrl, GetResponseChunkFragmentType } from "../provider";
 import { useConversationStore } from "@/stores/conversationStore";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import type { ProviderConfig, ModelConfig } from "@/types/config";
+import { TraceErrorAndGetString } from "@/utils/errorTrace";
 
 export type _request_hook_func = (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<void>;
 
@@ -178,6 +179,12 @@ export async function _base_stream(
         } else {
             respMsg.status = MessageStatus.Error;
             respMsg.has_pending_fragment = false;
+            respMsg.fragments.push({
+                id: respMsg.fragments.length + 1,
+                type: MessageFragmentType.Error,
+                contentType: MessageContentType.Text,
+                content: TraceErrorAndGetString(err),
+            });
         }
     }
     finally {
