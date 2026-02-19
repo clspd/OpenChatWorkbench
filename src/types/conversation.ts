@@ -42,6 +42,25 @@ export interface ConversationGroup {
     conversations: ConversationIndexItem[];
 }
 
+export interface FlattenedConversationIndexItemTextMark {
+    type: "text-mark";
+    content: string;
+}
+
+export interface FlattenedConversationIndexItemConversation {
+    type: "conversation";
+    content: ConversationIndexItem;
+}
+
+export interface FlattenedConversationIndexItemHasMoreMark {
+    type: "has-more-mark";
+}
+
+export type FlattenedConversationIndexItem =
+    FlattenedConversationIndexItemConversation |
+    FlattenedConversationIndexItemTextMark | 
+    FlattenedConversationIndexItemHasMoreMark;
+
 export type ChatEditBuffer = Record<string, {
     contentType: MessageContentType;
     content: MessageContent<MessageContentType>;

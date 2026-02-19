@@ -153,6 +153,7 @@ const restoreScrollPos = () => {
     flex: 1;
     overflow: auto;
     margin-top: 0.5em;
+    position: relative;
 }
 .message-list-container::-webkit-scrollbar {
     width: 8px;
