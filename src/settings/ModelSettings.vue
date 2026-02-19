@@ -49,7 +49,7 @@
                             <a-button type="link" size="small" @click="handleEdit(record)">
                                 Edit
                             </a-button>
-                            <a-button type="link" size="small" danger @click="handleDelete(record.id)">
+                            <a-button type="link" size="small" danger @click="handleDelete(record.provider_id, record.id)">
                                 Delete
                             </a-button>
                         </a-space>
@@ -188,11 +188,11 @@ const selectedProvider = ref<ProviderConfig | null>(null)
 const conflictDetailsVisible = ref(false)
 const searchKeyword = ref('')
 
-const formData = reactive<Partial<ModelConfig>>({
+const formData = reactive<ModelConfig>({
     id: '',
     provider_id: '',
     enabled: true
-})
+}), formDataClone = ref<ModelConfig>();
 
 const columns = [
     {
@@ -267,37 +267,37 @@ const handleAdd = () => {
 }
 
 const handleEdit = (model: ModelConfig) => {
-    isEditing.value = true
-    Object.assign(formData, { ...model })
-    modalVisible.value = true
+    isEditing.value = true;
+    Object.assign(formData, { ...model });
+    formDataClone.value = model;
+    modalVisible.value = true;
 }
 
-const handleDelete = (id: string) => {
-    configStore.deleteModel(id)
-    message.success('Model deleted successfully')
+const handleDelete = (provider_id: string, id: string) => {
+    configStore.deleteModel(provider_id, id);
+    message.success('Model deleted successfully');
 }
 
 const handleToggleEnabled = (model: ModelConfig) => {
-    configStore.updateModel(model.id, model)
+    configStore.updateModel(model.provider_id, model.id, model);
 }
 
 const allModelsEnabled = (group: { provider: ProviderConfig, models: ModelConfig[] }) => {
-    return group.models.every(m => m.enabled)
+    return group.models.every(m => m.enabled);
 }
 
 const handleToggleAllModels = (group: { provider: ProviderConfig, models: ModelConfig[] }) => {
-    const hasFilter = searchKeyword.value.trim() !== ''
-    const targetModels = hasFilter 
-        ? group.models 
-        : configStore.models.filter(m => m.provider_id === group.provider.id)
+    const hasFilter = searchKeyword.value.trim() !== '';
+    const targetModels = hasFilter
+        ? group.models
+        : configStore.models.filter(m => m.provider_id === group.provider.id);
     
-    const newState = !allModelsEnabled(group)
+    const newState = !allModelsEnabled(group);
     
     for (const model of targetModels) {
-        configStore.updateModel(model.id, {
-            ...model,
+        configStore.updateModel(model.provider_id, model.id, {
             enabled: newState
-        })
+        });
     }
     
     const scope = hasFilter ? 'filtered' : 'all'
@@ -309,16 +309,24 @@ const handleOk = async () => {
         await formRef.value?.validate()
         
         if (isEditing.value) {
-            configStore.updateModel(formData.id!, formData as ModelConfig)
+            if (!formData.id) {
+                message.error('Model ID is required')
+                return
+            }
+            if (!formDataClone.value) {
+                message.error('The state of the model editor has been damaged, please reload the page to try again')
+                return
+            }
+            configStore.updateModel(formDataClone.value.provider_id, formDataClone.value.id, formData);
             message.success('Model updated successfully')
         } else {
-            configStore.addModel(formData as ModelConfig)
+            configStore.addModel(formData.provider_id, formData.id, formData.enabled);
             message.success('Model added successfully')
         }
         
         modalVisible.value = false
     } catch (error) {
-        console.error('[ModelSettings]', 'Validation failed:', error)
+        message.error('Operation failed: ' + error)
     }
 }
 
@@ -335,7 +343,7 @@ const handleOverwriteConflicts = () => {
     if (!selectedProvider.value) return
 
     for (const conflict of conflictModels.value) {
-        configStore.updateModel(conflict.id, {
+        configStore.updateModel(conflict.existing.provider_id, conflict.id, {
             ...conflict.existing,
             provider_id: selectedProvider.value.id
         })
@@ -425,7 +433,7 @@ const handleFetchOk = async () => {
 
             if (newModels.length > 0) {
                 for (const model of newModels) {
-                    configStore.addModel(model)
+                    configStore.addModel(model.provider_id, model.id, model.enabled)
                 }
                 message.success(`Successfully added ${newModels.length} models`)
                 fetchModalVisible.value = false

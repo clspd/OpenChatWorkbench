@@ -69,7 +69,7 @@ export const useConfigStore = defineStore('config', {
         updateModel(provider_id: string, id: string, updates: Partial<ModelConfig>) {
             const index = this.models.findIndex(m => m.provider_id === provider_id && m.id === id)
             if (index === -1) throw new Error("Model not found for this provider")
-            this.models[index] = Object.assign(this.models[index]!, updates)
+            Object.assign(this.models[index]!, updates); // modifys in place
         },
         deleteModel(provider_id: string, id: string) {
             const index = this.models.findIndex(m => m.provider_id === provider_id && m.id === id)
