@@ -59,7 +59,7 @@ export async function _base_stream(
     // get request URL
     const providerInfo = useConfigStore().getProviderById(provider);
     if (!providerInfo) throw new Error("provider not found");
-    const modelInfo = useConfigStore().getModelById(model);
+    const modelInfo = useConfigStore().getModel(provider, model);
     if (!modelInfo) throw new Error("model not found");
 
     // build request JSON

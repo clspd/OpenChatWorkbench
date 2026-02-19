@@ -30,7 +30,7 @@ export async function GenerateResponse(
 
     const providerCfg = useConfigStore().getProviderById(provider);
     if (!providerCfg) throw new Error("Provider not found");
-    const modelCfg = useConfigStore().getModelById(model);
+    const modelCfg = useConfigStore().getModel(provider, model);
     if (!modelCfg) throw new Error("Model not found");
 
     if (updateUserPreference) {

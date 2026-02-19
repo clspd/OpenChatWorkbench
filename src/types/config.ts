@@ -10,8 +10,8 @@ export interface ProviderConfig {
 }
 
 export interface ModelConfig {
-    id: string
     provider_id: string
+    id: string
     enabled: boolean
 }
 

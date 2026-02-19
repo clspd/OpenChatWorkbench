@@ -1,6 +1,4 @@
 // configStore: There datas are **necessary** to run the application.
-
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { ModelConfig, ProviderConfig } from '@/types/config'
 import { db } from '@/userdata'
@@ -63,23 +61,23 @@ export const useConfigStore = defineStore('config', {
         getProviderById(id: string) {
             return this.providers.find(p => p.id === id)
         },
-        addModel(model: ModelConfig) {
-            this.models.push(model)
+        addModel(provider_id: string, id: string, enabled: boolean) {
+            const exists = this.models.some(m => m.provider_id === provider_id && m.id === id)
+            if (exists) throw new Error("Model already exists for this provider")
+            this.models.push({ provider_id, id, enabled })
         },
-        updateModel(id: string, model: ModelConfig) {
-            const index = this.models.findIndex(m => m.id === id)
-            if (index !== -1) {
-                this.models[index] = model
-            }
+        updateModel(provider_id: string, id: string, updates: Partial<ModelConfig>) {
+            const index = this.models.findIndex(m => m.provider_id === provider_id && m.id === id)
+            if (index === -1) throw new Error("Model not found for this provider")
+            this.models[index] = Object.assign(this.models[index]!, updates)
         },
-        deleteModel(id: string) {
-            const index = this.models.findIndex(m => m.id === id)
-            if (index !== -1) {
-                this.models.splice(index, 1)
-            }
+        deleteModel(provider_id: string, id: string) {
+            const index = this.models.findIndex(m => m.provider_id === provider_id && m.id === id)
+            if (index === -1) throw new Error("Model not found for this provider")
+            this.models.splice(index, 1)
         },
-        getModelById(id: string) {
-            return this.models.find(m => m.id === id)
+        getModel(provider_id: string, id: string) {
+            return this.models.find(m => m.provider_id === provider_id && m.id === id)
         },
         toggleFavoriteModel(providerId: string, modelId: string) {
             const index = this.favoriteModels.findIndex(([pid, mid]) => pid === providerId && mid === modelId)
