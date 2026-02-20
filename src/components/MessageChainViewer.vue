@@ -27,6 +27,7 @@ import { useConversationStore } from '@/stores/conversationStore';
 import { FlattenConversationTree, GetDefaultChoices } from '@/modules/chat-tree/flat';
 import MessageItem from '@/components/MessageItem.vue';
 import { useAppStateStore } from '@/stores/appState';
+import { message } from 'ant-design-vue';
 
 const props = defineProps<{
     chatId: string;
@@ -63,8 +64,14 @@ const tree = computed(() => conversation.value && ConvertConversationToTree(conv
 const chatFlow = computed(() => {
     if (!tree.value) return [];
     try { return FlattenConversationTree(tree.value, props.choices) }
-    catch {
-        emit('update:choices', GetDefaultChoices(tree.value));
+    catch (e) {
+        const defaultChoices = GetDefaultChoices(tree.value);
+        if (JSON.stringify(props.choices) !== JSON.stringify(defaultChoices)) {
+            emit('update:choices', defaultChoices);
+        } else {
+            console.error('[MessageChainViewer]', 'FlattenConversationTree error even with default choices', e);
+            message.error("Internal Error! See the browser console for more details.")
+        }
         return [];
     }
 });

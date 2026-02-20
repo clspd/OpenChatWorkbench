@@ -6,9 +6,11 @@ import { fs } from '@/userdata'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 import type { MessageFeatureItem } from '@/types/message'
 import type { Config as DomPurifyConfig } from 'dompurify'
+import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
+        fontSizeGlobal: 0,
         modelChooserScrollPos: 0,
         sidebarCollapsed: false,
         sidebarActiveTab: 'chat' as 'chat' | 'workspace',
@@ -19,6 +21,13 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,
     }),
+    getters: {
+        theme: (state): ThemeConfig => ({
+            token: {
+                fontSize: state.fontSizeGlobal || 14,
+            }
+        }),
+    },
     actions: {
         initAutoSave() {
             this.$subscribe(async (mutation, state) => {

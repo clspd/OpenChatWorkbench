@@ -32,6 +32,7 @@
                 </div>
                 <div v-if="groupedModels.length === 0" class="empty-state">
                     <p>No models available. Please add providers and models first.</p>
+                    <div><a href="javascript:void(0)" @click="appState.showConfigGuide = true">Open the configuration guide</a></div>
                 </div>
                 <div v-else>
                     <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
@@ -47,8 +48,10 @@
                                     v-if="model.enabled"
                                     :key="model.id"
                                     class="model-item"
-                                    :class="{ 'selected': props.modelId === model.id }"
+                                    :class="{ 'selected': (props.modelId === model.id && props.providerId === model.provider_id) }"
+                                    tabindex="0"
                                     @click="selectModel(model, group.provider.id)"
+                                    @keydown.enter="selectModel(model, group.provider.id)"
                                 >
                                     <div class="model-info">
                                         <div class="model-id">{{ model.id }}</div>
@@ -81,6 +84,8 @@ import { CheckOutlined, StarOutlined, StarFilled } from '@ant-design/icons-vue'
 import { useConfigStore } from '@/stores/configStore'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { DialogView } from 'vue-dialog-view'
+import { useAppStateStore } from '@/stores/appState'
+import type { ModelConfig } from '@/types/config'
 
 const props = defineProps({
     modelId: {
@@ -100,7 +105,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelId', 'update:providerId'])
 
 const configStore = useConfigStore()
-const appStatePersistStore = useAppStatePersistStore()
+const appState = useAppStateStore()
+const appStatePersist = useAppStatePersistStore()
 
 const modalVisible = ref(false)
 const searchKeyword = ref('')
@@ -161,7 +167,7 @@ const openModal = () => {
     modalVisible.value = true
 }
 
-const selectModel = (model: any, providerId: string) => {
+const selectModel = (model: ModelConfig, providerId: string) => {
     emit('update:modelId', model.id)
     emit('update:providerId', providerId)
     modalVisible.value = false
@@ -179,12 +185,10 @@ watch(modalVisible, async (newVal) => {
     if (newVal) {
         await nextTick()
         if (modelSelectionRef.value) {
-            modelSelectionRef.value.scrollTop = appStatePersistStore.modelChooserScrollPos
+            modelSelectionRef.value.scrollTop = appStatePersist.modelChooserScrollPos
         }
-    } else {
-        if (modelSelectionRef.value) {
-            appStatePersistStore.modelChooserScrollPos = modelSelectionRef.value.scrollTop
-        }
+    } else if (modelSelectionRef.value) {
+        appStatePersist.modelChooserScrollPos = modelSelectionRef.value.scrollTop
     }
 })
 </script>

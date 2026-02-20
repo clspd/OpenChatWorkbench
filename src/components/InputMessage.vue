@@ -115,7 +115,9 @@ onMounted(() => {
         editorProps: {
             handleKeyDown: (view, event) => {
                 if (event.key === 'Enter') {
-                    if (appStatePersist.sendMessageWithCtrlEnter) return false;
+                    if (appStatePersist.sendMessageWithCtrlEnter && (!event.ctrlKey || event.altKey || event.shiftKey)) {
+                        return false;
+                    }
                     if (event.shiftKey) {
                         editor.value?.commands.insertContent('<br>')
                         return true

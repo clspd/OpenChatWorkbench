@@ -60,6 +60,10 @@ export default async function init() {
         document.title = title ? (useAppStateStore().titleCustomize ? title : `${title} - ${app_name}`) : app_name
     });
 
+    if (useAppStatePersistStore().fontSizeGlobal) {
+        document.documentElement.style.setProperty('--ocw-font-size', useAppStatePersistStore().fontSizeGlobal + 'px');
+    }
+
     useConversationStore();
 
     await InitConvIndex();

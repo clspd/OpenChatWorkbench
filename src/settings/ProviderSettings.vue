@@ -2,6 +2,10 @@
     <div class="sub-settings-container">
         <h2 style="margin-top: 0;">Providers</h2>
 
+        <a-alert type="info">
+            <template #message>It is recommended to use the <a href="javascript:void(0)" @click="appState.showConfigGuide = true">Configuration Guide</a> to set up the providers easily.</template>
+        </a-alert>
+
         <div class="provider-list-container">
             <a-button type="primary" @click="handleAdd" style="margin-bottom: 16px;">
                 <template #icon>
@@ -92,8 +96,10 @@ import { useConfigStore } from '@/stores/configStore'
 import { useAppStateStore } from '@/stores/appState'
 import type { ProviderConfig } from '@/types/config'
 
+const appState = useAppStateStore()
+
 onMounted(() => {
-    useAppStateStore().setTitle('Provider Settings')
+    appState.setTitle('Provider Settings')
 
     fetch('/assets/providers.json')
         .then(response => response.json())
@@ -120,7 +126,6 @@ const formRef = ref()
 const modalVisible = ref(false)
 const selectModalVisible = ref(false)
 const isEditing = ref(false)
-const editingId = ref('')
 
 const predefinedProviders = ref<Array<{
     name: string
@@ -250,13 +255,14 @@ const openPurchaseUrl = (url: string) => {
 
 <style scoped>
 .sub-settings-container {
-    padding: 24px;
+    padding: 1em;
 }
 
 .provider-list-container {
     background: #fff;
-    padding: 16px;
+    margin-top: 1em;
     border-radius: 4px;
+    overflow: auto;
 }
 
 .provider-selection {
@@ -264,7 +270,7 @@ const openPurchaseUrl = (url: string) => {
     flex-direction: column;
     gap: 12px;
     max-height: 60vh;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 .provider-card {

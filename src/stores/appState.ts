@@ -11,6 +11,7 @@ export const useAppStateStore = defineStore('AppState', {
         showCookieConsent: false,
         currentConversationId_: '' as string | null,
         mainContentViewEl: null as Component | null,
+        showConfigGuide: false,
     }),
     getters: {
         currentConversationId: (state) => state.page === 'chat' ? state.currentConversationId_ : null,
