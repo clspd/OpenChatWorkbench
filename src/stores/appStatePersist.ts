@@ -5,6 +5,7 @@ import { defineStore } from 'pinia'
 import { fs } from '@/userdata'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 import type { MessageFeatureItem } from '@/types/message'
+import type { Config as DomPurifyConfig } from 'dompurify'
 
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
@@ -12,6 +13,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         sidebarCollapsed: false,
         sidebarActiveTab: 'chat' as 'chat' | 'workspace',
         userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
+        domPurifCfg: {} as DomPurifyConfig,
     }),
     actions: {
         initAutoSave() {

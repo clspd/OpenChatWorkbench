@@ -28,6 +28,8 @@ export interface _stream_options {
     onAfterRequest?: _request_hook_func,
     // called in onopen; if provided, the default handler will be overwritten
     onOpen?: (req: ChatCompletionCreateParamsStreaming, resp: Response, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<void>,
+    // called after onopen
+    onOpened?: (req: ChatCompletionCreateParamsStreaming, resp: Response, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<void>,
     // called in onerror; if provided, the default handler will be overwritten
     onError?: (req: ChatCompletionCreateParamsStreaming, err: any, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => void,
     // called in onclose; if provided, the default handler will be overwritten
@@ -116,6 +118,7 @@ export async function _base_stream(
 
                     pendingReq.opened = true;
                 }
+                if (options.onOpened) await options.onOpened(req, response, conv, reqMsg, respMsg, providerInfo, modelInfo);
             },
 
             onerror(err) {

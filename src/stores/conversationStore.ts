@@ -1,20 +1,21 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { Conversation, ConversationGroup, ConversationIndex, ConversationIndexItem, PendingMessageRequest } from '@/types/conversation'
+import type { Conversation, ConversationGroup, ConversationIndex, ConversationIndexItem, ConversationUserPref, PendingMessageRequest } from '@/types/conversation'
 import { fs } from '@/userdata';
-import { getChatIndexPath, getConvPath } from '@/modules/chat/path';
-import { dumpConversationData } from '@/modules/chat/dumper';
+import { getChatIndexPath, getConvPath, getConvPrefPath } from '@/modules/chat/path';
+import { dumpConversationData, dumpConversationPref } from '@/modules/chat/dumper';
 import { groupConversationsByTime } from '@/utils/conversationGroup';
+import { LoadConversationPreference } from '@/modules/chat/convPref';
 
 /**
  * Temporarily caches the conversation and message data.
- * TODO: Data should be automatically synced when updated
  */
 export const useConversationStore = defineStore('conversation', {
     state: () => ({
         index: new Map<number, ConversationIndex>(),
         currentIndexId: 0,
         conversations: new Map<string, Conversation>(),
+        preferences: new Map<string, ConversationUserPref>(),
         requestsInProgress: new Map<string, PendingMessageRequest>(),
     }),
 
@@ -25,9 +26,15 @@ export const useConversationStore = defineStore('conversation', {
         addConvToStore(convId: string, conv: Conversation) {
             this.conversations.set(convId, conv);
         },
-        async updateConvInStore(convId: string, conv?: Conversation) {
+        async updateConvInStore(convId: string, conv?: Conversation, partialUpdate = false) {
             if (conv) {
-                this.conversations.set(convId, conv);
+                if (partialUpdate) {
+                    const idData = this.conversations.get(convId);
+                    if (!idData) throw new Error('Conversation specified by ID is not in store.');
+                    Object.assign(idData, conv);
+                } else {
+                    this.conversations.set(convId, conv);
+                }
                 await fs.writeFile(getConvPath(convId), dumpConversationData(conv));
             }
             else {
@@ -36,8 +43,27 @@ export const useConversationStore = defineStore('conversation', {
                 await fs.writeFile(getConvPath(convId), dumpConversationData(idData));
             }
         },
+        removeConvFromStore(convId: string) {
+            this.conversations.delete(convId);
+            this.requestsInProgress.delete(convId);
+        },
         async saveConvIndex(indexId: number) {
             await fs.writeFile(getChatIndexPath(indexId), new TextEncoder().encode(JSON.stringify(this.index.get(indexId))));
+        },
+        async loadPref(convId: string) {
+            const pref = await LoadConversationPreference(convId);
+            this.preferences.set(convId, pref);
+            return pref;
+        },
+        async getPref(convId: string) {
+            return this.preferences.get(convId) ?? this.loadPref(convId);
+        },
+        async updatePref(convId: string, pref: ConversationUserPref) {
+            this.preferences.set(convId, pref);
+            await fs.writeFile(getConvPrefPath(convId), dumpConversationPref(pref));
+        },
+        removePrefFromStore(convId: string) {
+            this.preferences.delete(convId);
         },
     },
 
@@ -67,6 +93,6 @@ export const useConversationStore = defineStore('conversation', {
                 groups: groupConversationsByTime(data.conversations),
                 has_more: data.has_more,
             };
-        }
+        },
     }
 })

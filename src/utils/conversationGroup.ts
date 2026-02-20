@@ -5,58 +5,99 @@ import type { ConversationIndexItem, ConversationGroup } from '@/types/conversat
 
 dayjs.extend(relativeTime)
 
-export function groupConversationsByTime(
-    conversations: ConversationIndexItem[]
-): ConversationGroup[] {
+// export function groupConversationsByTime(
+//     conversations: ConversationIndexItem[]
+// ): ConversationGroup[] {
+//     const now = dayjs()
+//     const groups: ConversationGroup[] = []
+
+//     const pinnedConversations = conversations.filter(conv => conv.pinned).sort((a, b) => b.updated_at - a.updated_at)
+//     const normalConversations = conversations.filter(conv => !conv.pinned).sort((a, b) => b.updated_at - a.updated_at)
+
+//     if (pinnedConversations.length > 0) {
+//         groups.push({
+//             label: 'Pinned',
+//             conversations: pinnedConversations
+//         })
+//     }
+
+//     const timeGroups: Map<string, {
+//         conversations: ConversationIndexItem[];
+//         gpOffset: number;
+//     }> = new Map()
+
+//     normalConversations.forEach(conv => {
+//         const date = dayjs(conv.updated_at)
+//         const diffDays = now.diff(date, 'day')
+
+//         let groupLabel: string
+
+//         if (diffDays <= 30) {
+//             groupLabel = date.fromNow()
+//         } else {
+//             groupLabel = date.format('YYYY-MM')
+//         }
+
+//         if (!timeGroups.has(groupLabel)) {
+//             timeGroups.set(groupLabel, {
+//                 conversations: [],
+//                 gpOffset: groups.length,
+//             })
+//         }
+//         timeGroups.get(groupLabel)!.conversations.push(conv)
+//     })
+
+//     const sortedTimeGroups = Array.from(timeGroups.entries())
+//         .map(([label, convs]) => ({
+//             label,
+//             conversations: convs.conversations.toSorted((a, b) => b.updated_at - a.updated_at),
+//             // gpOffset: convs.gpOffset,
+//         }))
+//         // .sort((a, b) => {
+//         //     return a.gpOffset - b.gpOffset
+//         // })
+
+//     groups.push(...sortedTimeGroups)
+
+//     return groups
+// }
+
+export function groupConversationsByTime(conversations: ConversationIndexItem[]): ConversationGroup[] {
     const now = dayjs()
     const groups: ConversationGroup[] = []
+    const pinned: ConversationIndexItem[] = []
+    const normal: ConversationIndexItem[] = []
 
-    const pinnedConversations = conversations.filter(conv => conv.pinned)
-    const normalConversations = conversations.filter(conv => !conv.pinned)
-
-    if (pinnedConversations.length > 0) {
-        groups.push({
-            label: 'Pinned',
-            conversations: pinnedConversations.sort((a, b) => b.updated_at - a.updated_at)
-        })
+    for (const conv of conversations) {
+        if (conv.pinned) pinned.push(conv)
+        else normal.push(conv)
     }
 
-    const timeGroups: Map<string, ConversationIndexItem[]> = new Map()
+    const sortByTime = (a: ConversationIndexItem, b: ConversationIndexItem) => b.updated_at - a.updated_at
+    pinned.sort(sortByTime)
+    normal.sort(sortByTime)
 
-    normalConversations.forEach(conv => {
+    if (pinned.length) {
+        groups.push({ label: 'Pinned', conversations: pinned })
+    }
+
+    const timeGroups: Record<string, ConversationIndexItem[]> = {}
+    for (const conv of normal) {
         const date = dayjs(conv.updated_at)
         const diffDays = now.diff(date, 'day')
+        const label = diffDays <= 30 ? date.fromNow() : date.format('YYYY-MM')
+        if (!timeGroups[label]) timeGroups[label] = []
+        timeGroups[label].push(conv)
+    }
 
-        let groupLabel: string
+    const groupEntries = Object.entries(timeGroups).map(([label, convs]) => ({
+        label,
+        conversations: convs,
+        latestTime: convs[0]?.updated_at || 0
+    }))
+    groupEntries.sort((a, b) => b.latestTime - a.latestTime)
 
-        if (diffDays <= 30) {
-            groupLabel = date.fromNow()
-        } else {
-            groupLabel = date.format('YYYY-MM')
-        }
-
-        if (!timeGroups.has(groupLabel)) {
-            timeGroups.set(groupLabel, [])
-        }
-        timeGroups.get(groupLabel)!.push(conv)
-    })
-
-    const sortedTimeGroups = Array.from(timeGroups.entries())
-        .map(([label, convs]) => ({
-            label,
-            conversations: convs.sort((a, b) => b.updated_at - a.updated_at)
-        }))
-        .sort((a, b) => {
-            const isDateA = /^\d{4}-\d{2}$/.test(a.label)
-            const isDateB = /^\d{4}-\d{2}$/.test(b.label)
-
-            if (isDateA && !isDateB) return 1
-            if (!isDateA && isDateB) return -1
-
-            return 0
-        }).reverse()
-
-    groups.push(...sortedTimeGroups)
+    groups.push(...groupEntries.map(({ label, conversations }) => ({ label, conversations })))
 
     return groups
 }

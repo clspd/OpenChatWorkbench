@@ -8,7 +8,6 @@ export enum MessageRole {
     User = 'USER',
     Assistant = 'ASSISTANT',
     System = 'SYSTEM',
-    Tool = 'TOOL',
 }
 
 export enum MessageStatus {
@@ -41,6 +40,7 @@ export enum MessageFragmentType {
     Error = 'ERROR',
     Request = 'REQUEST',
     Think = 'THINK',
+    Tool = 'TOOL',
     Response = 'RESPONSE',
 }
 

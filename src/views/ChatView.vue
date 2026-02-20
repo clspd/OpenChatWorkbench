@@ -14,36 +14,56 @@
 
         <template v-else>
             <div class="messages-container">
-                TODO: render messages
+                <MessageChainViewer
+                    ref="messageChainViewerRef"
+                    :chatId="props.chatId"
+                    :conversation="conversation"
+                    v-model:choices="choices"
+                />
             </div>
 
             <div class="input-message-container">
+                <div class="floating-buttons-container"><a-button @click="requestScrollToBottom" shape=circle><ArrowDownOutlined /></a-button></div>
                 <InputMessage
+                    class="input-message-p"
                     v-model="messageEditorState.content"
                     v-model:providerId="messageEditorState.providerId"
                     v-model:modelId="messageEditorState.modelId"
                     v-model:features="messageEditorState.features"
                     v-model:files="messageEditorState.files"
-                    @send-message="handleSendMessage" />
+                    :disabled="messageEditorState.isSending"
+                    :is-generating="messageEditorState.isGenerating"
+                    @send-message="handleSendMessage" @interrupt-message="handleInterrupt" />
             </div>
         </template>
     </div>
 </template>
 
 <script setup lang="ts">
-import AppLogo from '@/components/AppLogo.vue';
-import { LoadConversation } from '@/modules/chat/conversation';
-import { useAppStateStore } from '@/stores/appState';
-import type { Conversation } from '@/types/conversation';
-import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
-import { ref, onMounted, watch, computed, reactive, h } from 'vue'
+// vendor
+import { ref, onMounted, watch, reactive, h } from 'vue'
 import { useRouter } from 'vue-router'
+import { message, Modal } from 'ant-design-vue';
+import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
+// components
 import InputMessage from '@/components/InputMessage.vue'
-import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, type MessageFeatureItem } from '@/types/message';
-import { message } from 'ant-design-vue';
+import MessageChainViewer from '@/components/MessageChainViewer.vue';
+// types
+import type { ConversationUserPref, Conversation } from '@/types/conversation';
+import { EMPTY_MESSAGE_JSON, MessageContentType, MessageRole, type FileAttachmentInfo, type MessageFeatureItem } from '@/types/message';
+// stores
+import { useAppStateStore } from '@/stores/appState';
 import { useConfigStore } from '@/stores/configStore';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { useAppStateSessionStore } from '@/stores/appStateSession';
+// modules
+import { LoadConversationPreference } from '@/modules/chat/convPref';
+import { GetConvNextMessageId, InsertMessageToConversation, LoadConversation } from '@/modules/chat/conversation';
+import { TraceErrorAndGetString } from '@/utils/errorTrace';
+import { tiptap2markdown } from '@/utils/parseTiptap';
+import { CreateUserMessage } from '@/modules/chat/message';
+import { GenerateResponse } from '@/modules/chat-request/respond';
+import { useConversationStore } from '@/stores/conversationStore';
 
 const router = useRouter()
 const props = defineProps({
@@ -53,18 +73,22 @@ const props = defineProps({
     },
 });
 
-const appStateStore = useAppStateStore()
+const appState = useAppStateStore()
+const conversationStore = useConversationStore()
 const notFound = ref(false)
 
 const conversation = ref<Conversation>();
+const preference = ref<ConversationUserPref>();
+const choices = ref<number[]>([]);
+const messageChainViewerRef = ref<InstanceType<typeof MessageChainViewer>>();
 
 watch(() => props.chatId, (newVal) => {
     queueMicrotask(() => LoadChat().finally(() => {
         if (conversation.value && conversation.value.session.title) {
-            appStateStore.setTitle(conversation.value.session.title)
+            appState.setTitle(conversation.value.session.title)
             InitChatMsgUI();
         } else {
-            appStateStore.setTitle('Chat')
+            appState.setTitle('Chat')
         }
     }))
 }, { immediate: true });
@@ -76,15 +100,20 @@ async function LoadChat() {
         return;
     }
 
-    // await new Promise(resolve => setTimeout(resolve, 10000)); // debug
-
     try {
         conversation.value = await LoadConversation(props.chatId);
+        preference.value = await LoadConversationPreference(props.chatId);
+        choices.value = preference.value.msgChainChoices;
         notFound.value = false;
+        appState.currentConversationId_ = props.chatId;
+
+        requestAnimationFrame(() => requestScrollToBottom());
     } catch {
-        conversation.value = undefined
+        conversation.value = undefined;
+        preference.value = undefined;
+        choices.value = [];
         notFound.value = true;
-        return;
+        appState.currentConversationId_ = null;
     }
 }
 
@@ -109,6 +138,7 @@ const messageEditorState = reactive<{
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
     isSending: boolean,
+    isGenerating: boolean,
 }>({
     content: '',
     modelId: '',
@@ -116,12 +146,15 @@ const messageEditorState = reactive<{
     features: [],
     files: [],
     isSending: false,
+    isGenerating: false,
 })
 
 onMounted(async () => {
     messageEditorState.providerId = useConfigStore().selectedProviderId;
     messageEditorState.modelId = useConfigStore().selectedModelId;
 });
+
+const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
@@ -135,14 +168,95 @@ const handleSendMessage = async function () {
 
     messageEditorState.isSending = true
     try {
+        // get current message node id
+        const currentMsgNodeIdData = messageChainViewerRef.value?.requestChatFlowData();
+        if (!currentMsgNodeIdData) {
+            message.error('Failed to get current message node id')
+            return
+        }
+        const currentNodeId = currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.id;
+        if (!currentNodeId) {
+            message.error('Failed to get current message node id')
+            return
+        }
 
+        const provider = useConfigStore().providers.find(p => p.id === messageEditorState.providerId)
+        const model = useConfigStore().models.find(m => m.id === messageEditorState.modelId)
+
+        if (!provider || !model || !provider.enabled || !model.enabled) {
+            message.error('Please select a valid model')
+            return
+        }
+
+        const msg = tiptap2markdown(messageEditorState.content)
+        if (!msg.trim()) {
+            message.error('Please enter a message')
+            return
+        }
+
+        // add user request to conversation
+        const reqId = await GetConvNextMessageId(props.chatId);
+        await InsertMessageToConversation(props.chatId, CreateUserMessage(
+            reqId,
+            currentNodeId,
+            MessageRole.User,
+            MessageContentType.Text,
+            msg,
+            messageEditorState.files
+        ));
+
+        // Send request
+        messageEditorState.isGenerating = true
+        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => resolve()).catch(e => {
+            reject(e);
+            console.error('[ChatView]', "Error generating response:", e);
+            Modal.error({
+                title: "Failed to generate response",
+                content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
+                okText: "Cancel",
+            });
+        }).finally(() => {
+            messageEditorState.isGenerating = false
+            resolve();
+        }))
+
+        // clear send buffer
+        messageEditorState.content = EMPTY_MESSAGE_JSON;
+        messageEditorState.features = [];
+        messageEditorState.files = [];
+        delete useAppStateSessionStore().chatEditBuffer[props.chatId];
     }
     catch (e) {
-
+        console.error('[ChatView]', "Error sending message:", e);
+        Modal.error({
+            title: "Failed to send message",
+            content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
+            okText: "Cancel",
+        });
     }
     finally {
         messageEditorState.isSending = false
     }
+}
+
+const handleInterrupt = async function () {
+    if (!messageEditorState.isGenerating) {
+        message.error('State error')
+        return
+    }
+
+    const convInfo = conversationStore.requestsInProgress.get(props.chatId)
+    if (!convInfo) {
+        message.error('The message is not generating.')
+        return
+    }
+
+    if (!convInfo.cancelToken) {
+        message.error('The message is not interruptable.')
+        return
+    }
+
+    convInfo.cancelToken.abort();
 }
 
 </script>
@@ -189,7 +303,26 @@ const handleSendMessage = async function () {
     padding: 1em;
     position: sticky;
     bottom: 0;
+    pointer-events: none;
+}
+
+.input-message-container > * {
+    pointer-events: auto;
+}
+
+.input-message-p {
     background: var(--background, #fff);
+}
+
+.floating-buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5em;
+    pointer-events: none;
+}
+
+.floating-buttons-container > * {
+    pointer-events: auto;
 }
 
 .messages-container {

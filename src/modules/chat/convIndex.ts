@@ -78,4 +78,55 @@ export async function AddConversationToIndex(indexId: number, item: Conversation
     useConversationStore().saveConvIndex(indexId);
 }
 
+export async function RemoveConversationFromIndex(indexId: number, itemId: string) {
+    let index = await LoadConvIndex(indexId);
+    if (!index) throw new Error("The conversation index specified does not exist.");
+    const indexItemIndex = index.conversations.findIndex(x => x.id === itemId);
+    if (indexItemIndex < 0) throw new Error("The conversation specified does not exist in the index.");
+    index.conversations.splice(indexItemIndex, 1);
+    useConversationStore().saveConvIndex(indexId);
+}
+
+export async function RemoveConversationFromAnyIndex(itemId: string) {
+    let indexId = await GetCurrentConvIndexId();
+    while (indexId > 0) {
+        const indexData = await LoadConvIndex(indexId);
+        if (!indexData) break;
+        const indexItemIndex = indexData.conversations.findIndex(x => x.id === itemId);
+        if (indexItemIndex >= 0) {
+            indexData.conversations.splice(indexItemIndex, 1);
+            useConversationStore().saveConvIndex(indexId);
+            return true;
+        }
+        indexId = indexData.previous;
+    }
+    return false;
+}
+
+export async function UpdateConversationIndex(indexId: number, item: ConversationIndexItem) {
+    let index = await LoadConvIndex(indexId);
+    if (!index) throw new Error("The conversation index specified does not exist.");
+    const indexItemIndex = index.conversations.findIndex(x => x.id === item.id);
+    if (indexItemIndex < 0) throw new Error("The conversation specified does not exist in the index.");
+    index.conversations[indexItemIndex] = item;
+    useConversationStore().saveConvIndex(indexId);
+}
+
+export async function UpdateConversationIndexAuto(item: ConversationIndexItem) {
+    let indexId = await GetCurrentConvIndexId();
+    while (indexId > 0) {
+        const indexData = await LoadConvIndex(indexId);
+        if (!indexData) break;
+        const indexItemIndex = indexData.conversations.findIndex(x => x.id === item.id);
+        if (indexItemIndex >= 0) {
+            indexData.conversations[indexItemIndex] = item;
+            useConversationStore().saveConvIndex(indexId);
+            return true;
+        }
+        indexId = indexData.previous;
+    }
+    return false;
+}
+
+
 

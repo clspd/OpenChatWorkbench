@@ -7,6 +7,7 @@
             v-model:providerId="providerId"
             v-model:features="userMessageFeatures"
             v-model:files="userMessageFiles"
+            :disabled="isSending"
             @send-message="handleSendMessage" />
     </div>
 </template>
@@ -116,16 +117,17 @@ const handleSendMessage = async () => {
         ));
 
         // Send request
-        GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value).then(msgId => {
-            console.log('[debug]', 'Response message id:', msgId); // DELETEME: delete debug log
-        }).catch(e => {
+        await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value, () => resolve()).catch(e => {
+            reject(e);
+            console.error('[NewChat]', "Error generating response:", e);
             Modal.error({
                 title: "Failed to generate response",
                 content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-                okText: "Learn more",
-                onOk() { console.error(e) },
+                okText: "Cancel",
             });
-        });
+        }).finally(() => {
+            resolve();
+        }));
 
         // clear send buffer
         delete useAppStateSessionStore().chatEditBuffer["_"];

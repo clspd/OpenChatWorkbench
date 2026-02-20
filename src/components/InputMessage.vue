@@ -30,13 +30,16 @@
             </div>
             <div class="model-chooser">
                 <ModelChooser
+                    :disabled="props.disabled"
                     :modelId="props.modelId" @update:modelId="emit('update:modelId', $event)"
                     :providerId="props.providerId" @update:providerId="emit('update:providerId', $event)" />
             </div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button :disabled="props.disabled" type="primary" shape="circle" @click="emit('sendMessage')">
-                    <ArrowUpOutlined />
+                <a-button :disabled="props.disabled" type="primary" shape="circle" @click="send">
+                    <LoadingOutlined v-if="props.disabled" class="loading-indicator" />
+                    <span v-else-if="props.isGenerating">■</span>
+                    <ArrowUpOutlined v-else />
                 </a-button>
             </div>
         </div>
@@ -58,17 +61,24 @@ const props = withDefaults(defineProps<{
     modelId: string,
     providerId: string,
     disabled?: boolean,
+    isGenerating?: boolean,
     features: MessageFeatureItem[],
 }>(), {
     modelValue: '',
     modelId: '',
     providerId: '',
     disabled: false,
+    isGenerating: false,
     features: () => [],
 });
-const emit = defineEmits(['update:modelValue', 'update:modelId', 'update:providerId', 'update:features', 'sendMessage'])
+const emit = defineEmits([
+    'update:modelValue', 'update:modelId', 'update:providerId', 'update:features',
+    'sendMessage',
+    'interruptMessage',
+])
 
 const editor = ref<Editor>()
+const send = () => props.isGenerating ? emit('interruptMessage') : emit('sendMessage')
 
 onMounted(() => {
     editor.value = new Editor({
@@ -98,7 +108,7 @@ onMounted(() => {
                         return true
                     }
                     event.preventDefault()
-                    emit('sendMessage')
+                    send()
                     return true
                 }
                 return false
@@ -221,6 +231,9 @@ const handleAttachMenuClick = ({ key = '' }) => {
 }
 .attacher {
     margin-right: 0.5em;
+}
+.loading-indicator {
+    animation: spin 0.5s linear infinite;
 }
 </style>
 

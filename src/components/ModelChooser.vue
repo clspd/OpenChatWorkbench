@@ -1,6 +1,6 @@
 <template>
     <div class="model-chooser">
-        <a-button @click="openModal" class="model-selector-btn">
+        <a-button @click="openModal" class="model-selector-btn" :disabled="props.disabled">
             <span v-if="selectedModel" class="model-name">
                 {{ selectedModel.name }}
             </span>
@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { DownOutlined, CheckOutlined, StarOutlined, StarFilled } from '@ant-design/icons-vue'
+import { CheckOutlined, StarOutlined, StarFilled } from '@ant-design/icons-vue'
 import { useConfigStore } from '@/stores/configStore'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { DialogView } from 'vue-dialog-view'
@@ -90,7 +90,11 @@ const props = defineProps({
     providerId: {
         type: String,
         default: ''
-    }
+    },
+    disabled: {
+        type: Boolean,
+        default: false
+    },
 })
 
 const emit = defineEmits(['update:modelId', 'update:providerId'])

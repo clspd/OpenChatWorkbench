@@ -9,4 +9,5 @@ export const MessageStreamer = {
     conv: Conversation,
     req: Message,
     resp: Message,
+    afterOpen?: (resp: Response) => void,
 ) => Promise<void>>>;

@@ -13,9 +13,40 @@
                     role="link"
                     :href="getConversationUrl((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.id)"
                     @click="handleConversationClick((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
-                    <div class="conversation-title">{{ (flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
-                    <div class="conversation-meta">
-                        <span class="conversation-time">{{ formatConversationTime((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
+                    <div class="conversation-info">
+                        <div class="conversation-title">{{ (flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
+                        <div class="conversation-meta">
+                            <span class="conversation-time">{{ formatConversationTime((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
+                        </div>
+                    </div>
+                    <div class="conversation-operations">
+                        <a-dropdown :trigger="['click']">
+                            <template #overlay>
+                                <a-menu @click="handleConvMenuClick($event.key, vi.index)">
+                                    <a-menu-item key="rename">
+                                        <EditOutlined />
+                                        Rename
+                                    </a-menu-item>
+                                    <a-menu-item key="pin">
+                                        <template v-if="(flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.pinned">
+                                            <ExportOutlined />
+                                            Unpin
+                                        </template>
+                                        <template v-else>
+                                            <PushpinOutlined />
+                                            Pin
+                                        </template>
+                                    </a-menu-item>
+                                    <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
+                                        <DeleteOutlined />
+                                        Delete
+                                    </a-menu-item>
+                                </a-menu>
+                            </template>
+                            <a-button shape="circle" type="text" class="trigger-button" @click.prevent.stop aria-label="Conversation operations…">
+                                <EllipsisOutlined />
+                            </a-button>
+                        </a-dropdown>
                     </div>
                 </a>
                 <div :data-index="vi.index" v-else-if="flattenedConversations[vi.index]?.type === 'has-more-mark'" class="has-more-mark">
@@ -34,7 +65,12 @@ import { formatConversationTime } from '@/utils/conversationGroup'
 import { useWindowStateStore } from '@/stores/windowState'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useVirtualizer } from '@tanstack/vue-virtual'
-import type { ConversationIndexItem, FlattenedConversationIndexItem, FlattenedConversationIndexItemConversation, FlattenedConversationIndexItemTextMark } from '@/types/conversation'
+import type { FlattenedConversationIndexItem, FlattenedConversationIndexItemConversation, FlattenedConversationIndexItemTextMark } from '@/types/conversation'
+import { handleRequestDeleteConversation, handleRequestRenameConversation } from '@/modules/ui-utils/convManager'
+import { useAppStateStore } from '@/stores/appState'
+import { LoadConversationPreference } from '@/modules/chat/convPref'
+import { UpdateConversationInfo } from '@/modules/chat/conversation'
+import { message } from 'ant-design-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -46,6 +82,8 @@ const props = defineProps({
     },
 })
 const emit = defineEmits(['initialized'])
+
+const appState = useAppStateStore();
 
 const conversationGroupsData = computed(() => {
     return conversationStore.groupedConversationsList
@@ -66,7 +104,6 @@ const flattenedConversations = computed<FlattenedConversationIndexItem[]>(() => 
 
 const msgList = ref<HTMLDivElement>();
 const fontSizeMeasurer = ref<HTMLDivElement>();
-const measure1em = () => fontSizeMeasurer.value && parseFloat(window.getComputedStyle(fontSizeMeasurer.value).fontSize);
 
 const vOptions = computed(() => ({
     count: flattenedConversations.value.length,
@@ -95,9 +132,37 @@ const isActive = (conversationId: string): boolean => {
 }
 
 onMounted(async () => {
-    // await conversationStore.loadIndex()
     emit('initialized')
 })
+
+const handleConvMenuClick = (key: string, index: number) => {
+    switch (key) {
+        case 'delete':
+            if (flattenedConversations.value[index]?.type === 'conversation') {
+                handleRequestDeleteConversation(flattenedConversations.value[index].content.id, true, router);
+            }
+            break;
+        case 'rename':
+            if (flattenedConversations.value[index]?.type === 'conversation') {
+                (import("@/utils/prompt")).then(({ prompt }) => prompt("Enter new name for the conversation:", "Rename Conversation", (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.title).then(v => {
+                    if (!v) return;
+                    handleRequestRenameConversation((flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id, v);
+                }));
+            }
+            break;
+        case 'pin':
+            if (flattenedConversations.value[index]?.type === 'conversation') {
+                const id = (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id;
+                LoadConversationPreference(id).then(pref => {
+                    return UpdateConversationInfo(id, undefined, !pref.pinned);
+                }).catch(e => {
+                    message.error("Failed to update conversation preference: " + e);
+                });
+            }
+            break;
+        default: ;
+    }
+}
 </script>
 
 <style scoped>
@@ -131,33 +196,25 @@ onMounted(async () => {
 }
 
 .conversation-vlist-wrapper {
-    flex: 1;
-    overflow-y: auto;
     padding: 0.5em;
 }
 
-.group {
-    margin-bottom: 1em;
-}
-
 .group-label {
-    padding: 0.5em 0.75em;
+    padding: 1em 0.5em 1em 0.5em;
     font-size: 0.85em;
     font-weight: 600;
-    color: var(--text-secondary);
-    background-color: var(--group-label-bg);
-    border-radius: 0.25em;
 }
 
 .conversation-item {
     display: block;
-    padding: 0.75em;
-    margin-top: 0.25em;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
     border-radius: 0.5em;
     cursor: pointer;
     text-decoration: none !important;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     border: 1px solid transparent;
+    display: flex;
     background-color: var(--app-message-list-conversation-item-bg);
     color: var(--app-message-list-conversation-item-text-color);
 }
@@ -180,16 +237,19 @@ onMounted(async () => {
     color: var(--app-message-list-conversation-selected-text-color);
 }
 
-.conversation-title {
-    font-size: 0.9em;
+.conversation-item > .conversation-info {
+    flex: 1;
+}
+
+.conversation-info > .conversation-title {
+    font-size: small;
     font-weight: 500;
-    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.conversation-meta {
+.conversation-info > .conversation-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -198,8 +258,22 @@ onMounted(async () => {
     color: var(--text-secondary);
 }
 
-.conversation-time {
+.conversation-info > .conversation-meta > .conversation-time {
     font-size: 0.75em;
     opacity: 0.8;
+}
+
+.conversation-item > .conversation-operations {
+    margin-left: 0.5em;
+    font-size: small;
+}
+.conversation-item > .conversation-operations > .trigger-button :deep(svg) {
+    fill: transparent;
+    transition: fill 0.2s;
+}
+.conversation-item:hover > .conversation-operations > .trigger-button :deep(svg),
+.conversation-item:focus-within > .conversation-operations > .trigger-button :deep(svg),
+.conversation-item:focus-visible > .conversation-operations > .trigger-button :deep(svg) {
+    fill: currentColor;
 }
 </style>

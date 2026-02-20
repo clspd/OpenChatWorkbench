@@ -1,11 +1,12 @@
 // conversation.ts: manage and load conversations.
 import { SchemaVersion, type Message } from "@/types/message";
-import type { Conversation, ConversationUserPref } from "@/types/conversation";
+import type { Conversation } from "@/types/conversation";
 import { fs } from "@/userdata";
 import { getConvPath, getConvPrefPath } from "./path";
 import { dumpConversationData, dumpConversationPref } from "./dumper";
-import { AddConversationToIndex, GetCurrentConvIndexId } from "./convIndex";
+import { AddConversationToIndex, GetCurrentConvIndexId, RemoveConversationFromAnyIndex, UpdateConversationIndexAuto } from "./convIndex";
 import { useConversationStore } from "@/stores/conversationStore";
+import { InitConversationPreference, LoadConversationPreference, UpdateConversationPreferenceInternal } from "./convPref";
 
 export const CONVERSATION_MAX_MESSAGE_COUNT = 2500;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
@@ -14,14 +15,7 @@ export async function CreateConversation(title = "New Conversation"): Promise<st
     const id = crypto.randomUUID(), ts = Date.now();
 
     // create Preference File
-    const pref = {
-        schemaVersion: SchemaVersion.V1,
-        id,
-        current_message_id: 0,
-        pinned: false,
-        last_access_at: ts,
-    } as ConversationUserPref;
-    await fs.writeFile(getConvPrefPath(id), dumpConversationPref(pref));
+    await InitConversationPreference(id);
 
     // create Conversation File
     const conv = {
@@ -81,12 +75,40 @@ export async function UpdateConversation(id: string, data: Conversation) {
 }
 
 export async function UpdateConversationInfo(id: string, title?: string, pinned?: boolean) {
-    throw new Error("Not implemented")
-    try {
-
-        return true;
+    // update conversation itself
+    const conv = await LoadConversation(id);
+    if (title) {
+        conv.session.title = title;
+        conv.session.updated_at = Date.now();
+        await UpdateConversation(id, conv);
     }
-    catch { return false }
+    // update conversation preference file
+    const pref = await LoadConversationPreference(id);
+    if (pinned !== undefined) {
+        pref.pinned = pinned;
+        await UpdateConversationPreferenceInternal(id, pref);
+    }
+    // update index data
+    await UpdateConversationIndexAuto({
+        id,
+        title: conv.session.title,
+        pinned: pref.pinned,
+        created_at: conv.session.created_at,
+        updated_at: Date.now(),
+    });
+}
+
+export async function DeleteConversation(id: string) {
+    if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
+    // cleanup index
+    await RemoveConversationFromAnyIndex(id);
+    // remove from memory cache
+    const store = useConversationStore();
+    store.removeConvFromStore(id);
+    store.removePrefFromStore(id);
+    // remove file
+    await fs.unlink(getConvPath(id));
+    await fs.unlink(getConvPrefPath(id));
 }
 
 export async function InsertMessageToConversation(id: string, message: Message) {

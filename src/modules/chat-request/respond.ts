@@ -23,6 +23,7 @@ export async function GenerateResponse(
     provider: string,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
+    onopen?: (resp: Response) => void,
     updateUserPreference = true,
 ): Promise<number> {
     const conversation = await LoadConversation(convId);
@@ -39,6 +40,6 @@ export async function GenerateResponse(
         appStatePersist.userSendMsgDefaultFeatures = features;
     }
 
-    return await streamResponse(conversation, reqId, providerCfg, modelCfg, features, files);
+    return await streamResponse(conversation, reqId, providerCfg, modelCfg, features, files, onopen);
 }
 

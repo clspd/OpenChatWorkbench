@@ -3,7 +3,7 @@ import type { Conversation } from "@/types/conversation";
 import { MessageFeatureType, type Message } from "@/types/message";
 import { _base_stream } from "./common";
 
-export async function stream(conv: Conversation, reqMsg: Message, respMsg: Message) {
+export async function stream(conv: Conversation, reqMsg: Message, respMsg: Message, afterOpen?: (resp: Response) => void) {
     return await _base_stream(conv, reqMsg, respMsg, {
         buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, mode) => ({
             "authorization": `Bearer ${prov.api_key}`,
@@ -23,6 +23,9 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                     break;
                 default: ; // ignore unknown feature type
             }
+        },
+        onOpened: async (req, resp, conv, reqMsg, respMsg, providerInfo, modelInfo) => {
+            if (afterOpen) afterOpen(resp);
         },
     });
 }

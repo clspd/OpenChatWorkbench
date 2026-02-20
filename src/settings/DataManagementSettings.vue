@@ -15,7 +15,13 @@
         </div>
 
         <div class="setting-item">
-            <a-button @click="clearData" danger>Clear All Data</a-button>
+            <a-button @click="deleteAllConversations" danger>Delete All Conversations</a-button>
+        </div>
+
+        <hr style="width: 100%;">
+
+        <div class="setting-item">
+            <a-button type="primary" @click="clearData" danger>Clear All Data</a-button>
         </div>
 
         <DialogView v-model="clearDataState.show" style="width: 400px;" @closed="cancelClearData" :closable="!clearDataState.deleting">
@@ -75,15 +81,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, defineComponent, h } from 'vue'
 import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
-import { db, db_name, setShowDbExpiredDialog } from '@/userdata'
+import { db, db_name, fs, setShowDbExpiredDialog } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
 import { domain_name_root, privacy_policy_href } from '@/config'
 import { parse } from 'cookie'
 import { isServiceWorkerActive } from '@/utils/swApi'
+import { chatAttachmentBasePath, chatIndexBasePath, getConvPath, getConvPrefPath } from '@/modules/chat/path'
 
 const router = useRouter()
 
@@ -170,6 +177,54 @@ const closeApp = () => {
     setTimeout(w => w?.close(), 100, window.open('about:blank', '_self'));
     window.close();
     document.close();
+}
+
+const deleteAllConversations = async () => {
+    let countdown = 5, cid: ReturnType<typeof setInterval>, m: ReturnType<typeof Modal.confirm>;
+    if (!await new Promise(r => m = Modal.confirm({
+        title: 'Delete All Conversations',
+        content: h(defineComponent({
+            render: () => h('div', null, 'Are you sure you want to delete all conversations?\nThis action cannot be undone!\nIf you click confirm to delete, all historical conversations of the current account will be cleared and cannot be recovered.'),
+            mounted: () => cid = setInterval(() => {
+                const ended = --countdown <= 0;
+                if (ended) clearInterval(cid);
+                m.update({
+                    okText: ended ? 'Confirm' : 'Confirm (' + countdown + ')',
+                    okButtonProps: {
+                        type: 'primary',
+                        disabled: !ended,
+                    },
+                })
+            }, 1000),
+            beforeUnmount: () => (clearInterval(cid)),
+        })),
+        okText: 'Confirm (' + countdown + ')',
+        okType: 'danger',
+        okButtonProps: {
+            type: 'primary',
+            disabled: true,
+        },
+        cancelText: 'Cancel',
+        onOk: () => r(true),
+        onCancel: () => r(false),
+    }))) return;
+    const loadingEl = document.createElement('dialog');
+    loadingEl.append(document.createTextNode('Deleting conversations, please wait...'))
+    document.body.append(loadingEl);
+    (loadingEl as any).closedBy = 'none';
+    loadingEl.showModal();
+    try {
+        await fs.rm(chatIndexBasePath, { recursive: true });
+        await fs.rm(chatAttachmentBasePath, { recursive: true });
+        await fs.rm(getConvPath(''), { recursive: true });
+        await fs.rm(getConvPrefPath(''), { recursive: true });
+    }
+    catch (e) {
+        message.error('Failed to delete conversations: ' + e);
+    }
+    finally {
+        window.location.reload();
+    }
 }
 
 const optOutUsageReport = ref(false);

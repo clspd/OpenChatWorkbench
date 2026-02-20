@@ -5,6 +5,7 @@ import { MessageStreamer } from "./openai-compatible";
 import type { ModelConfig, ProviderConfig } from "@/types/config";
 import { useConversationStore } from "@/stores/conversationStore";
 import { GetProviderUrl } from "./provider";
+import { reactive } from "vue";
 
 export async function streamResponse(
     conv: Conversation,
@@ -13,6 +14,7 @@ export async function streamResponse(
     model: ModelConfig,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
+    afterOpen?: (resp: Response) => void,
 ): Promise<number> {
     // check if there is an ongoing request
     if (useConversationStore().requestsInProgress.has(conv.id))
@@ -23,7 +25,7 @@ export async function streamResponse(
     if (!req) throw new Error('Request message specified by ID is not in conversation');
 
     // create message object
-    const msg: Message = {
+    const msg: Message = reactive({
         id: reqId + 1, // response id
         parent_id: reqId,
         role: MessageRole.Assistant,
@@ -39,7 +41,7 @@ export async function streamResponse(
         usage: {
             total_tokens: 0,
         },
-    };
+    });
 
     // update conversation
     conv.messages.push(msg);
@@ -59,7 +61,7 @@ export async function streamResponse(
 
     try {
         const streamer = await (MessageStreamer[providerHostname] ?? MessageStreamer["other"]!)();
-        await streamer(conv, req, msg);
+        await streamer(conv, req, msg, afterOpen);
     }
     catch (e) {
         throw new Error("Failed to stream response", { cause: e });

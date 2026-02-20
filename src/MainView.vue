@@ -1,7 +1,7 @@
 <template>
     <a-layout class="main-layout">
         <Sidebar></Sidebar>
-        <a-layout class="main-content">
+        <a-layout class="main-content" :ref="(el: Component | null) => appState.mainContentViewEl = el">
             <a-layout-header class="main-content-header">
                 <HeaderBar></HeaderBar>
             </a-layout-header>
@@ -11,14 +11,15 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from './components/Sidebar.vue'
+import type { Component } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
-import { useWindowStateStore } from '@/stores/windowState';
+import Sidebar from './components/Sidebar.vue'
 import { useAppStateStore } from './stores/appState';
+import { useWindowStateStore } from '@/stores/windowState';
 import '@/utils/webcIPCMessage'
 
-const windowState = useWindowStateStore();
 const appState = useAppStateStore();
+const windowState = useWindowStateStore();
 </script>
 
 <style scoped>

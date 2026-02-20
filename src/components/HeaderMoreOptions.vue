@@ -26,6 +26,7 @@ import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { message, Modal } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
+import { handleRequestDeleteConversation } from '@/modules/ui-utils/convManager';
 
 const appState = useAppStateStore();
 const windowState = useWindowStateStore();
@@ -36,18 +37,9 @@ const router = useRouter();
 const handleMenuClick = ({ key }: { key: string }) => {
     switch (key) {
         case 'delete':
-            // 确认删除？
-            Modal.confirm({
-                title: 'Delete Conversation',
-                content: 'Are you sure you want to delete this conversation?',
-                okText: 'Yes',
-                okType: 'danger',
-                cancelText: 'No',
-                onOk: () => {
-                    message.error('Not implemented yet');
-                },
-                onCancel: () => {},
-            });
+            if (appState.currentConversationId) {
+                handleRequestDeleteConversation(appState.currentConversationId, true, router);
+            }
             break;
 
         case 'settings':
