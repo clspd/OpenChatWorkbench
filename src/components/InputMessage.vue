@@ -4,7 +4,7 @@
             :editor="editor"
         ></editor-content>
         <a-textarea v-if="appStatePersist.usePlainInput" class="edit-message"
-            :disabled="props.disabled"
+            :disabled="props.disabled" auto-size
             :value="tiptap2markdown(props.modelValue)" @update:value="emit('update:modelValue', convertToTiptapFmt($event))"
         ></a-textarea>
         <div class="bottom-view">
@@ -115,6 +115,7 @@ onMounted(() => {
         editorProps: {
             handleKeyDown: (view, event) => {
                 if (event.key === 'Enter') {
+                    if (appStatePersist.sendMessageWithCtrlEnter) return false;
                     if (event.shiftKey) {
                         editor.value?.commands.insertContent('<br>')
                         return true
@@ -137,7 +138,7 @@ watch(() => props.modelValue, (newValue, oldValue) => {
     // const isSame = editor.value?.getHTML() === newValue
 
     // JSON
-    const isSame = oldValue === newValue
+    const isSame = JSON.stringify(editor.value?.getJSON()) === newValue
     // console.log('isSame', isSame, '|', oldValue, '|', newValue)
 
     if (isSame) {

@@ -75,7 +75,7 @@ const contentContainerRef = ref<HTMLDivElement>()
 const vOptions = computed(() => ({
     count: chatFlow.value.length,
     getScrollElement: () => (appState.mainContentViewEl as any)?.$el || null,
-    estimateSize: () => 200,
+    estimateSize: () => 300,
     overscan: 5,
 }))
 

@@ -37,6 +37,8 @@ declare module 'vue' {
     AModal: typeof import('ant-design-vue/es')['Modal']
     APopconfirm: typeof import('ant-design-vue/es')['Popconfirm']
     AppLogo: typeof import('./src/components/AppLogo.vue')['default']
+    ARadio: typeof import('ant-design-vue/es')['Radio']
+    ARadioGroup: typeof import('ant-design-vue/es')['RadioGroup']
     ArrowDownOutlined: typeof import('@ant-design/icons-vue')['ArrowDownOutlined']
     ArrowUpOutlined: typeof import('@ant-design/icons-vue')['ArrowUpOutlined']
     ASelect: typeof import('ant-design-vue/es')['Select']
@@ -77,5 +79,6 @@ declare module 'vue' {
     SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     StatusText: typeof import('./src/components/StatusText.vue')['default']
+    UserOutlined: typeof import('@ant-design/icons-vue')['UserOutlined']
   }
 }

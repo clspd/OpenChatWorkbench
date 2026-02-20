@@ -26,6 +26,7 @@ import { defineAsyncComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStateStore } from '@/stores/appState'
 
+const GeneralSettings = defineAsyncComponent(() => import('@/settings/GeneralSettings.vue'))
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
 const ModelSettings = defineAsyncComponent(() => import('@/settings/ModelSettings.vue'))
 const CacheSettings = defineAsyncComponent(() => import('@/settings/CacheSettings.vue'))
@@ -42,6 +43,11 @@ const router = useRouter();
 const currentComponent = ref<any>(null);
 const isValidPage = computed(() => (props.settingId === '' || pages.value.find((item: any) => item.id === props.settingId)));
 const pages = ref([
+    {
+        id: 'general',
+        title: 'General',
+        component: markRaw(GeneralSettings),
+    },
     {
         id: 'providers',
         title: 'Providers',

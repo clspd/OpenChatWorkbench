@@ -274,7 +274,8 @@ const handleConvMenuClick = (key: string, index: number) => {
 }
 .conversation-item:hover > .conversation-operations > .trigger-button :deep(svg),
 .conversation-item:focus-within > .conversation-operations > .trigger-button :deep(svg),
-.conversation-item:focus-visible > .conversation-operations > .trigger-button :deep(svg) {
+.conversation-item:focus-visible > .conversation-operations > .trigger-button :deep(svg),
+.conversation-item.is-selected > .conversation-operations > .trigger-button :deep(svg) {
     fill: currentColor;
 }
 </style>

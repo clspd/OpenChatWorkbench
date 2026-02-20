@@ -6,7 +6,9 @@
     props.message.role === MessageRole.Assistant">
             <div class="message-item" :data-role="msgRoleIdentifyMap[props.message.role]">
                 <div class="message-avatar">
-                    <div class="message-avatar-icon">Icon(TODO)</div>
+                    <div class="message-avatar-icon">
+                        <UserOutlined v-if="props.message.role === MessageRole.User" />
+                    </div>
                     <div class="message-avatar-name">{{ prettyMsgRole[props.message.role] }}</div>
                 </div>
 
@@ -44,6 +46,9 @@ const prettyMsgRole = {
 </script>
 
 <style scoped>
+.vItem + .vItem > .message-item-container {
+    margin-top: 1em;
+}
 .message-item {
     display: flex;
     flex-direction: column;
@@ -58,6 +63,26 @@ const prettyMsgRole = {
 .message-item[data-role="user"] {
     align-items: flex-end;
 }
+.message-item[data-role="user"] .message-avatar {
+    text-align: right;
+}
 
+.message-avatar-icon > :deep(*) {
+    padding: 5px;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    border: 1px solid gray;
+    font-size: 2em;
+}
+
+/* Message body:
+show user message as bubble 
+show assistant message as text
+*/
+.message-item[data-role="user"] > .message-body {
+    padding: 0.5em;
+    border-radius: 1em;
+    background-color: #e0ebff;
+}
 
 </style>

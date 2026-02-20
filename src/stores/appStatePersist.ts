@@ -14,6 +14,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         sidebarActiveTab: 'chat' as 'chat' | 'workspace',
         userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
         usePlainInput: false,
+        sendMessageWithCtrlEnter: false,
         domPurifCfg: {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,

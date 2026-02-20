@@ -23,9 +23,14 @@ const md = new MarkdownIt({
     typographer: true,
 });
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     content: string;
-}>();
+    disabled?: boolean;
+    trustSameOrigin?: boolean;
+}>(), {
+    disabled: false,
+    trustSameOrigin: false,
+});
 
 const html = computed(() => {
     return getSafeHTML(md.render(props.content));
@@ -36,6 +41,10 @@ const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.cr
 const update = () => {
     if (!renderer.value) {
         // console.warn("[MarkdownRenderer] renderer is not mounted");
+        return;
+    }
+    if (props.disabled) {
+        renderer.value.innerText = props.content; // when disabled, render plain text
         return;
     }
     buffer.value.innerHTML = html.value;
@@ -55,6 +64,7 @@ const update = () => {
 };
 
 watch(() => html.value, update, { immediate: true })
+watch(() => props.disabled, update)
 
 onMounted(() => {
     nextTick(() => update());
@@ -76,7 +86,7 @@ const handleContentClick = (e: PointerEvent) => {
                 const url = new URL((target as HTMLAnchorElement).href, window.location.href);
                 switch (url.protocol) {
                     case 'https:':
-                        if (url.hostname === window.location.hostname) {
+                        if (props.trustSameOrigin && url.hostname === window.location.hostname) {
                             window.location.href = url.href;
                             break;
                         }

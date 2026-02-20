@@ -6,7 +6,10 @@
                 class="fragment-text-viewer"
                 :data-type="fragTypeIdentifyMap[frag.type]"
             >
-                <MarkdownRenderer :content="frag.content" />
+                <div v-if="frag.type === MessageFragmentType.Error" class="error-tip-text">
+                    An error has occurred. See the details below for more information.
+                </div>
+                <MarkdownRenderer :content="frag.content" :disabled="frag.type === MessageFragmentType.Error" />
             </div>
             <div v-else class="err-not-supported">
                 The content type of this fragment is not supported
@@ -39,5 +42,23 @@ const fragTypeIdentifyMap = {
 </script>
 
 <style scoped>
+.message-content {
+    display: flex;
+    flex-direction: column;
+}
 
+.fragment-text-viewer[data-type="think"] {
+    color: var(--color-secondary, gray);
+}
+
+.fragment-text-viewer[data-type="error"] {
+    border: 1px solid red;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.error-tip-text {
+    color: red;
+    font-weight: bold;
+}
 </style>

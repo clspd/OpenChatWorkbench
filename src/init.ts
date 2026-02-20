@@ -76,6 +76,12 @@ export default async function init() {
     if (window.location.hostname === domain_name_stable) {
         sendUsageReport('An user is using the stable version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
+
+    // temporarily fix the dialog display on Safari
+    if (/safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|brave/i.test(navigator.userAgent))) {
+        // Caution that this is a temporary hack and should be removed in the future
+        document.head.appendChild(document.createElement('style')).textContent = `dialog._b4102a3b79656a37 { height: calc(100vh - 2em); }`
+    }
     
 
 };
