@@ -3,6 +3,7 @@
         v-model="appState.showCookieConsent"
         :closable="false"
         class="cookie-consent"
+        :data-platform-is-safari="isSafari"
     >
         <template #title>{{ isLoading ? "Loading Data, Please Wait" : "We Value Your Privacy" }}</template>
 
@@ -133,6 +134,7 @@ const activeKey = ref(['necessary', 'performance', 'functional', 'targeting']);
 const status = ref<CookieConsent>(createBaseCookieConsent());
 const isLoading = ref(true);
 const isUpdatedFromPrevious = computed(() => (!!status.value.updatedAt && status.value.updatedAt !== cookie_consent_updated_at));
+const isSafari = /safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|brave/i.test(navigator.userAgent)); // this value is immutable, no `ref` needed
 
 watch(() => appState.showCookieConsent, async (newValue: boolean) => {
     if (newValue) try {
@@ -203,6 +205,11 @@ const quitApp = async () => {
 .cookie-consent {
     width: 640px;
     word-break: normal;
+}
+
+.cookie-consent[data-platform-is-safari="true"] {
+    /* Safari has a bug that incorrectly computes the height of the dialog, so we must explicitly set the height */
+    height: 480px;
 }
 
 .loading-overlay {
