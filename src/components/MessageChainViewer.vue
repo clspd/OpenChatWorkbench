@@ -49,6 +49,9 @@ defineExpose({
     requestChatFlowData() {
         return chatFlow.value
     },
+    getVirtualizer() {
+        return virtualizer.value;
+    },
 });
 
 const appState = useAppStateStore()
@@ -95,12 +98,15 @@ const totalSize = computed(() => virtualizer.value.getTotalSize())
 }
 .content-container {
     padding: 1em;
+    max-width: calc(50rem + 2em);
+    margin: auto;
 }
 .vItem {
     position: absolute;
     width: calc(100% - 2em);
     box-sizing: border-box;
-    white-space: pre-wrap;
+    max-width: calc(50rem);
+    /* white-space: pre-wrap; */
     overflow-wrap: anywhere;
 }
 </style>

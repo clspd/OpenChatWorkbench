@@ -13,7 +13,10 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         sidebarCollapsed: false,
         sidebarActiveTab: 'chat' as 'chat' | 'workspace',
         userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
-        domPurifCfg: {} as DomPurifyConfig,
+        usePlainInput: false,
+        domPurifCfg: {
+            FORBID_TAGS: ["style", "img"],
+        } as DomPurifyConfig,
     }),
     actions: {
         initAutoSave() {

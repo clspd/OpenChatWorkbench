@@ -2,12 +2,17 @@
     <a-dropdown :trigger="['click']">
         <template #overlay>
             <a-menu @click="handleMenuClick">
+                <a-menu-item key="new_conv" v-if="appState.page !== 'new-chat'">
+                    <PlusOutlined />
+                    New Conversation
+                </a-menu-item>
+
                 <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);" v-if="appState.page === 'chat'">
                     <DeleteOutlined />
                     Delete
                 </a-menu-item>
 
-                <a-menu-item key="settings">
+                <a-menu-item key="settings" v-if="appState.page !== 'settings'">
                     <SettingOutlined />
                     Settings
                 </a-menu-item>
@@ -36,6 +41,10 @@ const router = useRouter();
 
 const handleMenuClick = ({ key }: { key: string }) => {
     switch (key) {
+        case 'new_conv':
+            router.push('/');
+            break;
+
         case 'delete':
             if (appState.currentConversationId) {
                 handleRequestDeleteConversation(appState.currentConversationId, true, router);

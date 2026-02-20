@@ -37,6 +37,7 @@
                                             Pin
                                         </template>
                                     </a-menu-item>
+                                    <a-menu-divider />
                                     <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
                                         <DeleteOutlined />
                                         Delete

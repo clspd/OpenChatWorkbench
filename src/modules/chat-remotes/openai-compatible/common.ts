@@ -12,6 +12,7 @@ import { useConversationStore } from "@/stores/conversationStore";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import type { ProviderConfig, ModelConfig } from "@/types/config";
 import { TraceErrorAndGetString } from "@/utils/errorTrace";
+import { useAppStateStore } from "@/stores/appState";
 
 export type _request_hook_func = (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<void>;
 
@@ -163,6 +164,17 @@ export async function _base_stream(
                             AppendMessageFragmentChunk(respMsg, currentFragment.id, json, false);
                             conversationStore.updateConvInStore(conv.id, conv);
                         }
+
+                        requestAnimationFrame(() => {
+                            function isNearBottom(el?: Element, threshold = 30) {
+                                if (!el) return false;
+                                return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+                            }
+                            const el = (useAppStateStore().mainContentViewEl as any)?.$el;
+                            if (isNearBottom(el)) {
+                                el.scrollTop = el.scrollHeight;
+                            }
+                        });
                     }
                 }
                 catch (err) {

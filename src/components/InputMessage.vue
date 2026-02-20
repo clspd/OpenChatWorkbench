@@ -1,8 +1,12 @@
 <template>
     <div class="input-message" :data-disabled="props.disabled">
-        <editor-content class="edit-message"
+        <editor-content v-show="!appStatePersist.usePlainInput" class="edit-message"
             :editor="editor"
         ></editor-content>
+        <a-textarea v-if="appStatePersist.usePlainInput" class="edit-message"
+            :disabled="props.disabled"
+            :value="tiptap2markdown(props.modelValue)" @update:value="emit('update:modelValue', convertToTiptapFmt($event))"
+        ></a-textarea>
         <div class="bottom-view">
            <div class="attacher">
                 <a-dropdown placement="top" :trigger="['click']">
@@ -20,6 +24,11 @@
                             <a-menu-item key="deepThink" :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 Deep Think
+                            </a-menu-item>
+                            <a-menu-divider />
+                            <a-menu-item key="plainInput" :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : '' }">
+                                <CheckOutlined :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : 'transparent' }" />   
+                                Plain Input
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -47,14 +56,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch, type PropType } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
-import { safeParseJSON } from '@/utils/parseTiptap'
+import { safeParseJSON, tiptap2markdown } from '@/utils/parseTiptap'
 import { EMPTY_MESSAGE, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
+import { useAppStatePersistStore } from '@/stores/appStatePersist'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -79,6 +89,8 @@ const emit = defineEmits([
 
 const editor = ref<Editor>()
 const send = () => props.isGenerating ? emit('interruptMessage') : emit('sendMessage')
+
+const appStatePersist = useAppStatePersistStore()
 
 onMounted(() => {
     editor.value = new Editor({
@@ -162,6 +174,10 @@ const isDeepThinkEnabled = computed<boolean>({
     }
 })
 
+const convertToTiptapFmt = (markdown: string) => {
+    return JSON.stringify({ "type": "doc", "content": [{ "type": "paragraph", "content": [markdown && ({ "type": "text", "text": markdown })] }] })
+}
+
 const handleAttachMenuClick = ({ key = '' }) => {
     if (props.disabled) {
         return
@@ -169,8 +185,11 @@ const handleAttachMenuClick = ({ key = '' }) => {
     if (key === 'deepThink') {
         isDeepThinkEnabled.value = !isDeepThinkEnabled.value
     }
+    if (key === 'plainInput') {
+        appStatePersist.usePlainInput = !appStatePersist.usePlainInput
+    }
     if (key === 'attachFile' || key === 'attachImage') {
-        
+        alert("Not implemented")
     }
 }
 </script>

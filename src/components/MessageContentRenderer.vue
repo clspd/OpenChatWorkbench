@@ -5,8 +5,9 @@
                 v-if="frag.contentType === MessageContentType.Text"
                 class="fragment-text-viewer"
                 :data-type="fragTypeIdentifyMap[frag.type]"
-                v-html="getSafeHTML(frag.content)"
-            ></div>
+            >
+                <MarkdownRenderer :content="frag.content" />
+            </div>
             <div v-else class="err-not-supported">
                 The content type of this fragment is not supported
             </div>
@@ -19,8 +20,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { MessageContentType, MessageFragmentType, MessageRole, type Message } from '@/types/message';
-import { getSafeHTML } from '@/utils/htmlpurify';
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
+import { MessageContentType, MessageFragmentType, type Message } from '@/types/message';
 
 const props = defineProps<{
     message: Message;

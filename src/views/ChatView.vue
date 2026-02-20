@@ -17,13 +17,15 @@
                 <MessageChainViewer
                     ref="messageChainViewerRef"
                     :chatId="props.chatId"
-                    :conversation="conversation"
                     v-model:choices="choices"
                 />
             </div>
 
             <div class="input-message-container">
-                <div class="floating-buttons-container"><a-button @click="requestScrollToBottom" shape=circle><ArrowDownOutlined /></a-button></div>
+                <div class="floating-buttons-container">
+                    <a-button @click="requestScrollToTop" shape="circle" style="margin-right: 0.5em;"><ArrowUpOutlined /></a-button>
+                    <a-button @click="requestScrollToBottom" shape="circle"><ArrowDownOutlined /></a-button>
+                </div>
                 <InputMessage
                     class="input-message-p"
                     v-model="messageEditorState.content"
@@ -32,8 +34,9 @@
                     v-model:features="messageEditorState.features"
                     v-model:files="messageEditorState.files"
                     :disabled="messageEditorState.isSending"
-                    :is-generating="messageEditorState.isGenerating"
+                    :is-generating="messageEditorState.isGenerating || hasGenerating"
                     @send-message="handleSendMessage" @interrupt-message="handleInterrupt" />
+                <div class="bottom-text-overlay"></div>
             </div>
         </template>
     </div>
@@ -41,7 +44,7 @@
 
 <script setup lang="ts">
 // vendor
-import { ref, onMounted, watch, reactive, h } from 'vue'
+import { ref, onMounted, watch, reactive, h, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue';
 import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
@@ -81,6 +84,7 @@ const conversation = ref<Conversation>();
 const preference = ref<ConversationUserPref>();
 const choices = ref<number[]>([]);
 const messageChainViewerRef = ref<InstanceType<typeof MessageChainViewer>>();
+const hasGenerating = computed(() => conversationStore.requestsInProgress.has(props.chatId) || messageEditorState.isGenerating);
 
 watch(() => props.chatId, (newVal) => {
     queueMicrotask(() => LoadChat().finally(() => {
@@ -154,6 +158,26 @@ onMounted(async () => {
     messageEditorState.modelId = useConfigStore().selectedModelId;
 });
 
+watch(() => messageEditorState.content, (newVal) => {
+    if (newVal) {
+        useAppStateSessionStore().chatEditBuffer[props.chatId] = {
+            content: newVal,
+            contentType: MessageContentType.Text,
+            features: messageEditorState.features
+        }
+    }
+})
+watch(() => messageEditorState.features, (newVal) => {
+    if (newVal) {
+        useAppStateSessionStore().chatEditBuffer[props.chatId] = {
+            content: messageEditorState.content,
+            contentType: MessageContentType.Text,
+            features: newVal
+        }
+    }
+})
+
+const requestScrollToTop = () => ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: 0 })
 const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
 
 const handleSendMessage = async function () {
@@ -206,7 +230,8 @@ const handleSendMessage = async function () {
         ));
 
         // Send request
-        messageEditorState.isGenerating = true
+        messageEditorState.isGenerating = true;
+        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
         await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => resolve()).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
@@ -218,11 +243,12 @@ const handleSendMessage = async function () {
         }).finally(() => {
             messageEditorState.isGenerating = false
             resolve();
-        }))
+        }));
+        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
 
         // clear send buffer
         messageEditorState.content = EMPTY_MESSAGE_JSON;
-        messageEditorState.features = [];
+        messageEditorState.features = useAppStatePersistStore().userSendMsgDefaultFeatures;
         messageEditorState.files = [];
         delete useAppStateSessionStore().chatEditBuffer[props.chatId];
     }
@@ -240,7 +266,7 @@ const handleSendMessage = async function () {
 }
 
 const handleInterrupt = async function () {
-    if (!messageEditorState.isGenerating) {
+    if (!messageEditorState.isGenerating && !hasGenerating.value) {
         message.error('State error')
         return
     }
@@ -300,7 +326,7 @@ const handleInterrupt = async function () {
 }
 
 .input-message-container {
-    padding: 1em;
+    padding: 1em 1em 0 1em;
     position: sticky;
     bottom: 0;
     pointer-events: none;
@@ -308,6 +334,17 @@ const handleInterrupt = async function () {
 
 .input-message-container > * {
     pointer-events: auto;
+}
+
+/* .bottom-text-overlay {
+    background: var(--background, #fff);
+    height: 2em;
+    position: absolute;
+    bottom: 0; right: 1em; left: 
+} */
+.bottom-text-overlay {
+    background: var(--background, #fff);
+    height: 1em;
 }
 
 .input-message-p {

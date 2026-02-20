@@ -1,0 +1,11 @@
+.renderer.markdown-renderer.renderer-main {
+    pre {
+        padding: 10px;
+        border-radius: 5px;
+        overflow: auto;
+    }
+    :not(pre) > code {
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+}

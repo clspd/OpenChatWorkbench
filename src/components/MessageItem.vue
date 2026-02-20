@@ -44,5 +44,20 @@ const prettyMsgRole = {
 </script>
 
 <style scoped>
+.message-item {
+    display: flex;
+    flex-direction: column;
+}
+.message-item .message-avatar {
+    display: flex;
+    flex-direction: column;
+}
+.message-item[data-role="system"] {
+    align-items: center;
+}
+.message-item[data-role="user"] {
+    align-items: flex-end;
+}
+
 
 </style>

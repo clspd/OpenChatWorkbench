@@ -4,11 +4,15 @@
 
         <div class="region">
             <h3>Import Data</h3>
-            <p>Import data from a file.</p>
+            <p>Import data from a previous export.</p>
             <div>
                 <input type="file" autocomplete="off" @change="setInputFile">
             </div>
             <p style="margin-bottom: 0;"><a-button type="primary" @click="importData" :disabled="!fileInput">Import</a-button></p>
+            <div style="margin-top: 1em; border-top: 1px solid #ccc; padding-top: 1em;">
+                <div><b>See also</b></div>
+                <router-link to="/interop/import-provider/">Import from other platform</router-link>
+            </div>
         </div>
 
         <div class="region">
