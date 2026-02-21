@@ -7,27 +7,36 @@ export function ConvertConversationToTree(conversation: Conversation): Conversat
         children: [],
     };
     const nodeMap = new Map<number, ConversationTreeNode>();
-    const sortedMessages = conversation.messages.toSorted((a, b) => a.id - b.id);
+    const messages = (conversation.messages);
 
     // 1st step: build a map of node id to node
-    for (const msg of sortedMessages) {
+    for (const msg of messages) {
         nodeMap.set(msg.id, {
             id: msg.id,
-            parent_id: msg.parent_id,
             self: msg,
+            parent: null,
+            siblings: [],
             children: [],
         });
     }
 
     // 2nd step: build the tree
-    for (const msg of sortedMessages) {
+    for (const msg of messages) {
         const node = nodeMap.get(msg.id)!;
         if (msg.parent_id === null) {
             root.children.push(node);
         } else {
-            const parent = nodeMap.get(msg.parent_id)!;
+            const parent = nodeMap.get(msg.parent_id);
+            if (!parent) continue;
+            node.parent = parent;
             parent.children.push(node);
         }
+    }
+
+    // 3rd step: build the siblings
+    for (const msg of nodeMap.values()) {
+        if (msg.parent) msg.siblings = msg.parent.children;
+        else msg.siblings = root.children;
     }
 
     return root;

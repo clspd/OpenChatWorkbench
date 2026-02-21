@@ -10,7 +10,7 @@
             }
         },
         "chat": {
-            "title": "聊天",
+            "title": "对话",
             "legend": "消息发送方式",
             "options": {
                 "enter": "Enter",
@@ -28,7 +28,7 @@
         }
     },
     "chat": {
-        "title": "聊天设置"
+        "title": "对话设置"
     },
     "provider": {
         "title": "提供商设置",

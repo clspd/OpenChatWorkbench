@@ -8,12 +8,13 @@
                 <div class="message-avatar">
                     <div class="message-avatar-icon">
                         <UserOutlined v-if="props.message.role === MessageRole.User" />
+                        <RobotOutlined v-if="props.message.role === MessageRole.Assistant" />
                     </div>
-                    <div class="message-avatar-name">{{ prettyMsgRole[props.message.role] }}</div>
+                    <!-- <div class="message-avatar-name">{{ prettyMsgRole[props.message.role] }}</div> -->
                 </div>
 
                 <div class="message-body">
-                    <MessageContentRenderer :message="props.message" />
+                    <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
                 </div>
             </div>
         </template>
@@ -26,29 +27,18 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { MessageRole, type Message } from '@/types/message';
+import { msgRoleIdentifyMap, prettyMsgRole } from "@/modules/chat/msgRoleMap";
 import MessageContentRenderer from './MessageContentRenderer.vue';
 
 const props = defineProps<{
     message: Message;
+    showRaw?: boolean;
 }>();
 
-const msgRoleIdentifyMap = {
-    [MessageRole.System]: 'system',
-    [MessageRole.User]: 'user',
-    [MessageRole.Assistant]: 'assistant',
-};
-const prettyMsgRole = {
-    [MessageRole.System]: 'System',
-    [MessageRole.User]: 'User',
-    [MessageRole.Assistant]: 'Assistant',
-};
 
 </script>
 
 <style scoped>
-.vItem + .vItem > .message-item-container {
-    margin-top: 1em;
-}
 .message-item {
     display: flex;
     flex-direction: column;
@@ -56,6 +46,7 @@ const prettyMsgRole = {
 .message-item .message-avatar {
     display: flex;
     flex-direction: column;
+    margin-bottom: 0.5em;
 }
 .message-item[data-role="system"] {
     align-items: center;

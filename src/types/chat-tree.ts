@@ -10,8 +10,12 @@ export interface ConversationTreeContainer {
 // the tree node
 export interface ConversationTreeNode {
     id: number;
-    parent_id: number | null;
     self: Message;
+    // previousSibling: ConversationTreeNode | null;
+    // nextSibling: ConversationTreeNode | null;
+    // siblingCount: number;
+    // child: ConversationTreeNode | null;
+    parent: ConversationTreeNode | null;
+    siblings: ConversationTreeNode[];
     children: ConversationTreeNode[];
 }
-

@@ -51,22 +51,24 @@ export class OcwMarkdownComponent extends LitElement {
     static properties = {
         type: { type: String },
         copied: { type: Boolean, reflect: true },
-        contentCodeType: { type: String, reflect: true },
+        language: { type: String, reflect: true },
     };
 
     declare type: string;
     declare copied: boolean;
+    declare language: string;
 
     constructor() {
         super();
         this.type = '';
         this.copied = false;
+        this.language = '';
     }
 
     private renderers: Record<string, () => ReturnType<typeof html>> = {
         default: () => html`<slot></slot>`,
         pre: () => html`<div class="pre-renderer"><div class="header">
-            <div class="language"><slot name="language"><span>${this.contentCodeType}</span></slot></div>
+            <div class="language"><slot name="language"><span>${this.language}</span></slot></div>
             <div class="flexible-space"></div>
             <div class="operations">
                 <sl-button size="small" ?disabled=${this.copied} @click=${this.copyContent}>${this.copied ? 'Copied' : 'Copy'}</sl-button>
@@ -81,10 +83,6 @@ export class OcwMarkdownComponent extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-    }
-
-    get contentCodeType() {
-        return this.querySelector("code")?.className?.match(/^language-(\w+)$/)?.[1] || '';
     }
 
     private copyContent() {

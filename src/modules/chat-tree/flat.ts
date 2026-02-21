@@ -23,8 +23,14 @@ export function GetDefaultChoices(tree: ConversationTreeContainer): number[] {
     return choices;
 }
 
-export function FlattenConversationTree(tree: ConversationTreeContainer, choices: number[]): Message[] {
-    const result: Message[] = [];
+export interface FlatMessage {
+    data: Message;
+    parentId: number | null;
+    choicesCount: number;
+}
+
+export function FlattenConversationTree(tree: ConversationTreeContainer, choices: number[]) {
+    const result: FlatMessage[] = [];
 
     if (!tree || !Array.isArray(tree.children) || tree.children.length === 0) {
         return result;
@@ -45,10 +51,16 @@ export function FlattenConversationTree(tree: ConversationTreeContainer, choices
 
     validateIndex(choices[0], tree.children.length, "root.children");
     let node: ConversationTreeNode = tree.children[choices[0]]!;
-    let choicePos = 1;
+    let choicePos = 0;
 
     while (node) {
-        result.push(node.self);
+        result.push({
+            data: node.self,
+            parentId: node.parent?.id ?? null,
+            // childrenId: node.children.map((c) => c.id),
+            choicesCount: node.siblings.length,
+        });
+        choicePos++;
 
         if (!node.children || node.children.length === 0) {
             break;
@@ -57,8 +69,27 @@ export function FlattenConversationTree(tree: ConversationTreeContainer, choices
         const nextChoice = choices[choicePos];
         validateIndex(nextChoice, node.children.length, `node(id=${node.id}).children`);
         node = node.children[nextChoice]!;
-        choicePos++;
     }
 
     return result;
 }
+
+export function FixChoiceChain(tree: ConversationTreeContainer, choices: number[]) {
+    if (!tree.children.length) return [];
+    if (choices.length === 0) return GetDefaultChoices(tree);
+    const fixed = [...choices];
+    let current: ConversationTreeContainer | undefined = tree.children[choices[0]!];
+    if (!current) return GetDefaultChoices(tree);
+    for (let i = 1; i < choices.length; i++) {
+        const nextChoice = choices[i]!;
+        current = current.children[nextChoice];
+        if (!current) return GetDefaultChoices(tree);
+    }
+    while (current.children.length > 0) {
+        fixed.push(0);
+        current = current.children[0]!;
+    }
+    return fixed;
+}
+
+

@@ -30,6 +30,7 @@ export interface FileAttachmentInfo {
 export interface MessageFragment {
     id: number;
     type: MessageFragmentType;
+    ts: number; // timestamp in milliseconds
     elapsed?: number; // elapsed time in seconds
     contentType: MessageContentType;
     content: MessageContent<this['contentType']>;
@@ -54,6 +55,8 @@ export type MessageContent<T extends MessageContentType> =
 export enum MessageFeatureType {
     Thinking = 'thinking',
     MaxTokensLimit = 'max_tokens_limit',
+    BanEdit = 'ban_edit',
+    BanRegenerate = 'ban_regenerate',
 }
 
 // This stores the features of the message, e.g. thinking enabled
@@ -73,6 +76,7 @@ export interface Message {
     id: number; // start from 1
     parent_id: number | null; // null if root message
     role: MessageRole; // who sent the message
+    ts: number; // timestamp in milliseconds
 
     // model fields (might be empty if not sent by a model)
     model?: string; // modelId

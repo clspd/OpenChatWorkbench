@@ -19,6 +19,10 @@
                     :chatId="props.chatId"
                     v-model:choices="choices"
                 />
+
+                <div v-if="conversation.messages.length" style="height: 10em; display: flex; align-items: center; justify-content: center;">
+                    <div style="color: gray;">Continue your chat……</div>
+                </div>
             </div>
 
             <div class="input-message-container">
@@ -205,7 +209,7 @@ const handleSendMessage = async function () {
             message.error('Failed to get current message node id')
             return
         }
-        const currentNodeId = currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.id;
+        const currentNodeId = currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.data.id;
         if (!currentNodeId) {
             message.error('Failed to get current message node id')
             return

@@ -9,10 +9,10 @@
             }
         },
         "sidebar": {
-            "newChatBtn": "新聊天",
+            "newChatBtn": "新对话",
             "newWorkspaceBtn": "新建工作区",
             "mode": {
-                "chat": "聊天",
+                "chat": "对话",
                 "workspace": "工作区"
             },
             "settingsBtn": "设置",

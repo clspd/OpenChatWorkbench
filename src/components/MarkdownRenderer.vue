@@ -55,6 +55,12 @@ const update = () => {
         // no extra attributes is needed
         i.replaceWith(newCom);
     }
+    for (const i of buffer.value.querySelectorAll('ocw-markdown-component>code[class]')) {
+        const lang = /language-(\w+)/.exec(i.getAttribute('class') || '')?.[1];
+        if (lang) {
+            i.parentElement?.setAttribute("language", lang);
+        }
+    }
     morphdom(renderer.value, buffer.value, {
         childrenOnly: true,
         onBeforeElChildrenUpdated(fromEl, toEl) {

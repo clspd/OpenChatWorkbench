@@ -14,25 +14,25 @@
                         <a-menu @click="handleAttachMenuClick" :disabled="props.disabled">
                             <a-menu-item key="attachFile">
                                 <LinkOutlined />
-                                Attach File
+                                {{ t('common:ui.mainInput.options.attachFile') }}
                             </a-menu-item>
                             <a-menu-item key="attachImage">
                                 <FileImageOutlined />
-                                Attach Image
+                                {{ t('common:ui.mainInput.options.attachImage') }}
                             </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="deepThink" :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : 'transparent' }" />   
-                                Deep Think
+                                {{ t('common:ui.mainInput.options.deepThink') }}
                             </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="plainInput" :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : 'transparent' }" />   
-                                Plain Input
+                                {{ t('common:ui.mainInput.options.plainInput') }}
                             </a-menu-item>
                         </a-menu>
                     </template>
-                    <a-button shape="circle" type="text" :disabled="props.disabled">
+                    <a-button shape="circle" type="text" :disabled="props.disabled" aria-label="Show more options">
                         <PlusOutlined />
                     </a-button>
                 </a-dropdown>
@@ -45,7 +45,7 @@
             </div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button :disabled="props.disabled || isEmptyMessage" type="primary" shape="circle" @click="send">
+                <a-button :disabled="props.disabled || (!props.isGenerating && isEmptyMessage)" type="primary" shape="circle" @click="send" aria-label="Send message">
                     <LoadingOutlined v-if="props.disabled" class="loading-indicator" />
                     <span v-else-if="props.isGenerating">■</span>
                     <ArrowUpOutlined v-else />
@@ -63,8 +63,9 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
 import { safeParseJSON, tiptap2markdown } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE, EMPTY_MESSAGE_JSON, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
+import { EMPTY_MESSAGE, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
+import { t } from 'i18next'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -98,10 +99,12 @@ onMounted(() => {
             StarterKit.configure({
                 link: false,
             }),
-            Placeholder,
+            Placeholder.configure({
+                placeholder: t('common:ui.mainInput.placeholder'),
+            }),
             Link.configure({
                 openOnClick: false,
-                autolink: true,
+                autolink: false,
             }),
         ],
         content: safeParseJSON(props.modelValue, EMPTY_MESSAGE),

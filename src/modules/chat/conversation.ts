@@ -73,6 +73,7 @@ export async function LoadConversation(id: string): Promise<Conversation> {
 export async function UpdateConversation(id: string, data: Conversation) {
     if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
     await useConversationStore().updateConvInStore(id, data);
+    await UpdateConversationInfo(id);
 }
 
 /**

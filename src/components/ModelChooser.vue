@@ -1,6 +1,6 @@
 <template>
     <div class="model-chooser">
-        <a-button @click="openModal" class="model-selector-btn" :disabled="props.disabled">
+        <a-button @click="openModal" class="model-selector-btn" :disabled="props.disabled" aria-label="click to select model">
             <span v-if="selectedModel" class="model-name">
                 {{ selectedModel.name }}
             </span>
@@ -52,7 +52,7 @@
                         <div v-else-if="groupedModels[item.index]?.type === 'model'"
                              class="model-item"
                              :class="{ 'selected': (props.modelId === (groupedModels[item.index] as any).data.id && props.providerId === (groupedModels[item.index] as any).data.provider_id) }"
-                             tabindex="0"
+                             tabindex="0" role="button"
                              @click="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
                              @keydown.enter="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
                         >

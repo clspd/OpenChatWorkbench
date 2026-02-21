@@ -4,7 +4,7 @@ import type { ChatCompletionChunk } from "openai/resources";
 import { GetResponseChunkFragmentType } from "../chat-remotes/provider";
 
 /**
- * Create a user message.
+ * Create a user or system message. Use the `role` parameter to specify the role of the message.
  */
 export const CreateUserMessage = (
     id: number,
@@ -29,12 +29,6 @@ export const CreateUserMessage = (
     ],
     has_pending_fragment: false,
 });
-
-// TODO: export const CreateUserMessageEx
-
-// There is no
-// export const CreateAssistantMessage
-// because assistant message should be added by respond module, not data module.
 
 // --------
 
@@ -63,5 +57,16 @@ export function AppendMessageFragmentChunk(msg: Message, fragmentId: number, chu
         }
         return true;
     }
+}
+
+// --------
+
+export function ExtractMessageText(msg: Message) {
+    const res: string[] = [];
+    for (const frag of msg.fragments) {
+        if (frag.contentType !== MessageContentType.Text) continue;
+        res.push(frag.content);
+    }
+    return res.join("\n\n---\n\n");
 }
 
