@@ -108,10 +108,133 @@
         "successfullyRemovedZombieModels": "成功移除了 {{count}} 个孤立的模型"
     },
     "cache": {
-        "title": "缓存设置"
+        "title": "缓存设置",
+        "description": "应用程序可以缓存一些前端资源以提高性能并允许离线访问。此页面提供管理缓存的设置。",
+        "availability": {
+            "title": "缓存可用性",
+            "serviceWorkerStatus": "Service Worker 状态：",
+            "active": "已激活",
+            "notActive": "未激活",
+            "explanation": "说明：",
+            "activeExplanation": "Service Worker 已激活。它可以缓存前端资源。",
+            "inactiveExplanation": "由于 Service Worker 未激活，资源将不会被缓存。Service Worker 是在浏览器中运行的后台脚本。它可以缓存前端资源并在应用程序离线时提供这些资源。如果它未激活，请求将直接进入网络，阻止应用程序离线工作。",
+            "toFix": "要解决此问题：",
+            "fix1": "如果您是第一次使用应用程序，请坐下放松。Service Worker 应该在后台安装中。请等待一段时间后再次检查。",
+            "fix1Check": "再次检查",
+            "fix2": "如果您在隐私模式（或无痕模式）下浏览，Service Worker 可能不受支持或在关闭窗口时被清除。请尝试使用正常浏览模式。",
+            "fix3": "尝试刷新页面。有时 Service Worker 需要重新加载页面才能完成安装过程。",
+            "fix4": "检查您的浏览器是否支持 Service Workers。大多数现代浏览器（Chrome、Firefox、Safari、Edge）都支持 Service Workers，但请确保您使用的是更新版本。",
+            "fix5": "如果您使用的是企业网络或位于防火墙后面，请检查 Service Workers 是否被阻止。某些安全设置可能会阻止 Service Worker 注册。",
+            "fix6": "禁用任何可能干扰 Service Workers 的浏览器扩展，例如广告拦截器或隐私扩展，然后重新加载页面。"
+        },
+        "resources": {
+            "title": "已缓存的资源",
+            "brief": "概况：",
+            "cachedObjects": "目前已缓存 {{count}} 个对象。"
+        },
+        "management": {
+            "title": "缓存管理",
+            "actions": "操作：",
+            "checkStatus": "检查缓存状态",
+            "cacheAll": "缓存所有资源",
+            "clear": "清除缓存"
+        },
+        "progress": {
+            "title": "下载中",
+            "downloading": "正在下载 {{current}} / {{total}} 个对象",
+            "current": "当前：",
+            "cancel": "取消"
+        },
+        "messages": {
+            "pageUnavailable": "由于您拒绝了功能 Cookie 的使用，此页面不可用。您可以通过更改 Cookie 同意来重新启用它。",
+            "changeCookieConsent": "更改 Cookie 同意",
+            "yes": "是",
+            "no": "否",
+            "checkedSwStatus": "我们已再次检查 Service Worker 状态。",
+            "failedToCheckCache": "检查缓存状态失败：{{error}}",
+            "failedToFetchManifest": "获取清单文件失败：HTTP {{status}} {{statusText}}",
+            "fetchingManifest": "正在获取清单文件...",
+            "confirmCacheAll": "确定要缓存所有资源吗？",
+            "confirmCacheAllContent": "此操作将下载 {{count}} 个资源，可能需要一些时间。您要继续吗？",
+            "failedToCacheResource": "缓存资源 {{url}} 失败：{{error}}",
+            "cacheDownloadCanceled": "缓存下载已取消。",
+            "allResourcesCached": "所有资源已缓存。",
+            "failedToCacheAll": "缓存所有资源失败：{{error}}",
+            "confirmClearCache": "确定要清除所有缓存资源吗？",
+            "confirmClearCacheContent": "此操作将清除所有缓存的资源。下次访问应用程序时，所有资源将再次下载，导致加载速度变慢。",
+            "noCacheFound": "未找到缓存。",
+            "allCacheCleared": "所有缓存资源已清除。",
+            "failedToClearCache": "清除缓存失败。可能已经被清除了。",
+            "failedToClearCacheError": "清除缓存失败：{{error}}",
+            "notAvailableInDev": "这在开发环境中不可用。",
+            "failedToFetchResource": "获取资源 {{url}} 失败：HTTP {{status}} {{statusText}}"
+        }
     },
     "data_management": {
-        "title": "数据管理"
+        "title": "数据管理设置",
+        "cookiesConsent": "Cookie 同意",
+        "privacyPolicy": "隐私政策",
+        "importExportData": "导入和导出数据",
+        "deleteAllConversations": "删除所有对话",
+        "clearAllData": "清除所有数据",
+        "clearData": {
+            "title": "确定吗？",
+            "content": "此操作将删除",
+            "allData": "所有数据",
+            "resetApp": "并将应用程序重置为初始状态",
+            "deleting": "正在删除所有数据...",
+            "cannotBeUndone": "此操作无法撤销！",
+            "continueAnyway": "如果您仍要继续，请在下面的输入框中输入",
+            "inInputBoxBelow": "：",
+            "typeToConfirm": "输入 '{{expect}}' 以确认",
+            "confirm": "确认",
+            "cancel": "取消"
+        },
+        "dataDeleted": {
+            "title": "数据已删除",
+            "content": "所有数据已被永久删除。",
+            "closeApp": "关闭应用程序",
+            "reloadApp": "重新加载应用程序"
+        },
+        "usageReport": {
+            "optOut": "退出使用报告",
+            "explanation": "说明：",
+            "description": "应用程序收集匿名使用数据以帮助改进应用程序。但是，如果您愿意，可以选择退出使用报告。",
+            "optOutDescription": "如果您选择退出使用报告，应用程序将不会收集任何使用数据。",
+            "toLearnMore": "要了解更多，请参阅",
+            "privacyPolicy": "隐私政策",
+            "failedToGetOptOut": "获取退出使用报告设置失败"
+        },
+        "cspReport": {
+            "optOut": "退出 CSP 报告",
+            "explanation": "说明：",
+            "description": "应用程序收集内容安全策略（CSP）违规报告数据以确保应用程序的安全性。",
+            "optOutDescription": "如果您选择退出 CSP 报告，应用程序将不再发送 CSP 报告数据。",
+            "whyNotRecommend": "为什么不建议退出？",
+            "whyNotRecommendDescription": "CSP 报告数据用于识别潜在的黑客尝试并提高应用程序的安全性。它不包含任何个人或敏感信息。但是，如果您非常注重隐私，仍然可以选择退出 CSP 报告。",
+            "toLearnMore": "要了解更多，请参阅",
+            "privacyPolicy": "隐私政策"
+        },
+        "messages": {
+            "clearAllData": {
+                "title": "清除所有数据",
+                "content": "确定要清除所有数据吗？\n此操作无法撤销！",
+                "okText": "下一步",
+                "cancelText": "取消"
+            },
+            "deleteAllConversations": {
+                "title": "删除所有对话",
+                "content": "确定要删除所有对话吗？\n此操作无法撤销！\n如果您点击确认删除，当前账户的所有历史对话将被清除且无法恢复。",
+                "confirm": "确认（{{countdown}}）",
+                "deleting": "正在删除对话，请稍候...",
+                "failed": "删除对话失败：{{error}}"
+            },
+            "operationCompleted": "操作已成功完成。",
+            "failed": "失败：{{error}}",
+            "processing": "正在处理，请稍候...",
+            "inputDoesNotMatch": "输入不匹配",
+            "pleaseCloseTab": "请关闭标签页。"
+        }
     },
     "about": "关于"
 }

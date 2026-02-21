@@ -1,81 +1,80 @@
 <template>
     <div class="sub-settings-container">
-        <h2>Data Management</h2>
+        <h2>{{ t('settings:data_management.title') }}</h2>
 
         <div class="setting-item">
-            <a-button @click="cookieConsent">Cookies Consent</a-button>
+            <a-button @click="cookieConsent">{{ t('settings:data_management.cookiesConsent') }}</a-button>
         </div>
 
         <div class="setting-item">
-            <a-button @click="privacyPolicy">Privacy Policy</a-button>
+            <a-button @click="privacyPolicy">{{ t('settings:data_management.privacyPolicy') }}</a-button>
         </div>
 
         <div class="setting-item">
-            <a-button @click="portData">Import &amp; Export Data</a-button>
+            <a-button @click="portData">{{ t('settings:data_management.importExportData') }}</a-button>
         </div>
 
         <div class="setting-item">
-            <a-button @click="deleteAllConversations" danger>Delete All Conversations</a-button>
+            <a-button @click="deleteAllConversations" danger>{{ t('settings:data_management.deleteAllConversations') }}</a-button>
         </div>
 
         <hr style="width: 100%;">
 
         <div class="setting-item">
-            <a-button type="primary" @click="clearData" danger>Clear All Data</a-button>
+            <a-button type="primary" @click="clearData" danger>{{ t('settings:data_management.clearAllData') }}</a-button>
         </div>
 
         <DialogView v-model="clearDataState.show" style="width: 400px;" @closed="cancelClearData" :closable="!clearDataState.deleting">
-            <template #title>Are you sure?</template>
+            <template #title>{{ t('settings:data_management.clearData.title') }}</template>
             <div>
-                This operation will delete
-                <b style="color: red;">ALL DATA</b>
-                of the application and reset the application to its initial state!
+                {{ t('settings:data_management.clearData.content') }}
+                <b style="color: red;">{{ t('settings:data_management.clearData.allData') }}</b>
+                {{ t('settings:data_management.clearData.resetApp') }}!
             </div>
-            <div v-if="clearDataState.deleting" style="color: red; font-weight: bold;">Deleting all data...</div>
-            <div v-else style="color: red; font-weight: bold;">THIS OPERATION CANNOT BE UNDONE!</div>
+            <div v-if="clearDataState.deleting" style="color: red; font-weight: bold;">{{ t('settings:data_management.clearData.deleting') }}</div>
+            <div v-else style="color: red; font-weight: bold;">{{ t('settings:data_management.clearData.cannotBeUndone') }}</div>
             <hr style="width: 100%;">
-            <div>If you want to continue anyway, please type <b style="color: red; user-select: all;">{{ clearDataState.expect }}</b> in the input box below:</div>
+            <div>{{ t('settings:data_management.clearData.continueAnyway') }} <b style="color: red; user-select: all;">{{ clearDataState.expect }}</b> {{ t('settings:data_management.clearData.inInputBoxBelow') }}:</div>
 
-            <a-input style="margin: 0.5em 0;" v-model:value="clearDataState.input" :placeholder="`Type '${clearDataState.expect}' to confirm`" :disabled="clearDataState.deleting" />
+            <a-input style="margin: 0.5em 0;" v-model:value="clearDataState.input" :placeholder="t('settings:data_management.clearData.typeToConfirm', { expect: clearDataState.expect })" :disabled="clearDataState.deleting" />
 
             <div class="btn-group">
                 <a-button @click="confirmClearData" danger type="primary" :disabled="(clearDataState.input !== clearDataState.expect) || clearDataState.deleting" :loading="clearDataState.deleting">
-                    {{ clearDataState.deleting ? 'Deleting...' : 'Confirm' }}
+                    {{ clearDataState.deleting ? t('settings:data_management.clearData.deleting') : t('settings:data_management.clearData.confirm') }}
                 </a-button>
-                <a-button @click="clearDataState.show = false" :disabled="clearDataState.deleting">Cancel</a-button>
+                <a-button @click="clearDataState.show = false" :disabled="clearDataState.deleting">{{ t('settings:data_management.clearData.cancel') }}</a-button>
             </div>
         </DialogView>
 
         <DialogView v-model="clearDataState.deleted" style="width: 400px;" :closable="false">
-            <template #title>Data Deleted</template>
+            <template #title>{{ t('settings:data_management.dataDeleted.title') }}</template>
             <div style="margin-bottom: 1em;">
-                All data has been deleted permanently.
+                {{ t('settings:data_management.dataDeleted.content') }}
             </div>
             <div class="btn-group">
-                <a-button @click="closeApp" type="primary">Close Application</a-button>
-                <a-button @click="reloadApp">Reload Application</a-button>
+                <a-button @click="closeApp" type="primary">{{ t('settings:data_management.dataDeleted.closeApp') }}</a-button>
+                <a-button @click="reloadApp">{{ t('settings:data_management.dataDeleted.reloadApp') }}</a-button>
             </div>
         </DialogView>
 
         <hr style="width: 100%;">
 
         <div class="setting-item">
-            <a-checkbox v-model:checked="optOutUsageReport">Opt out of usage report</a-checkbox>
+            <a-checkbox v-model:checked="optOutUsageReport">{{ t('settings:data_management.usageReport.optOut') }}</a-checkbox>
             <br>
-            <b>Explaination:</b>
-            <span>&nbsp;The application collects anonymous usage data to help improve the application. However, you can opt out of usage report if you want.</span>
-            <span>&nbsp;If you opt out of usage report, the application will not collect any usage data.</span>
-            <span>&nbsp;To learn more, refer to the <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>.</span>
+            <b>{{ t('settings:data_management.usageReport.explanation') }}</b>
+            <span>&nbsp;{{ t('settings:data_management.usageReport.description') }}</span>
+            <span>&nbsp;{{ t('settings:data_management.usageReport.optOutDescription') }}</span>
+            <span>&nbsp;{{ t('settings:data_management.usageReport.toLearnMore') }} <a :href="privacy_policy_href" target="_blank">{{ t('settings:data_management.usageReport.privacyPolicy') }}</a>.</span>
         </div>
 
         <div class="setting-item">
-            <a-checkbox v-model:checked="optOutCSPReport">Opt out of CSP report</a-checkbox>
+            <a-checkbox v-model:checked="optOutCSPReport">{{ t('settings:data_management.cspReport.optOut') }}</a-checkbox>
             <br>
-            <b>Explaination:</b>
-            <span>&nbsp;The application collects Content Security Policy (CSP) violation report data to ensure the security of the application.</span>
-            <span>&nbsp;If you opt out of CSP report, the application will not send CSP report data anymore.</span>
-            <span><br><b>Why not recommend to opt out?</b> CSP report data is used to identity the potential hacking attempts and improve the security of the application. It doesn't contain any personal or sensitive information.&nbsp;However, if you are very privacy-conscious, you can still opt out of CSP report.</span>
-            <span>&nbsp;To learn more, refer to the <a :href="privacy_policy_href" target="_blank">Privacy Policy</a>.</span>
+            <b>{{ t('settings:data_management.cspReport.explanation') }}</b>
+            <span>&nbsp;{{ t('settings:data_management.cspReport.description') }}</span>
+            <span>&nbsp;{{ t('settings:data_management.cspReport.optOutDescription') }}</span>
+            <span><br><b>{{ t('settings:data_management.cspReport.whyNotRecommend') }}</b> {{ t('settings:data_management.cspReport.whyNotRecommendDescription') }}&nbsp;{{ t('settings:data_management.cspReport.toLearnMore') }} <a :href="privacy_policy_href" target="_blank">{{ t('settings:data_management.cspReport.privacyPolicy') }}</a>.</span>
         </div>
     </div>
 </template>
@@ -91,15 +90,16 @@ import { domain_name_root, privacy_policy_href } from '@/config'
 import { parse } from 'cookie'
 import { isServiceWorkerActive } from '@/utils/swApi'
 import { chatAttachmentBasePath, chatIndexBasePath, getConvPath, getConvPrefPath } from '@/modules/chat/path'
+import { t } from 'i18next'
 
 const router = useRouter()
 
 onMounted(() => {
-    useAppStateStore().setTitle('Data Management Settings')
+    useAppStateStore().setTitle(t('settings:data_management.title'))
     db.get('config', 'user.privacy.optOutUsageReport').then((value) => {
         optOutUsageReport.value = value ?? false;
     }).catch(() => {
-        message.error('Failed to get opt out of usage report');
+        message.error(t('settings:data_management.usageReport.failedToGetOptOut'));
     });
     if (parse(document.cookie)['user.privacy.optOutCSPReport'] === 'true') optOutCSPReport.value = true;
 })
@@ -132,11 +132,11 @@ const clearDataState = ref<{
 });
 const clearData = async () => {
     if (!await new Promise(r => Modal.confirm({
-        title: 'Clear All Data',
-        content: 'Are you sure you want to clear all data?\nThis action cannot be undone!',
-        okText: 'Next Step',
+        title: t('settings:data_management.messages.clearAllData.title'),
+        content: t('settings:data_management.messages.clearAllData.content'),
+        okText: t('settings:data_management.messages.clearAllData.okText'),
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: t('settings:data_management.messages.clearAllData.cancelText'),
         onOk: () => r(true),
         onCancel: () => r(false),
     }))) return;
@@ -159,7 +159,7 @@ const clearData = async () => {
     location.href = '/resource/cleared.html';
 }
 const confirmClearData = () => {
-    if (clearDataState.value.input !== clearDataState.value.expect) return message.error('Input does not match');
+    if (clearDataState.value.input !== clearDataState.value.expect) return message.error(t('settings:data_management.messages.inputDoesNotMatch'));
     clearDataState.value.resolver?.(true);
     clearDataState.value.resolver = undefined;
 }
@@ -173,7 +173,7 @@ const reloadApp = () => {
 const closeApp = () => {
     document.open();
     // @ts-ignore
-    document.write("<h1>Please close the tab.");
+    document.write("<h1>" + t('settings:data_management.messages.pleaseCloseTab'));
     setTimeout(w => w?.close(), 100, window.open('about:blank', '_self'));
     window.close();
     document.close();
@@ -182,14 +182,14 @@ const closeApp = () => {
 const deleteAllConversations = async () => {
     let countdown = 5, cid: ReturnType<typeof setInterval>, m: ReturnType<typeof Modal.confirm>;
     if (!await new Promise(r => m = Modal.confirm({
-        title: 'Delete All Conversations',
+        title: t('settings:data_management.messages.deleteAllConversations.title'),
         content: h(defineComponent({
-            render: () => h('div', null, 'Are you sure you want to delete all conversations?\nThis action cannot be undone!\nIf you click confirm to delete, all historical conversations of the current account will be cleared and cannot be recovered.'),
+            render: () => h('div', null, t('settings:data_management.messages.deleteAllConversations.content')),
             mounted: () => cid = setInterval(() => {
                 const ended = --countdown <= 0;
                 if (ended) clearInterval(cid);
                 m.update({
-                    okText: ended ? 'Confirm' : 'Confirm (' + countdown + ')',
+                    okText: ended ? t('settings:data_management.messages.deleteAllConversations.confirm', { countdown: 0 }) : t('settings:data_management.messages.deleteAllConversations.confirm', { countdown }),
                     okButtonProps: {
                         type: 'primary',
                         disabled: !ended,
@@ -198,18 +198,18 @@ const deleteAllConversations = async () => {
             }, 1000),
             beforeUnmount: () => (clearInterval(cid)),
         })),
-        okText: 'Confirm (' + countdown + ')',
+        okText: t('settings:data_management.messages.deleteAllConversations.confirm', { countdown }),
         okType: 'danger',
         okButtonProps: {
             type: 'primary',
             disabled: true,
         },
-        cancelText: 'Cancel',
+        cancelText: t('settings:data_management.messages.clearAllData.cancelText'),
         onOk: () => r(true),
         onCancel: () => r(false),
     }))) return;
     const loadingEl = document.createElement('dialog');
-    loadingEl.append(document.createTextNode('Deleting conversations, please wait...'))
+    loadingEl.append(document.createTextNode(t('settings:data_management.messages.deleteAllConversations.deleting')))
     document.body.append(loadingEl);
     (loadingEl as any).closedBy = 'none';
     loadingEl.showModal();
@@ -220,7 +220,7 @@ const deleteAllConversations = async () => {
         await fs.rm(getConvPrefPath(''), { recursive: true });
     }
     catch (e) {
-        message.error('Failed to delete conversations: ' + e);
+        message.error(t('settings:data_management.messages.deleteAllConversations.failed', { error: e }));
     }
     finally {
         window.location.reload();
@@ -233,10 +233,10 @@ watch(() => optOutUsageReport.value, async (newValue) => {
         const currentSetting = await db.get('config', 'user.privacy.optOutUsageReport');
         if (currentSetting === newValue) return;
         await db.put('config', newValue, 'user.privacy.optOutUsageReport');
-        message.success('The operation has completed successfully.');
+        message.success(t('settings:data_management.messages.operationCompleted'));
         window.location.reload();
     } catch (error) {
-        message.error('Failed: ' + error);
+        message.error(t('settings:data_management.messages.failed', { error }));
     }
 })
 const optOutCSPReport = ref(false);
@@ -253,7 +253,7 @@ watch(() => optOutCSPReport.value, async (newValue) => {
         }
         document.cookie = `sys.operation.clearCache=yes; path=/; max-age=3600; secure`;
 
-        message.info("Processing, please wait...");
+        message.info(t('settings:data_management.messages.processing'));
         if (await isServiceWorkerActive()) {
             const c = (window as any).appInitConfig;
             const cache = await caches.open(c.CACHE_PREFIX + c.CACHE_VERSION);
@@ -268,12 +268,12 @@ watch(() => optOutCSPReport.value, async (newValue) => {
                 await (await fetch(location.href, { cache: 'no-store' })).arrayBuffer();
             }
         }
-        message.success('The operation has completed successfully.');
+        message.success(t('settings:data_management.messages.operationCompleted'));
         setTimeout(() => {
             window.location.reload();
         }, 1000);
     } catch (error) {
-        message.error('Failed: ' + error);
+        message.error(t('settings:data_management.messages.failed', { error }));
     }
 })
 </script>

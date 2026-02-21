@@ -1,75 +1,69 @@
 <template>
     <div class="sub-settings-container" v-if="isAvailable">
-        <h2>Cache Settings</h2>
+        <h2>{{ t('settings:cache.title') }}</h2>
         <p>
-            The application can cache some frontend resources to improve performance and allow offline access.
-            This page provides settings to manage the cache.
+            {{ t('settings:cache.description') }}
         </p>
 
-        <a-card title="Cache Availability">
+        <a-card :title="t('settings:cache.availability.title')">
             <div>
-                <b>Service Worker status:</b>
-                <StatusText :value="isSwActive" activeText="Active" inactiveText="Not Active" />
+                <b>{{ t('settings:cache.availability.serviceWorkerStatus') }}</b>
+                <StatusText :value="isSwActive" :activeText="t('settings:cache.availability.active')" :inactiveText="t('settings:cache.availability.notActive')" />
             </div>
 
             <div>
-                <b>Explaination:</b>
+                <b>{{ t('settings:cache.availability.explanation') }}</b>
                 <span>&nbsp;</span>
                 <span v-if="isSwActive">
-                    The Service Worker is active. It can cache frontend resources.
+                    {{ t('settings:cache.availability.activeExplanation') }}
                 </span>
                 <span v-else>
-                    The resources will not be cached because the Service Worker is not active. Service Worker
-                    is a background script that runs in the browser. It can cache frontend resources and
-                    serve them when the application is offline. If it is not active, the request will
-                    go into the network directly, preventing the application from working offline.
+                    {{ t('settings:cache.availability.inactiveExplanation') }}
                 </span>
             </div>
             <div v-if="!isSwActive">
-                <b>To fix this:</b>
+                <b>{{ t('settings:cache.availability.toFix') }}</b>
                 <ul>
-                    <li>If this is the first time for you to use the application, <i>sit down and relax</i>. The service worker is supposed to be installing in the background. Try to wait for a while and <a href="javascript:" @click.prevent="checkSw(true)">check again</a>.</li>
-                    <li>If you are browsing in <i>Private</i> mode (or Incognito mode), the Service Worker may not be supported or may be cleared when you close the window. Try using normal browsing mode instead.</li>
-                    <li>Try refreshing the page. Sometimes the Service Worker needs a page reload to complete the installation process.</li>
-                    <li>Check if your browser supports Service Workers. Most modern browsers (Chrome, Firefox, Safari, Edge) support Service Workers, but make sure you're using an updated version.</li>
-                    <li>If you're using a corporate network or behind a firewall, check if Service Workers are being blocked. Some security settings may prevent Service Worker registration.</li>
-                    <li>Disable any browser extensions that might interfere with Service Workers, such as ad blockers or privacy extensions, then reload the page.</li>
+                    <li>{{ t('settings:cache.availability.fix1') }} <a href="javascript:" @click.prevent="checkSw(true)">{{ t('settings:cache.availability.fix1Check') }}</a>.</li>
+                    <li>{{ t('settings:cache.availability.fix2') }}</li>
+                    <li>{{ t('settings:cache.availability.fix3') }}</li>
+                    <li>{{ t('settings:cache.availability.fix4') }}</li>
+                    <li>{{ t('settings:cache.availability.fix5') }}</li>
+                    <li>{{ t('settings:cache.availability.fix6') }}</li>
                 </ul>
             </div>
         </a-card>
 
-        <a-card title="Cached Resources">
+        <a-card :title="t('settings:cache.resources.title')">
             <div>
-                <b>Brief</b>
-                <span>:&nbsp;</span>
-                <span>Currently {{cachedCount}} object{{cachedCount === 1 ? '' : 's'}} have been cached.</span>
+                <b>{{ t('settings:cache.resources.brief') }}</b>
+                <span>{{ t('settings:cache.resources.cachedObjects', { count: cachedCount, plural: cachedCount === 1 ? '' : 's' }) }}</span>
             </div>
         </a-card>
 
-        <a-card title="Cache Management" v-if="isSwActive">
+        <a-card :title="t('settings:cache.management.title')" v-if="isSwActive">
             <div>
-                <b>Actions</b>
-                <span>:&nbsp;</span>
-                <a-button @click="checkCacheStatus">Check Cache Status</a-button>
-                <a-button @click="cacheAllResources">Cache All Resources</a-button>
-                <a-button danger @click="clearCache">Clear Cache</a-button>
+                <b>{{ t('settings:cache.management.actions') }}</b>
+                <a-button @click="checkCacheStatus">{{ t('settings:cache.management.checkStatus') }}</a-button>
+                <a-button @click="cacheAllResources">{{ t('settings:cache.management.cacheAll') }}</a-button>
+                <a-button danger @click="clearCache">{{ t('settings:cache.management.clear') }}</a-button>
             </div>
         </a-card>
 
         <DialogView v-model="showCacheProgressDlg" :closable="false" style="white-space: pre;">
-            <template #title>Download in progress</template>
-            <div>Downloading <b>{{cacheDownloadStat.current}}</b> of <b>{{cacheDownloadStat.total}} objects</b></div>
-            <div>Current: <b>{{cacheDownloadStat.currentName}}</b></div>
+            <template #title>{{ t('settings:cache.progress.title') }}</template>
+            <div>{{ t('settings:cache.progress.downloading', { current: cacheDownloadStat.current, total: cacheDownloadStat.total }) }}</div>
+            <div>{{ t('settings:cache.progress.current') }} <b>{{cacheDownloadStat.currentName}}</b></div>
             <template #footer>
                 <div style="text-align: right;">
-                    <a-button type="primary" danger :disabled="!cacheDownloadStat.abortController" @click="cacheDownloadStat.abortController?.abort()">Cancel</a-button>
+                    <a-button type="primary" danger :disabled="!cacheDownloadStat.abortController" @click="cacheDownloadStat.abortController?.abort()">{{ t('settings:cache.progress.cancel') }}</a-button>
                 </div>
             </template>
         </DialogView>
     </div>
     <div class="sub-settings-container" v-else>
-        <h2>Cache Settings</h2>
-        <p>The page is unavailable because you have rejected the usage of functional cookies. You can re-enable it by <a href="javascript:" @click.prevent="cookieConsent">changing your cookie consent</a>.</p>
+        <h2>{{ t('settings:cache.title') }}</h2>
+        <p>{{ t('settings:cache.messages.pageUnavailable') }} <a href="javascript:" @click.prevent="cookieConsent">{{ t('settings:cache.messages.changeCookieConsent') }}</a>.</p>
     </div>
 </template>
 
@@ -81,6 +75,7 @@ import StatusText from '@/components/StatusText.vue'
 import { message, Modal } from 'ant-design-vue';
 import { DialogView } from 'vue-dialog-view';
 import { useAppStateStore } from '@/stores/appState';
+import { t } from 'i18next';
 
 const isAvailable = ref(true);
 const isSwActive = ref<boolean>(false);
@@ -97,7 +92,7 @@ onMounted(async () => {
 
 const cookieConsent = () => useAppStateStore().showCookieConsent = true;
 
-const confirm = (title: string, content: string, okText: string = 'Yes', cancelText: string = 'No') => new Promise(resolve =>
+const confirm = (title: string, content: string, okText: string = t('settings:cache.messages.yes'), cancelText: string = t('settings:cache.messages.no')) => new Promise(resolve =>
     Modal.confirm({
         title,
         content,
@@ -110,7 +105,7 @@ const confirm = (title: string, content: string, okText: string = 'Yes', cancelT
 
 const checkSw = async (showToast: boolean = false) => {
     isSwActive.value = await isServiceWorkerActive();
-    if (showToast) message.info("We've checked the Service Worker status again.")
+    if (showToast) message.info(t('settings:cache.messages.checkedSwStatus'))
 }
 const checkCacheStatus = async () => {
     try {
@@ -121,7 +116,7 @@ const checkCacheStatus = async () => {
         const keys = await cache.keys();
         cachedCount.value = keys.length;
     } catch (error) {
-        message.error('Failed to check cache status: ' + error);
+        message.error(t('settings:cache.messages.failedToCheckCache', { error }))
     }
 }
 
@@ -135,18 +130,18 @@ const cacheDownloadStat = ref({
 const cacheAllResources = async () => {
     try {
         if (!isSwActive.value) return;
-        if (process.env.NODE_ENV === 'development') throw "This is not available in development environment.";
+        if (process.env.NODE_ENV === 'development') throw t('settings:cache.messages.notAvailableInDev');
 
         cacheDownloadStat.value.total = cacheDownloadStat.value.current = 0;
         cacheDownloadStat.value.abortController = undefined;
-        cacheDownloadStat.value.currentName = 'Fetching manifest file...';
+        cacheDownloadStat.value.currentName = t('settings:cache.messages.fetchingManifest');
         showCacheProgressDlg.value = true;
         const resp = await fetch(appInitConfig.MANIFEST_FILE);
-        if (!resp.ok) throw new Error('Failed to fetch manifest file: HTTP ' + resp.status + ' ' + resp.statusText);
+        if (!resp.ok) throw new Error(t('settings:cache.messages.failedToFetchManifest', { status: resp.status, statusText: resp.statusText }));
         const res = await resp.json();
         const urls = Object.values(res).map((item: any) => new URL(item.file, window.location.href));
         showCacheProgressDlg.value = false;
-        if (!await confirm('Are you sure cache all resources?', 'This action will download ' + urls.length + ' resources, which may take a while. Do you want to continue?')) return;
+        if (!await confirm(t('settings:cache.messages.confirmCacheAll'), t('settings:cache.messages.confirmCacheAllContent', { count: urls.length }))) return;
         showCacheProgressDlg.value = true;
         const cacheName = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
         const cache = await caches.open(cacheName);
@@ -162,21 +157,21 @@ const cacheAllResources = async () => {
                 });
                 cacheDownloadStat.value.currentName = url.pathname;
                 const res = await fetch(realReq);
-                if (!res.ok) throw new Error('Failed to fetch resource ' + url + ': HTTP ' + res.status + ' ' + res.statusText);
+                if (!res.ok) throw new Error(t('settings:cache.messages.failedToFetchResource', { url, status: res.status, statusText: res.statusText }));
                 await cache.put(req, res);
             } catch (error) {
                 if (error instanceof DOMException && error.name === 'AbortError') {
-                    message.info('Cache download canceled.');
+                    message.info(t('settings:cache.messages.cacheDownloadCanceled'));
                     return;
                 }
-                message.error('Failed to cache resource ' + url + ': ' + error);
+                message.error(t('settings:cache.messages.failedToCacheResource', { url, error }));
                 return;
             }
         }
         
-        message.success('All resources have been cached.');
+        message.success(t('settings:cache.messages.allResourcesCached'));
     } catch (error) {
-        message.error('Failed to cache all resources: ' + error);
+        message.error(t('settings:cache.messages.failedToCacheAll', { error }));
     } finally {
         showCacheProgressDlg.value = false;
         cacheDownloadStat.value.abortController = undefined;
@@ -186,18 +181,18 @@ const cacheAllResources = async () => {
 const clearCache = async () => {
     try {
         if (!isSwActive.value) return;
-        if (!await confirm('Are you sure clear all cached resources?', 'This action will clear all cached resources. The next time you visit the application, all resources will be downloaded again, causing slower loading speed.')) return;
+        if (!await confirm(t('settings:cache.messages.confirmClearCache'), t('settings:cache.messages.confirmClearCacheContent'))) return;
         const cacheName = appInitConfig.CACHE_PREFIX + appInitConfig.CACHE_VERSION;
         if (!caches.has(cacheName)) { 
-            message.info('No cache found.');
+            message.info(t('settings:cache.messages.noCacheFound'));
             return;
         }
         if (await caches.delete(cacheName))
-            message.success('All cached resources have been cleared.');
+            message.success(t('settings:cache.messages.allCacheCleared'));
         else
-            message.error('Failed to clear cache. It might been already cleared.');
+            message.error(t('settings:cache.messages.failedToClearCache'));
     } catch (error) {
-        message.error('Failed to clear cache: ' + error);
+        message.error(t('settings:cache.messages.failedToClearCacheError', { error }));
     }
 }
 </script>
