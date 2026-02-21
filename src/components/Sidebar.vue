@@ -41,13 +41,13 @@
     <teleport :to="content" v-if="content">
         <div class="sidebar-content">
             <div class="row" style="padding: 0 0.5em;">
-                <a-button v-if="appStatePersist.sidebarActiveTab === 'chat'" type="dashed" @click="go('/')">New Chat</a-button>
-                <a-button v-if="appStatePersist.sidebarActiveTab === 'workspace'" type="dashed" @click="go('/workspace/new')">New Workspace</a-button>
+                <a-button v-if="appStatePersist.sidebarActiveTab === 'chat'" type="dashed" @click="go('/')">{{ t('common:ui.sidebar.newChatBtn') }}</a-button>
+                <a-button v-if="appStatePersist.sidebarActiveTab === 'workspace'" type="dashed" @click="go('/workspace/new')">{{ t('common:ui.sidebar.newWorkspaceBtn') }}</a-button>
             </div>
             <div class="row">
                 <a-tabs v-model:activeKey="appStatePersist.sidebarActiveTab" size="small" class="app-conv-type-choose">
-                    <a-tab-pane key="chat" tab="Chat"></a-tab-pane>
-                    <a-tab-pane key="workspace" tab="Workspace"></a-tab-pane>
+                    <a-tab-pane key="chat" :tab="t('common:ui.sidebar.mode.chat')"></a-tab-pane>
+                    <a-tab-pane key="workspace" :tab="t('common:ui.sidebar.mode.workspace')"></a-tab-pane>
                 </a-tabs>
             </div>
             <div class="message-list-container" @scroll.passive="handleConvListScroll" ref="convListContainer">
@@ -56,7 +56,7 @@
             <div class="user-and-settings">
                 <div class="row"><a-button type="text" @click="go('/settings/')">
                     <SettingOutlined />
-                    <span>Settings</span>
+                    <span>{{ t('common:ui.sidebar.settingsBtn') }}</span>
                 </a-button></div>
             </div>
         </div>

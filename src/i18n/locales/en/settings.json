@@ -1,0 +1,117 @@
+{
+    "title": "Settings",
+    "general": {
+        "title": "General Settings",
+        "language": {
+            "title": "Language",
+            "options": {
+                "en": "English",
+                "zh-CN": "简体中文"
+            }
+        },
+        "chat": {
+            "title": "Chat",
+            "legend": "Send Message with...",
+            "options": {
+                "enter": "Enter",
+                "ctrl-enter": "Ctrl + Enter"
+            }
+        },
+        "accessibility": {
+            "title": "Accessibility",
+            "alert": "Some settings may require a refresh to take effect completely.",
+            "fontSize": {
+                "legend": "Font Size",
+                "reset": "Reset"
+            }
+        }
+    },
+    "chat": {
+        "title": "Chat Settings"
+    },
+    "provider": {
+        "title": "Provider Settings",
+        "addProvider": "Add Provider",
+        "configGuide": "Configuration Guide",
+        "configGuideAlert": "It is recommended to use the",
+        "configGuideSuffix": "to set up the providers easily.",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Are you sure you want to delete this provider?",
+        "addProviderModal": "Add Provider",
+        "editProviderModal": "Edit Provider",
+        "name": "Name",
+        "namePlaceholder": "Provider Name",
+        "apiKey": "API Key",
+        "apiKeyPlaceholder": "API Key",
+        "baseURL": "Base URL",
+        "baseURLPlaceholder": "https://api.example.com",
+        "requestPath": "Request Path",
+        "requestPathPlaceholder": "/chat/completions",
+        "compatibilityMode": "Compatibility Mode",
+        "compatibilityModeOpenAI": "OpenAI or OpenAI-compatible",
+        "compatibilityModeClaude": "Anthropic",
+        "compatibilityModeGemini": "Gemini",
+        "compatibilityModeUntested": "Untested (The provider you selected is not tested by us)",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "status": "Status",
+        "actions": "Actions",
+        "customProvider": "Custom Provider",
+        "customProviderDescription": "Add a custom provider",
+        "addNow": "Add now",
+        "getAPIKey": "Get API Key",
+        "providerAddedSuccessfully": "Provider added successfully",
+        "providerUpdatedSuccessfully": "Provider updated successfully",
+        "providerDeletedSuccessfully": "Provider deleted successfully",
+        "nameRequired": "Please input provider name!",
+        "apiKeyRequired": "Please input API key!",
+        "baseURLRequired": "Please input base URL!",
+        "invalidURL": "Please enter a valid URL (e.g., https://api.example.com)",
+        "unableToLoadProviders": "Unable to load providers"
+    },
+    "model": {
+        "title": "Model Settings",
+        "placeholder": "Filter by model ID...",
+        "fetch": "Fetch Models",
+        "add": "Add Model manually",
+        "cleanup": "Cleanup",
+        "zombie": {
+            "title": "Zombie Models",
+            "description": "Zombie models are models that are not associated with any provider. They may be left over from previous configurations. Accumulating them may cause performance issues, leading to slower response times. It is recommended to clean up zombie models periodically.",
+            "cleanupNow": "Cleanup Now"
+        },
+        "edit": "Edit",
+        "delete": "Delete",
+        "enableAll": "Enable All",
+        "disableAll": "Disable All",
+        "modelID": "Model ID",
+        "enabled": "Enabled",
+        "actions": "Actions",
+        "existingProvider": "Existing Provider",
+        "newProvider": "New Provider",
+        "selectProvider": "Please select a provider!",
+        "inputModelID": "Please input model ID!",
+        "modelDeletedSuccessfully": "Model deleted successfully",
+        "modelsToggledSuccessfully": "{newState} {scope} models for {providerName}",
+        "modelEditorDamaged": "The state of the model editor has been damaged, please reload the page to try again",
+        "modelUpdatedSuccessfully": "Model updated successfully",
+        "modelAddedSuccessfully": "Model added successfully",
+        "operationFailed": "Operation failed: ",
+        "successfullyUpdatedModels": "Successfully updated {{count}} models",
+        "skippedDuplicateModels": "Skipped {{count}} duplicate models",
+        "pleaseSelectProvider": "Please select a provider",
+        "providerNotFound": "Provider not found",
+        "noModelsFoundInResponse": "No models found in response",
+        "invalidResponseFormatFromAPI": "Invalid response format from API",
+        "cleanupZombieModelsWarning": "This operation will remove \"zombie\" models, which are models that are not associated with any provider. This may be caused after you deleted a provider directly. Continuing will not cause any data loss. Proceed?",
+        "successfullyRemovedZombieModels": "Successfully removed {{count}} zombie models"
+    },
+    "cache": {
+        "title": "Cache Settings"
+    },
+    "data_management": {
+        "title": "Data Management Settings"
+    },
+    "about": "About"
+}

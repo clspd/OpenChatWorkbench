@@ -8,6 +8,7 @@ export const useAppStateStore = defineStore('AppState', {
         page: 'unknown' as any,
         title: '',
         titleCustomize: false,
+        titleNoTranslate: false,
         showCookieConsent: false,
         currentConversationId_: '' as string | null,
         mainContentViewEl: null as Component | null,
@@ -20,8 +21,9 @@ export const useAppStateStore = defineStore('AppState', {
         setPage(page: any) {
             this.page = page
         },
-        setTitle(title: string, customize: boolean = false) {
+        setTitle(title: string, customize: boolean = false, noTranslate: boolean = false) {
             this.titleCustomize = customize
+            this.titleNoTranslate = noTranslate
             this.title = title
         },
     },

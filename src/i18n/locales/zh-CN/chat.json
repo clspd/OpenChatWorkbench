@@ -1,0 +1,14 @@
+{
+    "management": {
+        "requests": {
+            "delete": {
+                "title": "删除对话",
+                "content": "确定要删除 ",
+                "okText": "删除",
+                "cancelText": "取消",
+                "success": "对话已删除",
+                "error": "删除对话失败：{{error}}"
+            }
+        }
+    }
+}

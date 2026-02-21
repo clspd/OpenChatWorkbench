@@ -1,9 +1,9 @@
 <template>
     <div class="sub-settings-container">
-        <h2 style="margin-top: 0;">Providers</h2>
+        <h2 style="margin-top: 0;">{{ t('settings:provider.title') }}</h2>
 
         <a-alert type="info">
-            <template #message>It is recommended to use the <a href="javascript:void(0)" @click="appState.showConfigGuide = true">Configuration Guide</a> to set up the providers easily.</template>
+            <template #message>{{ t('settings:provider.configGuideAlert') }} <a href="javascript:void(0)" @click="appState.showConfigGuide = true">{{ t('settings:provider.configGuide') }}</a> {{ t('settings:provider.configGuideSuffix') }}</template>
         </a-alert>
 
         <div class="provider-list-container">
@@ -11,14 +11,14 @@
                 <template #icon>
                     <PlusOutlined />
                 </template>
-                Add Provider
+                {{ t('settings:provider.addProvider') }}
             </a-button>
 
             <a-table :columns="columns" :data-source="configStore.providers" :pagination="{ pageSize: 10 }" row-key="id">
                 <template #bodyCell="{ column, record }">
                     <template v-if="column.key === 'enabled'">
                         <a-tag :color="record.enabled ? 'green' : 'red'">
-                            {{ record.enabled ? 'Enabled' : 'Disabled' }}
+                            {{ record.enabled ? t('settings:provider.enabled') : t('settings:provider.disabled') }}
                         </a-tag>
                     </template>
                     <template v-else-if="column.key === 'action'">
@@ -27,14 +27,14 @@
                                 <template #icon>
                                     <EditOutlined />
                                 </template>
-                                Edit
+                                {{ t('settings:provider.edit') }}
                             </a-button>
-                            <a-popconfirm title="Are you sure you want to delete this provider?" @confirm="handleDelete(record.id)">
+                            <a-popconfirm :title="t('settings:provider.deleteConfirm')" @confirm="handleDelete(record.id)">
                                 <a-button type="link" size="small" danger>
                                     <template #icon>
                                         <DeleteOutlined />
                                     </template>
-                                    Delete
+                                    {{ t('settings:provider.delete') }}
                                 </a-button>
                             </a-popconfirm>
                         </a-space>
@@ -43,43 +43,43 @@
             </a-table>
         </div>
 
-        <a-modal v-model:open="modalVisible" :title="isEditing ? 'Edit Provider' : 'Add Provider'" @ok="handleOk" @cancel="handleCancel">
+        <a-modal v-model:open="modalVisible" :title="isEditing ? t('settings:provider.editProviderModal') : t('settings:provider.addProviderModal')" @ok="handleOk" @cancel="handleCancel">
             <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
-                <a-form-item label="Name" name="name">
-                    <a-input v-model:value="formState.name" placeholder="Provider Name" />
+                <a-form-item :label="t('settings:provider.name')" name="name">
+                    <a-input v-model:value="formState.name" :placeholder="t('settings:provider.namePlaceholder')" />
                 </a-form-item>
-                <a-form-item label="API Key" name="api_key">
-                    <a-input-password v-model:value="formState.api_key" placeholder="API Key" />
+                <a-form-item :label="t('settings:provider.apiKey')" name="api_key">
+                    <a-input-password v-model:value="formState.api_key" :placeholder="t('settings:provider.apiKeyPlaceholder')" />
                 </a-form-item>
-                <a-form-item label="Base URL" name="baseURL">
-                    <a-input v-model:value="formState.baseURL" placeholder="https://api.example.com" />
+                <a-form-item :label="t('settings:provider.baseURL')" name="baseURL">
+                    <a-input v-model:value="formState.baseURL" :placeholder="t('settings:provider.baseURLPlaceholder')" />
                 </a-form-item>
-                <a-form-item label="Request Path" name="requestPath">
-                    <a-input v-model:value="formState.requestPath" placeholder="/chat/completions" />
+                <a-form-item :label="t('settings:provider.requestPath')" name="requestPath">
+                    <a-input v-model:value="formState.requestPath" :placeholder="t('settings:provider.requestPathPlaceholder')" />
                 </a-form-item>
-                <a-form-item label="Compatibility Mode" name="compatibilityMode">
+                <a-form-item :label="t('settings:provider.compatibilityMode')" name="compatibilityMode">
                     <a-radio-group v-model:value="formState.compatibilityMode" style="display: flex; gap: 0.5em; flex-wrap: wrap; overflow-wrap: anywhere;">
-                        <a-radio value="untested" disabled v-if="formState.compatibilityMode === 'untested'">Untested (The provider you selected is not tested by us)</a-radio>
+                        <a-radio value="untested" disabled v-if="formState.compatibilityMode === 'untested'">{{ t('settings:provider.compatibilityModeUntested') }}</a-radio>
                         <template v-else>
-                            <a-radio value="openai">OpenAI or OpenAI-compatible</a-radio>
-                            <a-radio value="claude">Anthropic</a-radio>
-                            <a-radio value="gemini">Gemini</a-radio>
+                            <a-radio value="openai">{{ t('settings:provider.compatibilityModeOpenAI') }}</a-radio>
+                            <a-radio value="claude">{{ t('settings:provider.compatibilityModeClaude') }}</a-radio>
+                            <a-radio value="gemini">{{ t('settings:provider.compatibilityModeGemini') }}</a-radio>
                         </template>
                     </a-radio-group>
                 </a-form-item>
-                <a-form-item label="Enabled" name="enabled">
+                <a-form-item :label="t('settings:provider.enabled')" name="enabled">
                     <a-switch v-model:checked="formState.enabled" />
                 </a-form-item>
             </a-form>
         </a-modal>
 
-        <a-modal v-model:open="selectModalVisible" title="Add Provider" :footer="null" :width="700">
+        <a-modal v-model:open="selectModalVisible" :title="t('settings:provider.addProviderModal')" :footer="null" :width="700">
             <div class="provider-selection">
                 <div v-for="provider in predefinedProviders" :key="provider.name" class="provider-card" @click="handleSelectProvider(provider)">
                     <div class="provider-icon">{{ provider.icon }}</div>
                     <div class="provider-info">
-                        <div class="provider-name">{{ provider.name }}</div>
-                        <div class="provider-description">{{ provider.description }}</div>
+                        <div class="provider-name">{{ provider.isCustom ? t('settings:provider.customProvider') : provider.name }}</div>
+                        <div class="provider-description">{{ provider.isCustom ? t('settings:provider.customProviderDescription') : provider.description }}</div>
                     </div>
                     <div class="provider-actions">
                         <a-button 
@@ -88,9 +88,9 @@
                             size="small" 
                             @click.stop="openPurchaseUrl(provider.purchase_url)"
                         >
-                            Get API Key
+                            {{ t('settings:provider.getAPIKey') }}
                         </a-button>
-                        <a-button type="primary" class="add-now-btn">Add now</a-button>
+                        <a-button type="primary" class="add-now-btn">{{ t('settings:provider.addNow') }}</a-button>
                     </div>
                 </div>
             </div>
@@ -105,6 +105,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, CloseC
 import { useConfigStore } from '@/stores/configStore'
 import { useAppStateStore } from '@/stores/appState'
 import type { ProviderConfig } from '@/types/config'
+import { t } from 'i18next'
 
 const appState = useAppStateStore()
 
@@ -117,11 +118,11 @@ onMounted(() => {
             predefinedProviders.value = data
         })
         .catch(error => {
-            console.warn('[ProviderSettings]', 'Unable to load providers:', error)
+            console.warn('[ProviderSettings]', t('settings:provider.unableToLoadProviders'), error)
             // at least add a custom entrance
             predefinedProviders.value.push({
-                name: 'Custom Provider',
-                description: 'Add a custom provider',
+                name: t('settings:provider.customProvider'),
+                description: t('settings:provider.customProviderDescription'),
                 baseURL: '',
                 icon: '',
                 requestPath: '',
@@ -160,10 +161,10 @@ const formState = reactive<ProviderConfig>({
 })
 
 const rules = {
-    name: [{ required: true, message: 'Please input provider name!' }],
-    api_key: [{ required: true, message: 'Please input API key!' }],
+    name: [{ required: true, message: t('settings:provider.nameRequired') }],
+    api_key: [{ required: true, message: t('settings:provider.apiKeyRequired') }],
     baseURL: [
-        { required: true, message: 'Please input base URL!' },
+        { required: true, message: t('settings:provider.baseURLRequired') },
         {
             validator: (_rule: any, value: string) => {
                 if (!value) {
@@ -173,7 +174,7 @@ const rules = {
                     new URL(value)
                     return Promise.resolve()
                 } catch (error) {
-                    return Promise.reject(new Error('Please enter a valid URL (e.g., https://api.example.com)'))
+                    return Promise.reject(new Error(t('settings:provider.invalidURL')))
                 }
             },
             trigger: 'blur'
@@ -183,31 +184,31 @@ const rules = {
 
 const columns = [
     {
-        title: 'Name',
+        title: t('settings:provider.name'),
         dataIndex: 'name',
         key: 'name'
     },
     {
-        title: 'Base URL',
+        title: t('settings:provider.baseURL'),
         dataIndex: 'baseURL',
         key: 'baseURL'
     },
     {
-        title: 'Request Path',
+        title: t('settings:provider.requestPath'),
         dataIndex: 'requestPath',
         key: 'requestPath'
     },
     {
-        title: 'Compatibility Mode',
+        title: t('settings:provider.compatibilityMode'),
         dataIndex: 'compatibilityMode',
         key: 'compatibilityMode'
     },
     {
-        title: 'Status',
+        title: t('settings:provider.status'),
         key: 'enabled'
     },
     {
-        title: 'Action',
+        title: t('settings:provider.actions'),
         key: 'action',
         width: 150
     }
@@ -244,7 +245,7 @@ const handleEdit = (record: ProviderConfig) => {
 
 const handleDelete = (id: string) => {
     configStore.deleteProvider(id)
-    message.success('Provider deleted successfully')
+    message.success(t('settings:provider.providerDeletedSuccessfully'))
 }
 
 const handleOk = async () => {
@@ -252,10 +253,10 @@ const handleOk = async () => {
         await formRef.value.validate()
         if (isEditing.value) {
             configStore.updateProvider(formState.id, { ...formState })
-            message.success('Provider updated successfully')
+            message.success(t('settings:provider.providerUpdatedSuccessfully'))
         } else {
             configStore.addProvider({ ...formState })
-            message.success('Provider added successfully')
+            message.success(t('settings:provider.providerAddedSuccessfully'))
         }
         modalVisible.value = false
     } catch (error) {

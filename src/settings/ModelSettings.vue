@@ -1,11 +1,11 @@
 <template>
     <div class="sub-settings-container">
-        <h2>Models</h2>
+        <h2>{{ t("settings:model.title") }}</h2>
 
         <div class="filter-bar">
             <a-input 
                 v-model:value="searchKeyword" 
-                placeholder="Filter by model ID..." 
+                :placeholder="t('settings:model.placeholder')" 
                 allow-clear
             >
                 <template #prefix>
@@ -15,17 +15,17 @@
         </div>
 
         <div class="action-buttons">
-            <a-button type="primary" @click="openFetchModal">Fetch Models</a-button>
-            <a-button @click="handleAdd">Add Model manually</a-button>
-            <a-button @click="handleCleanup">Cleanup</a-button>
+            <a-button type="primary" @click="openFetchModal">{{ t("settings:model.fetch") }}</a-button>
+            <a-button @click="handleAdd">{{ t("settings:model.add") }}</a-button>
+            <a-button @click="handleCleanup">{{ t("settings:model.cleanup") }}</a-button>
         </div>
 
         <div class="provider-group" v-if="configStore.hasZombieModels()">
             <div class="provider-header">
-                <h3 class="provider-name">Zombie Models</h3>
+                <h3 class="provider-name">{{ t("settings:model.zombie.title") }}</h3>
             </div>
-            <p>Zombie models are models that are not associated with any provider. They may be left over from previous configurations. Accumulating them may cause performance issues, leading to slower response times. It is recommended to clean up zombie models periodically.</p>
-            <a-button @click="handleCleanup">Cleanup Now</a-button>
+            <p>{{ t("settings:model.zombie.description") }}</p>
+            <a-button @click="handleCleanup">{{ t("settings:model.zombie.cleanupNow") }}</a-button>
         </div>
 
         <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
@@ -36,7 +36,7 @@
                     size="small"
                     @click="handleToggleAllModels(group)"
                 >
-                    {{ allModelsEnabled(group) ? 'Disable All' : 'Enable All' }}
+                    {{ allModelsEnabled(group) ? t("settings:model.disableAll") : t("settings:model.enableAll") }}
                 </a-button>
             </div>
             
@@ -56,10 +56,10 @@
                     <template v-else-if="column.key === 'actions'">
                         <a-space>
                             <a-button type="link" size="small" @click="handleEdit(record)">
-                                Edit
+                                {{ t("settings:model.edit") }}
                             </a-button>
                             <a-button type="link" size="small" danger @click="handleDelete(record.provider_id, record.id)">
-                                Delete
+                                {{ t("settings:model.delete") }}
                             </a-button>
                         </a-space>
                     </template>
@@ -183,6 +183,8 @@ import { message, Modal } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 import { useAppStateStore } from '@/stores/appState'
 import { InfoCircleOutlined } from '@ant-design/icons-vue'
+import { TraceErrorAndGetString } from '@/utils/errorTrace'
+import { t } from 'i18next'
 
 const configStore = useConfigStore()
 
@@ -206,18 +208,18 @@ const formData = reactive<ModelConfig>({
 
 const columns = [
     {
-        title: 'Model ID',
+        title: t("settings:model.modelID"),
         dataIndex: 'id',
         key: 'id'
     },
     {
-        title: 'Enabled',
+        title: t("settings:model.enabled"),
         dataIndex: 'enabled',
         key: 'enabled',
         width: 100
     },
     {
-        title: 'Actions',
+        title: t("settings:model.actions"),
         key: 'actions',
         width: 150
     }
@@ -225,26 +227,26 @@ const columns = [
 
 const conflictColumns = [
     {
-        title: 'Model ID',
+        title: t("settings:model.modelID"),
         dataIndex: 'id',
         key: 'id',
         width: 200
     },
     {
-        title: 'Existing Provider',
+        title: t("settings:model.existingProvider"),
         key: 'existing_provider',
         width: 150
     },
     {
-        title: 'New Provider',
+        title: t("settings:model.newProvider"),
         key: 'new_provider',
         width: 150
     },
 ]
 
 const rules = {
-    provider_id: [{ required: true, message: 'Please select a provider!' }],
-    id: [{ required: true, message: 'Please input model ID!' }]
+    provider_id: [{ required: true, message: t("settings:model.selectProvider") }],
+    id: [{ required: true, message: t("settings:model.inputModelID") }]
 }
 
 onMounted(() => {
@@ -285,7 +287,7 @@ const handleEdit = (model: ModelConfig) => {
 
 const handleDelete = (provider_id: string, id: string) => {
     configStore.deleteModel(provider_id, id);
-    message.success('Model deleted successfully');
+    message.success(t("settings:model.modelDeletedSuccessfully"));
 }
 
 const handleToggleEnabled = (model: ModelConfig) => {
@@ -311,7 +313,11 @@ const handleToggleAllModels = (group: { provider: ProviderConfig, models: ModelC
     }
     
     const scope = hasFilter ? 'filtered' : 'all'
-    message.success(`${newState ? 'Enabled' : 'Disabled'} ${scope} models for ${group.provider.name}`)
+    message.success(t("settings:model.modelsToggledSuccessfully", {
+        newState: newState ? t("settings:model.enabled") : t("settings:model.disabled"),
+        scope: scope,
+        providerName: group.provider.name
+    }))
 }
 
 const handleOk = async () => {
@@ -320,23 +326,23 @@ const handleOk = async () => {
         
         if (isEditing.value) {
             if (!formData.id) {
-                message.error('Model ID is required')
+                message.error(t("settings:model.inputModelID"))
                 return
             }
             if (!formDataClone.value) {
-                message.error('The state of the model editor has been damaged, please reload the page to try again')
+                message.error(t("settings:model.modelEditorDamaged"))
                 return
             }
             configStore.updateModel(formDataClone.value.provider_id, formDataClone.value.id, formData);
-            message.success('Model updated successfully')
+            message.success(t("settings:model.modelUpdatedSuccessfully"))
         } else {
             configStore.addModel(formData.provider_id, formData.id, formData.enabled);
-            message.success('Model added successfully')
+            message.success(t("settings:model.modelAddedSuccessfully"))
         }
         
         modalVisible.value = false
     } catch (error) {
-        message.error('Operation failed: ' + error)
+        message.error(t("settings:model.operationFailed") + error)
     }
 }
 
@@ -359,13 +365,17 @@ const handleOverwriteConflicts = () => {
         })
     }
 
-    message.success(`Successfully updated ${conflictModels.value.length} models`)
+    message.success(t("settings:model.successfullyUpdatedModels", {
+        count: conflictModels.value.length
+    }))
     conflictModalVisible.value = false
     fetchModalVisible.value = false
 }
 
 const handleSkipConflicts = () => {
-    message.info(`Skipped ${conflictModels.value.length} duplicate models`)
+    message.info(t("settings:model.skippedDuplicateModels", {
+        count: conflictModels.value.length
+    }))
     conflictModalVisible.value = false
     fetchModalVisible.value = false
 }
@@ -381,13 +391,13 @@ const openFetchModal = () => {
 
 const handleFetchOk = async () => {
     if (!selectedProviderId.value) {
-        message.warning('Please select a provider')
+        message.warning(t("settings:model.pleaseSelectProvider"))
         return
     }
 
     const provider = configStore.getProviderById(selectedProviderId.value)
     if (!provider) {
-        message.error('Provider not found')
+        message.error(t("settings:model.providerNotFound"))
         return
     }
 
@@ -445,17 +455,19 @@ const handleFetchOk = async () => {
                 for (const model of newModels) {
                     configStore.addModel(model.provider_id, model.id, model.enabled)
                 }
-                message.success(`Successfully added ${newModels.length} models`)
+                message.success(t("settings:model.successfullyAddedModels", {
+                    count: newModels.length
+                }))
                 fetchModalVisible.value = false
             } else {
-                message.warning('No models found in response')
+                message.warning(t("settings:model.noModelsFoundInResponse"))
             }
         } else {
-            message.warning('Invalid response format from API')
+            message.warning(t("settings:model.invalidResponseFormatFromAPI"))
         }
     } catch (error) {
         console.error('Failed to fetch models:', error)
-        message.error(`Failed to fetch models: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        message.error(t("settings:model.operationFailed") + TraceErrorAndGetString(error))
     } finally {
         isFetching.value = false
     }
@@ -463,17 +475,19 @@ const handleFetchOk = async () => {
 
 const handleCleanup = async () => {
     if (!await new Promise(r => Modal.confirm({
-        title: "Cleanup",
+        title: t("settings:model.cleanup"),
         icon: h(InfoCircleOutlined),
-        content: "This operation will remove \"zombie\" models, which are models that are not associated with any provider. This may be caused after you deleted a provider directly. Continuing will not cause any data loss. Proceed?",
-        okText: "Cleanup",
+        content: t("settings:model.cleanupZombieModelsWarning"),
+        okText: t("settings:model.cleanup"),
         okType: "primary",
         onOk: () => r(true),
         onCancel: () => r(false),
     }))) return;
 
     const cleanedCount = configStore.cleanupZombieModels()
-    message.success(`Successfully removed ${cleanedCount} zombie models`);
+    message.success(t("settings:model.successfullyRemovedZombieModels", {
+        count: cleanedCount
+    }));
 }
 </script>
 

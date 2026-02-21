@@ -1,6 +1,6 @@
 <template>
     <div class="new-chat-view">
-        <h2 style="margin-top: 0;">How can I assist with you today?</h2>
+        <h2 style="margin-top: 0;">{{ t('common:ui.newChat.greeting._1') }}</h2>
         <InputMessage
             v-model="userMessage"
             v-model:modelId="modelId"

@@ -128,5 +128,24 @@ export async function UpdateConversationIndexAuto(item: ConversationIndexItem) {
     return false;
 }
 
+export async function UpdateConversationIndexAutoPartial(item: Partial<ConversationIndexItem> & { id: string }) {
+    let indexId = await GetCurrentConvIndexId();
+    while (indexId > 0) {
+        const indexData = await LoadConvIndex(indexId);
+        if (!indexData) break;
+        const indexItemIndex = indexData.conversations.findIndex(x => x.id === item.id);
+        if (indexItemIndex >= 0) {
+            for (const key of Reflect.ownKeys(item)) {
+                if (key !== 'id') {
+                    Reflect.set(indexData.conversations[indexItemIndex]!, key, Reflect.get(item, key));
+                }
+            }
+            useConversationStore().saveConvIndex(indexId);
+            return true;
+        }
+        indexId = indexData.previous;
+    }
+    return false;
+}
 
 

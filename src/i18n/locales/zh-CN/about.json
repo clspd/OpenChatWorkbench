@@ -1,0 +1,25 @@
+{
+    "title": "关于 OpenChatWorkbench",
+    "sourceCode": {
+        "title": "源代码",
+        "viewOnGitHub": "在 GitHub 上查看"
+    },
+    "version": {
+        "title": "版本",
+        "commit": "提交"
+    },
+    "license": {
+        "title": "许可证",
+        "text": "许可证"
+    },
+    "status": {
+        "title": "状态",
+        "serviceWorkerStatus": "Service Worker 状态：",
+        "active": "正常",
+        "notActive": "未激活"
+    },
+    "debugTools": {
+        "title": "调试工具",
+        "fileBrowser": "文件浏览器"
+    }
+}

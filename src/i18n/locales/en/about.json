@@ -1,0 +1,26 @@
+{
+    "title": "About OpenChatWorkbench",
+    "sourceCode": {
+        "title": "Source code",
+        "description": "OpenChatWorkbench is open-source software available on GitHub.",
+        "viewOnGitHub": "View on GitHub"
+    },
+    "version": {
+        "title": "Version",
+        "commit": "Commit"
+    },
+    "license": {
+        "title": "License",
+        "text": "License"
+    },
+    "status": {
+        "title": "Status",
+        "serviceWorkerStatus": "Service Worker status:",
+        "active": "Active",
+        "notActive": "Not Active"
+    },
+    "debugTools": {
+        "title": "Debug Tools",
+        "fileBrowser": "File Browser"
+    }
+}

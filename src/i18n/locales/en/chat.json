@@ -1,0 +1,14 @@
+{
+    "management": {
+        "requests": {
+            "delete": {
+                "title": "Delete Conversation",
+                "content": "Are you sure you want to delete ",
+                "okText": "Yes",
+                "cancelText": "No",
+                "success": "Conversation deleted",
+                "error": "Failed to delete conversation: {{error}}"
+            }
+        }
+    }
+}

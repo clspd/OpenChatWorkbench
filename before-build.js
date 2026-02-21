@@ -20,7 +20,7 @@ export const DYNDATA = {
     writeFileSync(targetPath, content, 'utf-8');
 
 } catch (error) {
-    console.error('Error generating dynamic.ts:', error.message);
+    console.error('Error generating dynamic.ts:', error);
 
     const fallbackContent = `export const DYNDATA = {
     commithash: ""
@@ -30,7 +30,7 @@ export const DYNDATA = {
         const targetPath = join(__dirname, 'src', 'dynamic.ts');
         writeFileSync(targetPath, fallbackContent, 'utf-8');
     } catch (writeError) {
-        console.error('Error writing fallback content:', writeError.message);
+        console.error('Error writing fallback content:', writeError);
     }
 
     process.exit(1);

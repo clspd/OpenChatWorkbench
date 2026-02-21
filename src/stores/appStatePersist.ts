@@ -10,6 +10,7 @@ import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
+        language: 'en',
         fontSizeGlobal: 0,
         modelChooserScrollPos: 0,
         sidebarCollapsed: false,

@@ -18,7 +18,7 @@
             </div>
 
             <div class="flexible-space"></div>
-            <div class="title-text">{{ appState.title }}</div>
+            <div class="title-text">{{ (appState.titleCustomize || appState.titleNoTranslate) ? appState.title : t(GetTitleI18nKeyByText(appState.title)) }}</div>
             <div class="flexible-space"></div>
             <HeaderMoreOptions />
         </template>
@@ -42,6 +42,7 @@ import { useWindowStateStore } from '@/stores/windowState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { useRouter } from 'vue-router';
 import HeaderMoreOptions from './HeaderMoreOptions.vue';
+import { GetTitleI18nKeyByText } from '@/i18n/titles';
 
 const appState = useAppStateStore();
 const windowState = useWindowStateStore();

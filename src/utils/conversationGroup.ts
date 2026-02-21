@@ -2,67 +2,14 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/en'
 import type { ConversationIndexItem, ConversationGroup } from '@/types/conversation'
+import { t } from 'i18next'
+import { currentLanguage } from '@/i18n'
 
 dayjs.extend(relativeTime)
 
-// export function groupConversationsByTime(
-//     conversations: ConversationIndexItem[]
-// ): ConversationGroup[] {
-//     const now = dayjs()
-//     const groups: ConversationGroup[] = []
-
-//     const pinnedConversations = conversations.filter(conv => conv.pinned).sort((a, b) => b.updated_at - a.updated_at)
-//     const normalConversations = conversations.filter(conv => !conv.pinned).sort((a, b) => b.updated_at - a.updated_at)
-
-//     if (pinnedConversations.length > 0) {
-//         groups.push({
-//             label: 'Pinned',
-//             conversations: pinnedConversations
-//         })
-//     }
-
-//     const timeGroups: Map<string, {
-//         conversations: ConversationIndexItem[];
-//         gpOffset: number;
-//     }> = new Map()
-
-//     normalConversations.forEach(conv => {
-//         const date = dayjs(conv.updated_at)
-//         const diffDays = now.diff(date, 'day')
-
-//         let groupLabel: string
-
-//         if (diffDays <= 30) {
-//             groupLabel = date.fromNow()
-//         } else {
-//             groupLabel = date.format('YYYY-MM')
-//         }
-
-//         if (!timeGroups.has(groupLabel)) {
-//             timeGroups.set(groupLabel, {
-//                 conversations: [],
-//                 gpOffset: groups.length,
-//             })
-//         }
-//         timeGroups.get(groupLabel)!.conversations.push(conv)
-//     })
-
-//     const sortedTimeGroups = Array.from(timeGroups.entries())
-//         .map(([label, convs]) => ({
-//             label,
-//             conversations: convs.conversations.toSorted((a, b) => b.updated_at - a.updated_at),
-//             // gpOffset: convs.gpOffset,
-//         }))
-//         // .sort((a, b) => {
-//         //     return a.gpOffset - b.gpOffset
-//         // })
-
-//     groups.push(...sortedTimeGroups)
-
-//     return groups
-// }
-
 export function groupConversationsByTime(conversations: ConversationIndexItem[]): ConversationGroup[] {
+    void(currentLanguage.value)
+
     const now = dayjs()
     const groups: ConversationGroup[] = []
     const pinned: ConversationIndexItem[] = []
@@ -78,7 +25,7 @@ export function groupConversationsByTime(conversations: ConversationIndexItem[])
     normal.sort(sortByTime)
 
     if (pinned.length) {
-        groups.push({ label: 'Pinned', conversations: pinned })
+        groups.push({ label: t('common:ui.sidebar.conversation.state.pinned'), conversations: pinned })
     }
 
     const timeGroups: Record<string, ConversationIndexItem[]> = {}

@@ -1,0 +1,59 @@
+{
+    "appName": "Open Chat Workbench",
+    "ui": {
+        "header": {
+            "moreOptions": {
+                "newConv": "新对话",
+                "delConv": "删除",
+                "settings": "设置"
+            }
+        },
+        "sidebar": {
+            "newChatBtn": "新聊天",
+            "newWorkspaceBtn": "新建工作区",
+            "mode": {
+                "chat": "聊天",
+                "workspace": "工作区"
+            },
+            "settingsBtn": "设置",
+            "conversation": {
+                "state": {
+                    "pinned": "已置顶"
+                },
+                "operations": {
+                    "rename": "重命名",
+                    "pin": "置顶",
+                    "unpin": "取消置顶",
+                    "delete": "删除"
+                }
+            }
+        },
+        "mainInput": {
+            "placeholder": "输入消息...",
+            "options": {
+                "attachFile": "添加文件",
+                "attachImage": "添加图片",
+                "deepThink": "深度思考",
+                "plainInput": "纯文本输入"
+            }
+        },
+        "modelChooser": {
+            "title": "选择模型",
+            "showFavOnly": "仅显示收藏的模型",
+            "filterTooltip": "按模型 ID 筛选",
+            "emptyState": "暂无模型可用。请先配置提供商和模型。"
+        },
+        "state": {
+            "enabled": "已启用",
+            "disabled": "已禁用"
+        },
+        "newChat": {
+            "greeting": {
+                "_1": "今天有什么可以帮到你？"
+            }
+        }
+    },
+    "conversation": {
+        "defaultTitle": "新对话"
+    }
+}

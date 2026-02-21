@@ -7,11 +7,12 @@ import { dumpConversationData, dumpConversationPref } from "./dumper";
 import { AddConversationToIndex, GetCurrentConvIndexId, RemoveConversationFromAnyIndex, UpdateConversationIndexAuto } from "./convIndex";
 import { useConversationStore } from "@/stores/conversationStore";
 import { InitConversationPreference, LoadConversationPreference, UpdateConversationPreferenceInternal } from "./convPref";
+import i18next from "i18next";
 
 export const CONVERSATION_MAX_MESSAGE_COUNT = 2500;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
 
-export async function CreateConversation(title = "New Conversation"): Promise<string> {
+export async function CreateConversation(title = i18next.t("common:conversation.defaultTitle")): Promise<string> {
     const id = crypto.randomUUID(), ts = Date.now();
 
     // create Preference File
@@ -74,6 +75,16 @@ export async function UpdateConversation(id: string, data: Conversation) {
     await useConversationStore().updateConvInStore(id, data);
 }
 
+/**
+ * Updates conversation information.
+ * @param id Conversation id
+ * @param title New title. Optional
+ * @param pinned New pinned status. Optional
+ * @example 
+ * UpdateConversationInfo("12345678-1234-1234-1234-1234567890ab", "New Title", true); // set title and pin
+ * UpdateConversationInfo("12345678-1234-1234-1234-1234567890ab", undefined, false); // unpin conversation
+ * UpdateConversationInfo("12345678-1234-1234-1234-1234567890ab"); // update the `updated_at` field
+ */
 export async function UpdateConversationInfo(id: string, title?: string, pinned?: boolean) {
     // update conversation itself
     const conv = await LoadConversation(id);
@@ -117,6 +128,7 @@ export async function InsertMessageToConversation(id: string, message: Message) 
     // append message
     conv.messages.push(message);
     // update conversation
+    await UpdateConversationInfo(id);
     await useConversationStore().updateConvInStore(id, conv);
 }
 

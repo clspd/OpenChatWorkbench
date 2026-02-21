@@ -13,6 +13,7 @@ import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import type { ProviderConfig, ModelConfig } from "@/types/config";
 import { TraceErrorAndGetString } from "@/utils/errorTrace";
 import { useAppStateStore } from "@/stores/appState";
+import { UpdateConversationInfo } from "../chat/conversation";
 
 export type _request_hook_func = (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<void>;
 
@@ -140,6 +141,7 @@ export async function _base_stream(
                 if (options.onClose) options.onClose(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
                 else {
                     respMsg.has_pending_fragment = false;
+                    UpdateConversationInfo(conv.id);
                     conversationStore.updateConvInStore(conv.id, conv);
                 }
             },
@@ -213,6 +215,7 @@ export async function _base_stream(
     finally {
         if (options.onAfterRequest) await options.onAfterRequest(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
         // update conversation status
+        UpdateConversationInfo(conv.id);
         conversationStore.updateConvInStore(conv.id, conv);
         // remove the pending request data from store
         conversationStore.requestsInProgress.delete(conv.id);

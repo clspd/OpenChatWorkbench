@@ -5,19 +5,19 @@
                 {{ selectedModel.name }}
             </span>
             <span v-else class="model-placeholder">
-                Select Model
+                {{ t('common:ui.modelChooser.title') }}
             </span>
         </a-button>
 
         <dialog-view v-model="modalVisible" :close-on-click-mask="true" style="max-width: 500px; width: calc(100% - 2em);">
             <template #title>
-                Select Model
+                {{ t('common:ui.modelChooser.title') }}
             </template>
             <div class="model-selection" ref="modelSelectionRef">
                 <div class="search-bar">
                     <a-input 
                         v-model:value="searchKeyword" 
-                        placeholder="Filter by model ID..." 
+                        :placeholder="t('common:ui.modelChooser.filterTooltip')" 
                         allow-clear
                     >
                         <template #prefix>
@@ -27,11 +27,11 @@
                 </div>
                 <div class="filter-section">
                     <a-checkbox v-model:checked="showFavoritesOnly">
-                        Show favorites only
+                        {{ t('common:ui.modelChooser.showFavOnly') }}
                     </a-checkbox>
                 </div>
                 <div v-if="groupedModels.length === 0" class="empty-state">
-                    <p>No models available. Please add providers and models first.</p>
+                    <p>{{ t('common:ui.modelChooser.emptyState') }}</p>
                     <div><a href="javascript:void(0)" @click="appState.showConfigGuide = true">Open the configuration guide</a></div>
                 </div>
                 <div v-else style="position: relative;">
@@ -46,7 +46,7 @@
                              class="provider-header">
                             <span class="provider-name">{{ (groupedModels[item.index] as any).data.name }}</span>
                             <a-tag :color="(groupedModels[item.index] as any).data.enabled ? 'green' : 'red'" size="small">
-                                {{ (groupedModels[item.index] as any).data.enabled ? 'Enabled' : 'Disabled' }}
+                                {{ (groupedModels[item.index] as any).data.enabled ? t('common:ui.state.enabled') : t('common:ui.state.disabled') }}
                             </a-tag>
                         </div>
                         <div v-else-if="groupedModels[item.index]?.type === 'model'"

@@ -25,22 +25,22 @@
                                 <a-menu @click="handleConvMenuClick($event.key, vi.index)">
                                     <a-menu-item key="rename">
                                         <EditOutlined />
-                                        Rename
+                                        {{ t('common:ui.sidebar.conversation.operations.rename') }}
                                     </a-menu-item>
                                     <a-menu-item key="pin">
                                         <template v-if="(flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.pinned">
                                             <ExportOutlined />
-                                            Unpin
+                                            {{ t('common:ui.sidebar.conversation.operations.unpin') }}
                                         </template>
                                         <template v-else>
                                             <PushpinOutlined />
-                                            Pin
+                                            {{ t('common:ui.sidebar.conversation.operations.pin') }}
                                         </template>
                                     </a-menu-item>
                                     <a-menu-divider />
                                     <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
                                         <DeleteOutlined />
-                                        Delete
+                                        {{ t('common:ui.sidebar.conversation.operations.delete') }}
                                     </a-menu-item>
                                 </a-menu>
                             </template>

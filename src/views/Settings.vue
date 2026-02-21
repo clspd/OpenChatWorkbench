@@ -1,7 +1,7 @@
 <template>
     <div class="settings-view">
         <template v-if="settingId === ''">
-            <h2 style="margin-top: 0;">Settings</h2>
+            <h2 style="margin-top: 0;">{{ t('settings:title') }}</h2>
 
             <a-list bordered :data-source="pages">
                 <template #renderItem="{ item }">
@@ -25,6 +25,7 @@ import { computed, markRaw, ref, watch } from 'vue';
 import { defineAsyncComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStateStore } from '@/stores/appState'
+import i18next from 'i18next';
 
 const GeneralSettings = defineAsyncComponent(() => import('@/settings/GeneralSettings.vue'))
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
@@ -45,32 +46,32 @@ const isValidPage = computed(() => (props.settingId === '' || pages.value.find((
 const pages = ref([
     {
         id: 'general',
-        title: 'General',
+        title: i18next.t('settings:general.title'),
         component: markRaw(GeneralSettings),
     },
     {
         id: 'providers',
-        title: 'Providers',
+        title: i18next.t('settings:provider.title'),
         component: markRaw(ProviderSettings),
     },
     {
         id: 'models',
-        title: 'Models',
+        title: i18next.t('settings:model.title'),
         component: markRaw(ModelSettings),
     },
     {
         id: 'cache',
-        title: 'Cache',
+        title: i18next.t('settings:cache.title'),
         component: markRaw(CacheSettings),
     },
     {
         id: 'data-management',
-        title: 'Data Management',
+        title: i18next.t('settings:data_management.title'),
         component: markRaw(DataManagementSettings),
     },
     {
         id: 'about',
-        title: 'About',
+        title: i18next.t('settings:about'),
         anotherPage: '/about/',
     },
 ])

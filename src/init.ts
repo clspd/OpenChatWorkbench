@@ -16,8 +16,11 @@ import { DYNDATA } from "./dynamic";
 import { setupErrorHandler } from "./utils/errorHandler";
 import { createChatBaseStructure } from "./modules/chat/path";
 import { InitConvIndex } from "./modules/chat/convIndex";
+import { GetTitleI18nKeyByText } from "./i18n/titles";
+import i18next from "i18next";
+import { SetupI18n } from "./i18n";
 
-export default async function init() {
+export default async function init(app: ReturnType<typeof import('vue').createApp>) {
     // register service worker
     await registerServiceWorker()
 
@@ -51,14 +54,19 @@ export default async function init() {
     await loadAppStateAutoSave();
     initAppStateAutoSave();
 
+    app.config.globalProperties.t = await SetupI18n();
+
     const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave, cleanup: cleanupAppStateSession } = useAppStateSessionStore()
     await loadAppStateSession();
     initAppStateSessionAutoSave();
     cleanupAppStateSession();
 
     watch(() => useAppStateStore().title, (title) => {
+        if (!useAppStateStore().titleCustomize && !useAppStateStore().titleNoTranslate) title = i18next.t(GetTitleI18nKeyByText(title));
         document.title = title ? (useAppStateStore().titleCustomize ? title : `${title} - ${app_name}`) : app_name
     });
+
+    await i18next.loadNamespaces('settings');
 
     if (useAppStatePersistStore().fontSizeGlobal) {
         document.documentElement.style.setProperty('--ocw-font-size', useAppStatePersistStore().fontSizeGlobal + 'px');

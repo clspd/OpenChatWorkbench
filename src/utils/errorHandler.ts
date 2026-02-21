@@ -11,10 +11,11 @@ export async function setupErrorHandler() {
 async function handleWindowError(e: ErrorEvent) {
     if (!await isPerformanceCookieConsented()) return;
     // Send a report
+    if (!e) return;
     await sendStatisticsReport({
         type: 'runtime-error',
         errorType: 'error',
-        errorMessage: e.message,
+        errorMessage: e.message ?? 'Unknown error',
         ctx: {
             fileName: e.filename,
             lineNumber: e.lineno,

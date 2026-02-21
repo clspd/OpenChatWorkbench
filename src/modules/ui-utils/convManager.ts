@@ -1,27 +1,28 @@
 import { h } from "vue";
 import { message, Modal } from "ant-design-vue";
-import { CreateConversation, DeleteConversation, LoadConversation, UpdateConversationInfo } from "../chat/conversation";
+import { DeleteConversation, LoadConversation, UpdateConversationInfo } from "../chat/conversation";
 import { useAppStateStore } from "@/stores/appState";
 import type { Router } from "vue-router";
 import { LoadConversationPreference } from "../chat/convPref";
+import { t } from "i18next";
 
 export async function handleRequestDeleteConversation(cid: string, showConfirm = true, router?: Router) {
     const conv = await LoadConversation(cid);
     let res = false;
     if (showConfirm) {
         res = await new Promise<boolean>((r, j) => Modal.confirm({
-            title: 'Delete Conversation',
+            title: t('chat:management.requests.delete.title'),
             content: h('div', null, [
-                h('span', null, 'Are you sure you want to delete conversation '),
+                h('span', null, t('chat:management.requests.delete.content')),
                 h('span', { style: { userSelect: 'all', fontWeight: 'bold' } }, conv.session.title),
                 h('span', null, '?'),
             ]),
-            okText: 'Yes',
+            okText: t('chat:management.requests.delete.okText'),
             okType: 'danger',
-            cancelText: 'No',
+            cancelText: t('chat:management.requests.delete.cancelText'),
             onOk: () => {
                 return DeleteConversation(cid).then(() => {
-                    message.success('Conversation deleted');
+                    message.success(t('chat:management.requests.delete.success'));
                     r(true);
                 }).catch(j);
             },

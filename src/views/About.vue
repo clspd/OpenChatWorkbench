@@ -1,30 +1,30 @@
 <template>
     <div class="about-view">
-        <h2 style="margin-top: 0;">About OpenChatWorkbench</h2>
+        <h2 style="margin-top: 0;">{{ t('about:title') }}</h2>
         
-        <a-card title="Source code" class="my-card">
-            <p>OpenChatWorkbench is open-source software available on GitHub.</p>
+        <a-card :title="t('about:sourceCode.title')" class="my-card">
+            <p>{{ t('about:sourceCode.description') }}</p>
             <a-button type="link" :href="project_path" target="_blank">
-                View on GitHub
+                {{ t('about:sourceCode.viewOnGitHub') }}
             </a-button>
         </a-card>
 
-        <a-card title="Version" class="my-card" style="overflow: hidden">
-            <p style="overflow: auto; white-space: nowrap;">Commit: HEAD+{{ DYNDATA.commithash }}</p>
+        <a-card :title="t('about:version.title')" class="my-card" style="overflow: hidden">
+            <p style="overflow: auto; white-space: nowrap;">{{ t('about:version.commit') }}: HEAD+{{ DYNDATA.commithash }}</p>
         </a-card>
 
-        <a-card title="License" class="my-card">
-            <p><a href="/resource/license.html" target=_blank>GPL-3.0</a> License</p>
+        <a-card :title="t('about:license.title')" class="my-card">
+            <p><a href="/resource/license.html" target=_blank>GPL-3.0</a> {{ t('about:license.text') }}</p>
         </a-card>
 
-        <a-card title="Status" class="my-card">
+        <a-card :title="t('about:status.title')" class="my-card">
             <div>
-                <b>Service Worker status:</b>
-                <StatusText :value="isSwActive" activeText="Active" inactiveText="Not Active" />
+                <b>{{ t('about:status.serviceWorkerStatus') }}</b>
+                <StatusText :value="isSwActive" :activeText="t('about:status.active')" :inactiveText="t('about:status.notActive')" />
             </div>
         </a-card>
 
-        <a-card title="Debug Tools" class="my-card">
+        <a-card :title="t('about:debugTools.title')" class="my-card">
             <a-space direction="vertical" :size="8" style="width: 100%;">
                 <a-button 
                     block 
@@ -33,7 +33,7 @@
                     <template #icon>
                         <FolderOpenOutlined />
                     </template>
-                    File Browser
+                    {{ t('about:debugTools.fileBrowser') }}
                 </a-button>
             </a-space>
         </a-card>
@@ -49,6 +49,7 @@ import { isServiceWorkerActive } from '@/utils/swApi';
 import StatusText from '@/components/StatusText.vue'
 import { project_path } from '@/config';
 import { DYNDATA } from '@/dynamic';
+import { t } from 'i18next';
 
 const router = useRouter()
 

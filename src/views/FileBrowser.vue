@@ -1,6 +1,13 @@
 <template>
     <div class="file-browser-view">
+        <!-- @i18n notranslate -->
         <h2 style="margin-top: 0;">File Browser</h2>
+
+        <a-alert v-if="!isDev"
+            show-icon type="warning" closable><template #message>
+                File Browser is a <b>Debug Tool</b> and should not be accessed by regular users. Please <router-link to="/">Create a conversation</router-link> to use the application normally.
+            </template>
+        </a-alert>
 
         <div class="file-browser-toolbar">
             <a-space>
@@ -161,6 +168,8 @@ onMounted(() => {
     useAppStateStore().setTitle('File Browser (Debug)')
     loadFiles()
 })
+
+const isDev = import.meta.env.DEV;
 
 const console = {
     error(...args: any[]) {

@@ -4,17 +4,17 @@
             <a-menu @click="handleMenuClick">
                 <a-menu-item key="new_conv" v-if="appState.page !== 'new-chat'">
                     <PlusOutlined />
-                    New Conversation
+                    {{ t('common:ui.header.moreOptions.newConv') }}
                 </a-menu-item>
 
                 <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);" v-if="appState.page === 'chat'">
                     <DeleteOutlined />
-                    Delete
+                    {{ t('common:ui.header.moreOptions.delConv') }}
                 </a-menu-item>
 
                 <a-menu-item key="settings" v-if="appState.page !== 'settings'">
                     <SettingOutlined />
-                    Settings
+                    {{ t('common:ui.header.moreOptions.settings') }}
                 </a-menu-item>
             </a-menu>
         </template>

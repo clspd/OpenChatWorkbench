@@ -6,6 +6,7 @@ import type { ModelConfig, ProviderConfig } from "@/types/config";
 import { useConversationStore } from "@/stores/conversationStore";
 import { GetProviderUrl } from "./provider";
 import { reactive } from "vue";
+import { UpdateConversationInfo } from "../chat/conversation";
 
 export async function streamResponse(
     conv: Conversation,
@@ -45,6 +46,7 @@ export async function streamResponse(
 
     // update conversation
     conv.messages.push(msg);
+    UpdateConversationInfo(conv.id);
     useConversationStore().updateConvInStore(conv.id, conv);
 
     // create stream

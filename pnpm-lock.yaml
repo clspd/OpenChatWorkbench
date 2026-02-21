@@ -59,6 +59,15 @@ importers:
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
+      i18next:
+        specifier: ^25.8.13
+        version: 25.8.13(typescript@5.9.3)
+      i18next-resources-to-backend:
+        specifier: ^1.2.1
+        version: 1.2.1
+      i18next-vue:
+        specifier: ^5.4.0
+        version: 5.4.0(i18next@25.8.13(typescript@5.9.3))(vue@3.5.26(typescript@5.9.3))
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -1340,6 +1349,23 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
+  i18next-resources-to-backend@1.2.1:
+    resolution: {integrity: sha512-okHbVA+HZ7n1/76MsfhPqDou0fptl2dAlhRDu2ideXloRRduzHsqDOznJBef+R3DFZnbvWoBW+KxJ7fnFjd6Yw==}
+
+  i18next-vue@5.4.0:
+    resolution: {integrity: sha512-GDj0Xvmis5Xgcvo9gMBJMgJCtewYMLZP6gAEPDDGCMjA+QeB4uS4qUf1MK79mkz/FukhaJdC+nlj0y1qk6NO2Q==}
+    peerDependencies:
+      i18next: '>=23'
+      vue: ^3.4.38
+
+  i18next@25.8.13:
+    resolution: {integrity: sha512-E0vzjBY1yM+nsFrtgkjLhST2NBkirkvOVoQa0MSldhsuZ3jUge7ZNpuwG0Cfc74zwo5ZwRzg3uOgT+McBn32iA==}
+    peerDependencies:
+      typescript: ^5
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   idb@8.0.3:
     resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
@@ -3565,6 +3591,21 @@ snapshots:
   has-flag@4.0.0: {}
 
   hookable@5.5.3: {}
+
+  i18next-resources-to-backend@1.2.1:
+    dependencies:
+      '@babel/runtime': 7.28.4
+
+  i18next-vue@5.4.0(i18next@25.8.13(typescript@5.9.3))(vue@3.5.26(typescript@5.9.3)):
+    dependencies:
+      i18next: 25.8.13(typescript@5.9.3)
+      vue: 3.5.26(typescript@5.9.3)
+
+  i18next@25.8.13(typescript@5.9.3):
+    dependencies:
+      '@babel/runtime': 7.28.4
+    optionalDependencies:
+      typescript: 5.9.3
 
   idb@8.0.3: {}
 

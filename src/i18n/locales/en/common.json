@@ -1,0 +1,59 @@
+{
+    "appName": "Open Chat Workbench",
+    "ui": {
+        "header": {
+            "moreOptions": {
+                "newConv": "New Conversation",
+                "delConv": "Delete",
+                "settings": "Settings"
+            }
+        },
+        "sidebar": {
+            "newChatBtn": "New Chat",
+            "newWorkspaceBtn": "New Workspace",
+            "mode": {
+                "chat": "Chat",
+                "workspace": "Workspace"
+            },
+            "settingsBtn": "Settings",
+            "conversation": {
+                "state": {
+                    "pinned": "Pinned"
+                },
+                "operations": {
+                    "rename": "Rename",
+                    "pin": "Pin",
+                    "unpin": "Unpin",
+                    "delete": "Delete"
+                }
+            }
+        },
+        "mainInput": {
+            "placeholder": "Type a message...",
+            "options": {
+                "attachFile": "Attach File",
+                "attachImage": "Attach Image",
+                "deepThink": "Deep Think",
+                "plainInput": "Plain Input"
+            }
+        },
+        "modelChooser": {
+            "title": "Select Model",
+            "showFavOnly": "Show favorites only",
+            "filterTooltip": "Filter by model ID",
+            "emptyState": "No models available. Please add providers and models first."
+        },
+        "state": {
+            "enabled": "Enabled",
+            "disabled": "Disabled"
+        },
+        "newChat": {
+            "greeting": {
+                "_1": "How can I assist with you today?"
+            }
+        }
+    },
+    "conversation": {
+        "defaultTitle": "New Conversation"
+    }
+}
