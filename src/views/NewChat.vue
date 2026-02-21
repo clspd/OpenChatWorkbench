@@ -28,6 +28,8 @@ import { CreateConversation, GetConvNextMessageId, InsertMessageToConversation }
 import { CreateUserMessage } from '@/modules/chat/message'
 import { GenerateResponse } from '@/modules/chat-request/respond'
 import { TraceErrorAndGetString } from '@/utils/errorTrace'
+import { useConversationStore } from '@/stores/conversationStore'
+import { InitConversationPreference } from '@/modules/chat/convPref'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
@@ -117,7 +119,9 @@ const handleSendMessage = async () => {
         ));
 
         // Send request
-        await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value, () => resolve()).catch(e => {
+        await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value, () => InitConversationPreference(cid).then(pref => (useConversationStore().updatePref(cid, Object.assign(pref, {
+            msgChainChoices: [0, 0],
+        })))).then(() => resolve())).catch(e => {
             reject(e);
             console.error('[NewChat]', "Error generating response:", e);
             Modal.error({

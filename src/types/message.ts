@@ -31,7 +31,7 @@ export interface MessageFragment {
     id: number;
     type: MessageFragmentType;
     ts: number; // timestamp in milliseconds
-    elapsed?: number; // elapsed time in seconds
+    elapsed?: number; // elapsed time in milliseconds
     contentType: MessageContentType;
     content: MessageContent<this['contentType']>;
 }

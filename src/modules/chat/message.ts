@@ -17,11 +17,13 @@ export const CreateUserMessage = (
     id,
     parent_id,
     role,
+    ts: Date.now(),
     status: MessageStatus.Finished,
     files,
     fragments: [
         {
             id: 0,
+            ts: Date.now(),
             type: MessageFragmentType.Request,
             contentType,
             content,

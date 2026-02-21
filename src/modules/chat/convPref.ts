@@ -35,6 +35,7 @@ export async function LoadConversationPreference(id: string): Promise<Conversati
 }
 
 export async function UpdateConversationPreferenceInternal(id: string, pref: ConversationUserPref) {
+    console.debug("[convPref]", "UpdateConversationPreferenceInternal", "for", id, "t=", Date.now());
     await fs.writeFile(getConvPrefPath(id), dumpConversationPref(pref));
 }
 

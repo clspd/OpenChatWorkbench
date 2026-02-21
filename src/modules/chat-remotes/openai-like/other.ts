@@ -25,7 +25,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
             }
         },
         onOpened: async (req, resp, conv, reqMsg, respMsg, providerInfo, modelInfo) => {
-            if (afterOpen) afterOpen(resp);
+            if (afterOpen) await afterOpen(resp);
         },
     });
 }

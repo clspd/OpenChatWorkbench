@@ -11,10 +11,6 @@ export interface ConversationTreeContainer {
 export interface ConversationTreeNode {
     id: number;
     self: Message;
-    // previousSibling: ConversationTreeNode | null;
-    // nextSibling: ConversationTreeNode | null;
-    // siblingCount: number;
-    // child: ConversationTreeNode | null;
     parent: ConversationTreeNode | null;
     siblings: ConversationTreeNode[];
     children: ConversationTreeNode[];

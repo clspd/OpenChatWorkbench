@@ -17,8 +17,8 @@
                 />
                 <div v-else class="err-data-corrupted">Data corrupted</div>
 
-                <MessageOperations v-if="chatFlow[vi.index] && chatFlow[vi.index]?.data.status === MessageStatus.Finished"
-                    :message="chatFlow[vi.index]!.data"
+                <MessageOperations v-if="chatFlow[vi.index]"
+                    :message="chatFlow[vi.index]!.data" :convId="props.chatId"
                     :choice="getCurrentChoiceForId(chatFlow[vi.index]!.data.id)"
                     :total-choices="chatFlow[vi.index]!.choicesCount"
                     @update:choice="(choice) => updateChoice(chatFlow[vi.index]!.data.id, choice)"
@@ -30,13 +30,31 @@
                 />
             </div>
         </div>
+
+        <DialogView c_if="contentEditDlgState.show" v-model="contentEditDlgState.show" class="fragment-editor">
+            <template #title>Edit Message {{contentEditDlgState.msgId}}</template>
+            <div v-for="(frag, idx) in contentEditDlgState.frag" :key="idx" class="fragment">
+                <div class="fragment-edit-title">Fragment {{frag.id}} <a href="javascript:" class="fragment-btn-delete" @click="contentEditDlgState.frag.splice(idx, 1)">Delete fragment</a></div>
+                <a-textarea v-if="frag.contentType === MessageContentType.Text"
+                    auto-size
+                    v-model:value="frag.content" />
+                <div v-else>This fragment couldn't be edited.</div>
+            </div>
+            <div style="flex: 1;"></div>
+            <template #footer>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5em;">
+                    <a-button type="primary" @click="handleSaveEdit">Save</a-button>
+                    <a-button @click="contentEditDlgState.show = false">Cancel</a-button>
+                </div>
+            </template>
+        </DialogView>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRaw, watch } from 'vue';
+import { computed, reactive, ref, toRaw, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import { debounce, useVirtualizer } from '@tanstack/vue-virtual';
+import { useVirtualizer } from '@tanstack/vue-virtual';
 import { ConvertConversationToTree } from '@/modules/chat-tree/tree';
 import { useConversationStore } from '@/stores/conversationStore';
 import { FixChoiceChain, FlattenConversationTree, GetDefaultChoices, type FlatMessage } from '@/modules/chat-tree/flat';
@@ -44,19 +62,19 @@ import { useAppStateStore } from '@/stores/appState';
 import { msgRoleIdentifyMap } from "@/modules/chat/msgRoleMap";
 import MessageItem from '@/components/MessageItem.vue';
 import MessageOperations from '@/components/MessageOperations.vue';
-import { MessageFeedback, MessageStatus } from '@/types/message';
-import { UpdateConversation } from '@/modules/chat/conversation';
-import type { ConversationTreeContainer, ConversationTreeNode } from '@/types/chat-tree';
-import { nextTick } from 'vue';
+import { MessageContentType, MessageFeedback, MessageFragmentType, MessageRole, type MessageFragment } from '@/types/message';
+import type { ConversationTreeNode } from '@/types/chat-tree';
+import { DialogView } from 'vue-dialog-view';
 
 const props = defineProps<{
     chatId: string;
-    // conversation: Conversation;
     choices: number[];
 }>();
 
 const emit = defineEmits<{
     (e: 'update:choices', choices: number[]): void;
+    (e: 'request-regenerate', id: number, parent_id: number, newChoices: number[]): void;
+    (e: 'request-edit', id: number, parent_id: number | null, newChoices: number[]): void;
 }>();
 
 defineExpose({
@@ -82,37 +100,10 @@ const conversationStore = useConversationStore()
 const conversation = computed(() => conversationStore.getConvFromStore(props.chatId));
 
 const tree = computed(() => conversation.value && ConvertConversationToTree(conversation.value));
-const chatFlowComputingState = ref({
-    last_computed_at: 0,
-    computed_count: 0,
-})
 const chatFlow = ref<FlatMessage[]>([]);
-//     computed(() => {
-//     if (!tree.value) return [];
-//     console.log('compute chatFlow with choices', props.choices.join(','))
-//     const now = Date.now();
-//     if (chatFlowComputingState.value.last_computed_at !== now) {
-//         chatFlowComputingState.value.last_computed_at = now;
-//         chatFlowComputingState.value.computed_count = 0;
-//     }
-//     else if (++chatFlowComputingState.value.computed_count > 10) {
-//         throw new Error("Maximun 100 iterations reached! Application error")
-//     }
-//     try { return FlattenConversationTree(tree.value, props.choices) }
-//     catch (e) {
-//         const defaultChoices = GetDefaultChoices(tree.value);
-//         if ((props.choices.join(',')) !== (defaultChoices.join(','))) {
-//             message.warn("Invalid choices, reset to default choices.");
-//             // console.trace(e)
-//             nextTick(() => emit('update:choices', defaultChoices));
-//         } else {
-//             throw e;
-//         }
-//         return [];
-//     }
-// });
 const updateChatFlow = () => {
     if (!tree.value) return;
+    if (props.choices.length === 0) return;
     console.debug('compute chatFlow with choices', props.choices.join(','))
     try {
         chatFlow.value = FlattenConversationTree(tree.value, props.choices);
@@ -120,7 +111,7 @@ const updateChatFlow = () => {
         const defaultChoices = GetDefaultChoices(tree.value);
         if ((props.choices.join(',')) !== (defaultChoices.join(','))) {
             message.warn("Invalid choices, reset to default choices.");
-            // console.trace(e)
+            console.trace(e)
             emit('update:choices', defaultChoices);
         } else {
             throw e;
@@ -128,8 +119,8 @@ const updateChatFlow = () => {
         return [];
     }
 }
-watch(() => props.choices, updateChatFlow, { immediate: true })
-watch(() => tree.value, updateChatFlow)
+watch(() => props.choices, updateChatFlow, { immediate: true, deep: true })
+// watch(() => tree.value, updateChatFlow)
 const chatFlowPref = ref<Record<number, {
     showRaw: boolean;
 }>>({});
@@ -147,17 +138,6 @@ const vOptions = computed(() => ({
 const virtualizer = useVirtualizer(vOptions)
 const virtualItems = computed(() => virtualizer.value.getVirtualItems())
 const totalSize = computed(() => virtualizer.value.getTotalSize())
-
-// const scheduledFlush = ref(new Set<HTMLElement>());
-// const scheduleFlush = (el: HTMLElement) => {
-//     scheduledFlush.value.add(el);
-//     debounce(window, () => {
-//         scheduledFlush.value.forEach((el) => {
-//             virtualizer.value.measureElement(el);
-//         })
-//         scheduledFlush.value.clear();
-//     }, 100);
-// }
 
 const updateShowRawMessage = (index: number, showRaw: boolean) => {
     if (chatFlowPref.value[index]) {
@@ -191,23 +171,51 @@ const getCurrentChoiceForId = (id: number): number => {
     return data;
 }
 
-const updateChoice = (id: number, choice: number) => {
+const truncateChoicesToId = (idx: number) => {
     const clone = Array.from(props.choices);
+    if (idx < clone.length - 3) clone.splice(idx + 1);
+    return clone;
+}
+
+const updateChoice = (id: number, choice: number) => {
     const idx = getIdxChoicePathIndex(id);
-    if (idx === -1 || !tree.value) return;
+    if (idx === -1) return;
+    const clone = truncateChoicesToId(idx);
+    if (!clone || !tree.value) return;
     clone[idx] = choice;
-    if (idx > clone.length - 3) clone.splice(idx + 1);
     emit('update:choices', FixChoiceChain(tree.value, clone));
 }
 
+const handleModifyMessage = (id: number, type: ('regenerate' | 'edit')) => { 
+    const idx = getIdxChoicePathIndex(id);
+    if (idx === -1) return null;
+    const clone = truncateChoicesToId(idx);
+    if (!clone || !tree.value) return;
+    clone.splice(clone.length - 1, 1, chatFlow.value.find((msg) => msg.data.id === id)?.choicesCount || 0);
+    // create new request
+    const parent_id = conversation.value?.messages.find((msg) => msg.id === id)?.parent_id ?? null
+    if (!parent_id && type === 'regenerate') return message.error('The message couldn\'t be regenerated.')
+    emit(("request-" + type) as any, id, parent_id, clone);
+}
+
+const contentEditDlgState = reactive({
+    show: false,
+    msgId: 0,
+    frag: [] as MessageFragment[],
+})
 const handleRequestEditMessage = (id: number) => {
-    
-    
+    const data = conversation.value?.messages.find((msg) => msg.id === id);
+    if (!data) return message.error('The message couldn\'t be edited.')
+    if (data.role === MessageRole.User) handleModifyMessage(id, 'edit');
+    else { 
+        contentEditDlgState.msgId = id;
+        contentEditDlgState.frag = structuredClone(toRaw(data.fragments));
+        contentEditDlgState.show = true;
+    }
 }
 
 const handleRequestRegenerateMessage = (id: number) => {
-    
-    
+    handleModifyMessage(id, 'regenerate');
 }
 
 const handleRequestLikeMessage = (id: number, newState: MessageFeedback) => {
@@ -216,6 +224,15 @@ const handleRequestLikeMessage = (id: number, newState: MessageFeedback) => {
     if (!msg) return;
     msg.feedback = newState;
     conversationStore.updateConvInStore(props.chatId, conversation.value);
+}
+
+const handleSaveEdit = async () => {
+    if (!contentEditDlgState.show) return;
+    const msg = conversation.value?.messages.find((msg) => msg.id === contentEditDlgState.msgId);
+    if (!msg) return message.error('The message couldn\'t be edited.')
+    msg.fragments = contentEditDlgState.frag;
+    conversationStore.updateConvInStore(props.chatId, conversation.value);
+    contentEditDlgState.show = false;
 }
 
 </script>
@@ -253,5 +270,17 @@ const handleRequestLikeMessage = (id: number, newState: MessageFeedback) => {
 }
 .vItem + .vItem {
     margin-top: 1em;
+}
+.fragment-editor {
+    width: 100%;
+    height: 100%;
+}
+.fragment-editor .fragment {
+    margin-bottom: 1em;
+}
+.fragment-editor .fragment-btn-delete {
+    color: red;
+    font-size: small;
+    margin-left: 1em;
 }
 </style>

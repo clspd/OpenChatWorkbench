@@ -33,7 +33,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
             (req as any).max_tokens = typeof v === 'number' ? v : 8192;
         },
         onOpened: async (req, resp, conv, reqMsg, respMsg, providerInfo, modelInfo) => {
-            if (afterOpen) afterOpen(resp);
+            if (afterOpen) await afterOpen(resp);
         },
         onChunk(req, chunk, conv, reqMsg, respMsg, provider, model) {
             switch (chunk.type) {
@@ -52,6 +52,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                         throw new TypeError("Cannot parse content block index");
                     respMsg.fragments.push({
                         id: base_offset + chunk.index,
+                        ts: Date.now(),
                         type: (
                             chunk.content_block?.type === "thinking" ?
                                 MessageFragmentType.Think :

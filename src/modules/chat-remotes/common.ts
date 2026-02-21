@@ -129,6 +129,7 @@ export async function _base_stream(
 
                     pendingReq.opened = true;
                 }
+                await conversationStore.updateConvInStore(conv.id, conv);
                 if (options.onOpened) await options.onOpened(req, response, conv, reqMsg, respMsg, providerInfo, modelInfo);
             },
 
@@ -140,6 +141,7 @@ export async function _base_stream(
             onclose() {
                 if (options.onClose) options.onClose(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
                 else try {
+                    if (currentFragment) currentFragment.elapsed = Date.now() - currentFragment.ts;
                     respMsg.has_pending_fragment = false;
                     UpdateConversationInfo(conv.id);
                     conversationStore.updateConvInStore(conv.id, conv);
@@ -164,8 +166,10 @@ export async function _base_stream(
                         const type = GetResponseChunkFragmentType(json, 0);
                         if (type !== lastResponseChunkType) {
                             lastResponseChunkType = type;
+                            if (currentFragment) currentFragment.elapsed = Date.now() - currentFragment.ts;
                             currentFragment = type ? {
                                 id: respMsg.fragments.length + 1,
+                                ts: Date.now(),
                                 type: type,
                                 contentType: MessageContentType.Text,
                                 content: "",
@@ -209,6 +213,7 @@ export async function _base_stream(
             respMsg.has_pending_fragment = false;
             respMsg.fragments.push({
                 id: respMsg.fragments.length + 1,
+                ts: Date.now(),
                 type: MessageFragmentType.Error,
                 contentType: MessageContentType.Text,
                 content: TraceErrorAndGetString(err),
@@ -216,6 +221,7 @@ export async function _base_stream(
         }
     }
     finally {
+        respMsg.has_pending_fragment = false;
         if (options.onAfterRequest) await options.onAfterRequest(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
         try {
             // update conversation status

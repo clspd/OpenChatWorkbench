@@ -14,17 +14,17 @@
                 <CompressOutlined v-if="!props.showRawMessage" />
                 <ExpandOutlined v-else />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="props.message.status === MessageStatus.WIP">
+            <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="isPending">
                 <EditOutlined />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.message.status === MessageStatus.WIP">
+            <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
                 <RedoOutlined />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.message.status === MessageStatus.WIP">
+            <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
                 <LikeFilled v-if="currentLikeState === 1" />
                 <LikeOutlined v-else />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.message.status === MessageStatus.WIP">
+            <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
                 <DislikeFilled v-if="currentLikeState === -1" />
                 <DislikeOutlined v-else />
             </a-button>
@@ -55,8 +55,10 @@ import { ExtractMessageText } from '@/modules/chat/message';
 import dayjs from 'dayjs';
 import { msgRoleIdentifyMap } from '@/modules/chat/msgRoleMap';
 import { prompt } from '@/utils/prompt';
+import { useConversationStore } from '@/stores/conversationStore';
 
 const props = defineProps<{
+    convId: string;
     message: Message;
     choice: number;
     totalChoices: number;
@@ -70,6 +72,12 @@ const emit = defineEmits<{
     (e: 'update:choice', choice: number): void;
     (e: 'update:showRawMessage', showRawMessage: boolean): void;
 }>();
+
+const conversationStore = useConversationStore();
+
+const isPending = computed(() => {
+    return props.message.status === MessageStatus.WIP || conversationStore.hasPendingMessage(props.convId);
+});
 
 const sentAt = computed(() => {
     return dayjs(props.message.ts).format('HH:mm:ss');
@@ -158,7 +166,7 @@ const currentLikeState = computed(() => (
     color: gray;
     font-size: 0.85em;
 }
-.message-choices > button[disabled] {
+.message-operations button[disabled] {
     color: #d9d9d9;
 }
 </style>

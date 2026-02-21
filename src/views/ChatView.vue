@@ -17,11 +17,13 @@
                 <MessageChainViewer
                     ref="messageChainViewerRef"
                     :chatId="props.chatId"
-                    v-model:choices="choices"
+                    :choices="choices"
+                    @update:choices="handleUpdateChoices"
+                    @request-regenerate="handleRequestRegenerateMessage"
                 />
 
-                <div v-if="conversation.messages.length" style="height: 10em; display: flex; align-items: center; justify-content: center;">
-                    <div style="color: gray;">Continue your chat……</div>
+                <div v-if="conversation.messages.length" style="height: 2em; display: flex; align-items: center; justify-content: center;">
+                    <!-- <div style="color: gray;">Continue your chat……</div> -->
                 </div>
             </div>
 
@@ -188,6 +190,13 @@ watch(() => messageEditorState.features, (newVal) => {
     }
 })
 
+// watch(() => choices.value, (newVal) => {
+//     if (preference.value) {
+//         preference.value.msgChainChoices = newVal;
+//         useConversationStore().updatePref(props.chatId, preference.value);
+//     }
+// })
+
 const requestScrollToTop = () => ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: 0 })
 const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
 
@@ -243,7 +252,9 @@ const handleSendMessage = async function () {
         // Send request
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
-        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => resolve()).catch(e => {
+        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => (conversationStore.getPref(props.chatId).then(pref => (conversationStore.updatePref(props.chatId, Object.assign(pref, {
+            msgChainChoices: (choices.value.push(0, 0), choices.value),
+        })), resolve())))).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
@@ -294,6 +305,59 @@ const handleInterrupt = async function () {
     }
 
     convInfo.cancelToken.abort();
+}
+
+const handleUpdateChoices = async (newVal: number[]) => {
+    choices.value = newVal;
+    preference.value = await conversationStore.getPref(props.chatId);
+    if (!preference.value) {
+        message.error('Failed to get conversation preference')
+        return
+    }
+    preference.value.msgChainChoices = newVal;
+    await conversationStore.updatePref(props.chatId, preference.value);
+}
+
+const handleRequestRegenerateMessage = async function (id: number, parent_id: number, newChoices: number[]) {
+    if (!conversation.value) return;
+    messageEditorState.isSending = true
+    try {
+        const data = conversation.value?.messages.find((msg) => msg.id === id);
+        if (!data || (!data.model) || (!data.provider) || (typeof data.model !== 'string') || !data.features || !data.files) {
+            message.error('Failed to get message data');
+            return;
+        }
+        // Send request
+        messageEditorState.isGenerating = true;
+        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+        const modelId = data.model;
+        const providerId = data.provider;
+        const features = data.features;
+        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, parent_id, modelId, providerId, features, data.files, () => (resolve(), choices.value = newChoices)).catch(e => {
+            reject(e);
+            console.error('[ChatView]', "Error generating response:", e);
+            Modal.error({
+                title: "Failed to generate response",
+                content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
+                okText: "Cancel",
+            });
+        }).finally(() => {
+            messageEditorState.isGenerating = false
+            resolve();
+        }));
+        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+    }
+    catch (e) {
+        console.error('[ChatView]', "Error regenerating message:", e);
+        Modal.error({
+            title: "Failed to regenerate message",
+            content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
+            okText: "Cancel",
+        });
+    }
+    finally {
+        messageEditorState.isSending = false
+    }
 }
 
 </script>

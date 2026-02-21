@@ -5,7 +5,7 @@ import { fs } from '@/userdata';
 import { getChatIndexPath, getConvPath, getConvPrefPath } from '@/modules/chat/path';
 import { dumpConversationData, dumpConversationPref } from '@/modules/chat/dumper';
 import { groupConversationsByTime } from '@/utils/conversationGroup';
-import { LoadConversationPreference } from '@/modules/chat/convPref';
+import { LoadConversationPreference, UpdateConversationPreferenceInternal } from '@/modules/chat/convPref';
 
 /**
  * Temporarily caches the conversation and message data.
@@ -60,10 +60,13 @@ export const useConversationStore = defineStore('conversation', {
         },
         async updatePref(convId: string, pref: ConversationUserPref) {
             this.preferences.set(convId, pref);
-            await fs.writeFile(getConvPrefPath(convId), dumpConversationPref(pref));
+            await UpdateConversationPreferenceInternal(convId, pref);
         },
         removePrefFromStore(convId: string) {
             this.preferences.delete(convId);
+        },
+        hasPendingMessage(convId: string) {
+            return this.requestsInProgress.has(convId);
         },
     },
 

@@ -180,7 +180,8 @@ const closeApp = () => {
 }
 
 const deleteAllConversations = async () => {
-    let countdown = 5, cid: ReturnType<typeof setInterval>, m: ReturnType<typeof Modal.confirm>;
+    let countdown = (location.hostname === 'localhost') ? 1 : 5,
+        cid: ReturnType<typeof setInterval>, m: ReturnType<typeof Modal.confirm>;
     if (!await new Promise(r => m = Modal.confirm({
         title: t('settings:data_management.messages.deleteAllConversations.title'),
         content: h(defineComponent({

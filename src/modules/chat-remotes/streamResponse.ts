@@ -6,7 +6,7 @@ import type { ModelConfig, ProviderConfig } from "@/types/config";
 import { useConversationStore } from "@/stores/conversationStore";
 import { GetProviderUrl } from "./provider";
 import { reactive } from "vue";
-import { UpdateConversationInfo } from "../chat/conversation";
+import { GetConvNextMessageId, UpdateConversationInfo } from "../chat/conversation";
 
 export async function streamResponse(
     conv: Conversation,
@@ -27,10 +27,11 @@ export async function streamResponse(
 
     // create message object
     const msg: Message = reactive({
-        id: reqId + 1, // response id
+        id: await GetConvNextMessageId(conv.id),
         parent_id: reqId,
         role: MessageRole.Assistant,
         status: MessageStatus.WIP,
+        ts: Date.now(),
         feedback: MessageFeedback.NotProvided,
         provider: provider.id,
         providerName: provider.name,
