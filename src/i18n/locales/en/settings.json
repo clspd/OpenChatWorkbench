@@ -20,6 +20,7 @@
         "accessibility": {
             "title": "Accessibility",
             "alert": "Some settings may require a refresh to take effect completely.",
+            "refreshNow": "Refresh Now",
             "fontSize": {
                 "legend": "Font Size",
                 "reset": "Reset"

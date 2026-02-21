@@ -53,6 +53,7 @@ export type MessageContent<T extends MessageContentType> =
 
 export enum MessageFeatureType {
     Thinking = 'thinking',
+    MaxTokensLimit = 'max_tokens_limit',
 }
 
 // This stores the features of the message, e.g. thinking enabled

@@ -1,7 +1,7 @@
 // adapter for other Anthropic-compatible providers
 import type { Conversation } from "@/types/conversation";
 import { MessageContentType, MessageFeatureType, MessageFragmentType, type Message, type MessageFragment } from "@/types/message";
-import { _base_stream } from "../common";
+import { _base_stream, APIError } from "../common";
 import { GetProviderUrl, GetResponseChunkFragmentType } from "../provider";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import { useConversationStore } from "@/stores/conversationStore";
@@ -10,25 +10,27 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
     // In Anthropic API, we don't need to manually maintain the state
     // since the response has a `index` field to indicate the order of the chunk
     // See also: https://platform.claude.com/docs/en/build-with-claude/extended-thinking
-    const base_offset = respMsg.fragments.length;
+    const base_offset = respMsg.fragments.length + 1;
     let modelId: string | null = respMsg.model || null;
     return await _base_stream(conv, reqMsg, respMsg, {
-        buildRequestUrl: async (req, conv, reqMsg, respMsg, prov, mode) => {
+        buildRequestUrl: async (req, conv, reqMsg, respMsg, prov, model) => {
             return GetProviderUrl(prov);
         },
-        buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, mode) => ({
+        buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, model) => ({
             "x-api-key": prov.api_key,
             "accept": "text/event-stream",
             "content-type": "application/json",
             "anthropic-version": "2023-06-01",
         }),
-        onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, mode) => {
+        onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, model) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
                 case MessageFeatureType.Thinking:
                     if (i.value === true) (req as any).thinking = { type: 'enabled' };
                     break;
                 default: ; // ignore unknown feature type
             }
+            const v = respMsg.features?.find(i => i.type === MessageFeatureType.MaxTokensLimit)?.value;
+            (req as any).max_tokens = typeof v === 'number' ? v : 8192;
         },
         onOpened: async (req, resp, conv, reqMsg, respMsg, providerInfo, modelInfo) => {
             if (afterOpen) afterOpen(resp);
@@ -41,22 +43,23 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                 case "message_delta":
                 case "message_stop":
                 case "content_block_stop":
+                case "ping":
                     // We're not interested in this chunk
                     break;
                 case "content_block_start":
                     // create a new fragment
                     if (Number.isNaN(chunk.index))
                         throw new TypeError("Cannot parse content block index");
-                    respMsg.fragments[base_offset + chunk.index] = {
-                        id: chunk.index.toString(),
+                    respMsg.fragments.push({
+                        id: base_offset + chunk.index,
                         type: (
-                            chunk.delta.type === "thinking" ?
+                            chunk.content_block?.type === "thinking" ?
                                 MessageFragmentType.Think :
                                 MessageFragmentType.Response
                         ),
                         content: "",
                         contentType: MessageContentType.Text,
-                    };
+                    });
                     break;
                 case "content_block_delta":
                     // append content to the fragment
@@ -65,7 +68,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                     AppendMessageFragmentChunk(respMsg, base_offset + chunk.index, {
                         choices: [{
                             delta: {
-                                content: chunk.delta.text,
+                                content: (chunk.delta?.type === "thinking_delta" ? chunk.delta.thinking : chunk.delta?.text) || "",
                             },
                             finish_reason: null,
                             index: chunk.index,
@@ -77,8 +80,10 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                     });
                     useConversationStore().updateConvInStore(conv.id, conv);
                     break;
+                case 'error':
+                    throw new APIError("Remote API returned an error: " + JSON.stringify(chunk));
                 default:
-                    throw new TypeError("Unexpected object type in streaming response: " + chunk.type);
+                    // throw new TypeError("Unexpected object type in streaming response: " + chunk.type);
             }
         },
     });

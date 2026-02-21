@@ -87,7 +87,6 @@ const handleSendMessage = async () => {
         return
     }
     
-    isSending.value = true
     try {
         const provider = useConfigStore().providers.find(p => p.id === providerId.value)
         const model = useConfigStore().models.find(m => m.id === modelId.value)
@@ -105,6 +104,7 @@ const handleSendMessage = async () => {
             return
         }
 
+        isSending.value = true
         // add user request to conversation
         const reqId = await GetConvNextMessageId(cid);
         await InsertMessageToConversation(cid, CreateUserMessage(
@@ -132,12 +132,13 @@ const handleSendMessage = async () => {
         // clear send buffer
         delete useAppStateSessionStore().chatEditBuffer["_"];
 
+        // the `isSending` is not reset; this is expected
+
         // go to conversation
         router.push(`/chat/c/${cid}`);
     } catch (error) {
         console.error('[NewChat]', "Error sending message:", error);
         message.error('Failed to send message: ' + error)
-    } finally {
         isSending.value = false
     }
 }

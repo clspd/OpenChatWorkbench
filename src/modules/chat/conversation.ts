@@ -112,10 +112,16 @@ export async function UpdateConversationInfo(id: string, title?: string, pinned?
 
 export async function DeleteConversation(id: string) {
     if (!(await fs.exists(getConvPath(id)))) throw new Error("The conversation specified does not exist.");
+    // stop any ongoing request
+    const store = useConversationStore();
+    if (store.requestsInProgress.has(id)) {
+        store.requestsInProgress.get(id)?.cancelToken?.abort();
+        store.requestsInProgress.delete(id);
+        await new Promise(r => requestAnimationFrame(r));
+    }
     // cleanup index
     await RemoveConversationFromAnyIndex(id);
     // remove from memory cache
-    const store = useConversationStore();
     store.removeConvFromStore(id);
     store.removePrefFromStore(id);
     // remove file

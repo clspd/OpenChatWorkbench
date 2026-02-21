@@ -139,10 +139,13 @@ export async function _base_stream(
 
             onclose() {
                 if (options.onClose) options.onClose(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
-                else {
+                else try {
                     respMsg.has_pending_fragment = false;
                     UpdateConversationInfo(conv.id);
                     conversationStore.updateConvInStore(conv.id, conv);
+                } catch (e) {
+                    if (!!e && e instanceof Error && (e as any).code === "ENOENT") return; // conversation has been deleted
+                    throw e;
                 }
             },
 
@@ -214,10 +217,16 @@ export async function _base_stream(
     }
     finally {
         if (options.onAfterRequest) await options.onAfterRequest(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
-        // update conversation status
-        UpdateConversationInfo(conv.id);
-        conversationStore.updateConvInStore(conv.id, conv);
-        // remove the pending request data from store
-        conversationStore.requestsInProgress.delete(conv.id);
+        try {
+            // update conversation status
+            UpdateConversationInfo(conv.id);
+            conversationStore.updateConvInStore(conv.id, conv);
+            // remove the pending request data from store
+            conversationStore.requestsInProgress.delete(conv.id);
+        }
+        catch (e) {
+            if (!!e && e instanceof Error && (e as any).code === "ENOENT") return; // conversation has been deleted
+            throw e;
+        }
     }
 }

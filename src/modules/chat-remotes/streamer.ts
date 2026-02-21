@@ -3,7 +3,7 @@ import type { MessageFeatureItem, FileAttachmentInfo, Message } from "@/types/me
 
 export const MessageStreamer = {
     "other-openai": async () => (await import('./openai-like/other')).stream,
-    "other-anthropic": async () => (await import('./anthropic-like/other')).stream,
+    "other-claude": async () => (await import('./anthropic-like/other')).stream,
     "other-gemini": async () => (await import('./gemini-like/gemini')).stream,
     "api.openai.com": async () => (await import('./openai-like/openai')).stream,
     "api.deepseek.com_openai": async () => (await import('./openai-like/deepseek')).stream,

@@ -22,7 +22,12 @@
         </a-card>
 
         <a-card :title="t('settings:general.accessibility.title')">
-            <a-alert :message="t('settings:general.accessibility.alert')" type="warning" show-icon closable />
+            <a-alert v-if="accessibilityNeedsRefresh" type="warning" show-icon closable>
+                <template #message>
+                    {{ t('settings:general.accessibility.alert') }}
+                    <a-button @click="refreshNow">{{ t('settings:general.accessibility.refreshNow') }}</a-button>
+                </template>
+            </a-alert>
 
             <fieldset @input="accessibilityNeedsRefresh = true">
                 <legend>{{ t('settings:general.accessibility.fontSize.legend') }}</legend>
@@ -37,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useAppStateStore } from '@/stores/appState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent';
@@ -53,6 +58,28 @@ onMounted(() => {
 });
 
 const accessibilityNeedsRefresh = ref(false)
+
+watch(() => appStatePersist.fontSizeGlobal, (newValue, oldValue) => {
+    if (newValue !== oldValue) {
+        accessibilityNeedsRefresh.value = true;
+    }
+});
+
+watch(() => appStatePersist.language, (newValue, oldValue) => {
+    if (newValue !== oldValue) {
+        const dlg = window.document.body.appendChild(document.createElement('dialog'));
+        dlg.append('Language changed. Reloading...');
+        dlg.showModal();
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
+});
+
+const refreshNow = () => {
+    window.location.reload();
+}
 
 </script>
 
