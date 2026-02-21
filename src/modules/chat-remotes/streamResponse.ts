@@ -1,7 +1,7 @@
 // modules/chat-remotes/index.ts: remote chat service
 import type { Conversation } from "@/types/conversation";
 import { MessageFeedback, MessageRole, MessageStatus, type FileAttachmentInfo, type Message, type MessageFeatureItem } from "@/types/message";
-import { MessageStreamer } from "./openai-compatible";
+import { MessageStreamer } from "./streamer";
 import type { ModelConfig, ProviderConfig } from "@/types/config";
 import { useConversationStore } from "@/stores/conversationStore";
 import { GetProviderUrl } from "./provider";
@@ -60,7 +60,12 @@ export async function streamResponse(
     })();
 
     try {
-        const streamer = await (MessageStreamer[providerHostname] ?? MessageStreamer["other"]!)();
+        const streamer = await (
+            MessageStreamer[providerHostname + "_" + provider.compatibilityMode] ??
+            MessageStreamer[providerHostname] ??
+            MessageStreamer["other-" + provider.compatibilityMode] ??
+            MessageStreamer["other-openai"]!
+        )();
         await streamer(conv, req, msg, afterOpen);
     }
     catch (e) {

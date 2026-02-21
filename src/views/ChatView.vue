@@ -158,6 +158,13 @@ onMounted(async () => {
     messageEditorState.modelId = useConfigStore().selectedModelId;
 });
 
+watch(() => messageEditorState.providerId, (newVal) => {
+    useConfigStore().selectedProviderId = newVal
+})
+watch(() => messageEditorState.modelId, (newVal) => {
+    useConfigStore().selectedModelId = newVal
+})
+
 watch(() => messageEditorState.content, (newVal) => {
     if (newVal) {
         useAppStateSessionStore().chatEditBuffer[props.chatId] = {

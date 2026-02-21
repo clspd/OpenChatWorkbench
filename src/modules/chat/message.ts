@@ -1,6 +1,7 @@
 // message.ts: functions about message management
 import { MessageContentType, MessageFragmentType, MessageStatus, type FileAttachmentInfo, type Message, type MessageContent, type MessageFeatureItem, type MessageRole } from "@/types/message";
 import type { ChatCompletionChunk } from "openai/resources";
+import { GetResponseChunkFragmentType } from "../chat-remotes/provider";
 
 /**
  * Create a user message.
@@ -37,7 +38,7 @@ export const CreateUserMessage = (
 
 // --------
 
-export async function AppendMessageFragmentChunk(msg: Message, fragmentId: number, chunk: ChatCompletionChunk, useChoices = false) {
+export function AppendMessageFragmentChunk(msg: Message, fragmentId: number, chunk: ChatCompletionChunk, useChoices = false) {
     const fragment = msg.fragments.find(f => f.id === fragmentId);
     if (!fragment) throw new Error(`Fragment ${fragmentId} not found in message ${msg.id}`);
     
@@ -49,11 +50,16 @@ export async function AppendMessageFragmentChunk(msg: Message, fragmentId: numbe
     else {
         const choice = chunk.choices[0];
         if (!choice) return null;
-        if (typeof (choice.delta as any).reasoning_content === 'string') {
-            fragment.content += String((choice.delta as any).reasoning_content);
-        }
-        else if (choice.delta.content) {
-            fragment.content += choice.delta.content;
+        const fragType = GetResponseChunkFragmentType(chunk, 0);
+        if (!fragType) return null;
+        switch (fragType) {
+            case MessageFragmentType.Think:
+                fragment.content += String((choice.delta as any).reasoning_content);
+                break;
+            case MessageFragmentType.Response:
+                fragment.content += choice.delta.content;
+                break;
+            default: ;
         }
         return true;
     }

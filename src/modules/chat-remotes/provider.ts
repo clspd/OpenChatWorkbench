@@ -16,7 +16,7 @@ export function GetProviderUrl(data: ProviderConfig) {
 export function GetResponseChunkFragmentType(chunk: ChatCompletionChunk, choiceId: number) {
     const choice = chunk.choices[choiceId];
     if (!choice) return null;
-    if (typeof (choice.delta as any).reasoning_content === 'string') //  reasoning_content is not a standard property
+    if (typeof (choice.delta as any).reasoning_content === 'string' && (!!(choice.delta as any).reasoning_content)) //  reasoning_content is not a standard property
         return MessageFragmentType.Think;
     else if (choice.delta.content !== undefined)
         return MessageFragmentType.Response;

@@ -57,6 +57,16 @@
                 <a-form-item label="Request Path" name="requestPath">
                     <a-input v-model:value="formState.requestPath" placeholder="/chat/completions" />
                 </a-form-item>
+                <a-form-item label="Compatibility Mode" name="compatibilityMode">
+                    <a-radio-group v-model:value="formState.compatibilityMode" style="display: flex; gap: 0.5em; flex-wrap: wrap; overflow-wrap: anywhere;">
+                        <a-radio value="untested" disabled v-if="formState.compatibilityMode === 'untested'">Untested (The provider you selected is not tested by us)</a-radio>
+                        <template v-else>
+                            <a-radio value="openai">OpenAI or OpenAI-compatible</a-radio>
+                            <a-radio value="claude">Anthropic</a-radio>
+                            <a-radio value="gemini">Gemini</a-radio>
+                        </template>
+                    </a-radio-group>
+                </a-form-item>
                 <a-form-item label="Enabled" name="enabled">
                     <a-switch v-model:checked="formState.enabled" />
                 </a-form-item>
@@ -116,6 +126,7 @@ onMounted(() => {
                 icon: '',
                 requestPath: '',
                 purchase_url: '',
+                compatibilityMode: 'openai',
                 isCustom: true
             })
         })
@@ -134,6 +145,7 @@ const predefinedProviders = ref<Array<{
     icon: string
     requestPath: string
     purchase_url: string
+    compatibilityMode: 'openai' | 'claude' | 'gemini' | 'untested'
     isCustom: boolean
 }>>([])
 
@@ -143,6 +155,7 @@ const formState = reactive<ProviderConfig>({
     baseURL: '',
     api_key: '',
     requestPath: '/chat/completions',
+    compatibilityMode: 'openai',
     enabled: true,
 })
 
@@ -185,6 +198,11 @@ const columns = [
         key: 'requestPath'
     },
     {
+        title: 'Compatibility Mode',
+        dataIndex: 'compatibilityMode',
+        key: 'compatibilityMode'
+    },
+    {
         title: 'Status',
         key: 'enabled'
     },
@@ -208,6 +226,7 @@ const handleSelectProvider = (provider: typeof predefinedProviders.value[0]) => 
     formState.api_key = ''
     formState.baseURL = provider.baseURL
     formState.requestPath = provider.requestPath
+    formState.compatibilityMode = provider.compatibilityMode
     formState.enabled = true
 }
 
@@ -219,6 +238,7 @@ const handleEdit = (record: ProviderConfig) => {
     formState.api_key = record.api_key
     formState.baseURL = record.baseURL
     formState.requestPath = record.requestPath
+    formState.compatibilityMode = record.compatibilityMode
     formState.enabled = record.enabled
 }
 

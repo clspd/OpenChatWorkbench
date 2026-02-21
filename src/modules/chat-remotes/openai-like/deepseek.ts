@@ -1,10 +1,14 @@
-// adapter for other OpenAI-compatible providers
+// adapter for DeepSeek
 import type { Conversation } from "@/types/conversation";
 import { MessageFeatureType, type Message } from "@/types/message";
-import { _base_stream } from "./common";
+import { _base_stream } from "../common";
+import { GetProviderUrl } from "../provider";
 
 export async function stream(conv: Conversation, reqMsg: Message, respMsg: Message, afterOpen?: (resp: Response) => void) {
     return await _base_stream(conv, reqMsg, respMsg, {
+        buildRequestUrl: async (req, conv, reqMsg, respMsg, prov, mode) => {
+            return GetProviderUrl(prov);
+        },
         buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, mode) => ({
             "authorization": `Bearer ${prov.api_key}`,
             "accept": "text/event-stream",
@@ -13,8 +17,8 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
         onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, mode) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
                 case MessageFeatureType.Thinking:
-                    // unknown platform, we don't know how to add reasoning params
-                    // if you want to enable thinking, you should create a custom adapter
+                    // reference: https://api-docs.deepseek.com/zh-cn/api/create-chat-completion
+                    if (i.value === true) (req as any).thinking = { type: 'enabled' };
                     break;
                 default: ; // ignore unknown feature type
             }

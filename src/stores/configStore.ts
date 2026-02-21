@@ -89,6 +89,14 @@ export const useConfigStore = defineStore('config', {
         },
         isFavoriteModel(providerId: string, modelId: string) {
             return this.favoriteModels.some(([pid, mid]) => pid === providerId && mid === modelId)
-        }
+        },
+        hasZombieModels() {
+            return this.models.some(m => !this.providers.some(p => p.id === m.provider_id))
+        },
+        cleanupZombieModels() {
+            const beforeCleanup = this.models.length
+            this.models = this.models.filter(m => this.providers.some(p => p.id === m.provider_id))
+            return beforeCleanup - this.models.length
+        },
     },
 })

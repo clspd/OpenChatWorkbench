@@ -34,42 +34,44 @@
                     <p>No models available. Please add providers and models first.</p>
                     <div><a href="javascript:void(0)" @click="appState.showConfigGuide = true">Open the configuration guide</a></div>
                 </div>
-                <div v-else>
-                    <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
-                        <div class="provider-header">
-                            <span class="provider-name">{{ group.provider.name }}</span>
-                            <a-tag :color="group.provider.enabled ? 'green' : 'red'" size="small">
-                                {{ group.provider.enabled ? 'Enabled' : 'Disabled' }}
+                <div v-else style="position: relative;">
+                    <div :style="{ height: totalSize + 'px' }"></div>
+                    <div v-for="item in virtualItems" :key="item.index" :style="{
+                        top: `${item.start}px`
+                    }"
+                        :ref="el => { if (el) virtualizer.measureElement(el as Element) }"
+                        class="vItem" :data-index="item.index"
+                    >
+                        <div v-if="groupedModels[item.index]?.type === 'provider'" 
+                             class="provider-header">
+                            <span class="provider-name">{{ (groupedModels[item.index] as any).data.name }}</span>
+                            <a-tag :color="(groupedModels[item.index] as any).data.enabled ? 'green' : 'red'" size="small">
+                                {{ (groupedModels[item.index] as any).data.enabled ? 'Enabled' : 'Disabled' }}
                             </a-tag>
                         </div>
-                        <div class="model-list" v-if="group.provider.enabled">
-                            <template v-for="model in group.models" >
-                                <div 
-                                    v-if="model.enabled"
-                                    :key="model.id"
-                                    class="model-item"
-                                    :class="{ 'selected': (props.modelId === model.id && props.providerId === model.provider_id) }"
-                                    tabindex="0"
-                                    @click="selectModel(model, group.provider.id)"
-                                    @keydown.enter="selectModel(model, group.provider.id)"
+                        <div v-else-if="groupedModels[item.index]?.type === 'model'"
+                             class="model-item"
+                             :class="{ 'selected': (props.modelId === (groupedModels[item.index] as any).data.id && props.providerId === (groupedModels[item.index] as any).data.provider_id) }"
+                             tabindex="0"
+                             @click="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
+                             @keydown.enter="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
+                        >
+                            <div class="model-info">
+                                <div class="model-id">{{ (groupedModels[item.index] as any).data.id }}</div>
+                            </div>
+                            <div class="model-actions">
+                                <a-button 
+                                    type="text" 
+                                    size="small"
+                                    @click.stop="toggleFavorite((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data.id)"
+                                    @keydown.enter.stop
+                                    class="favorite-btn"
                                 >
-                                    <div class="model-info">
-                                        <div class="model-id">{{ model.id }}</div>
-                                    </div>
-                                    <div class="model-actions">
-                                        <a-button 
-                                            type="text" 
-                                            size="small"
-                                            @click.stop="toggleFavorite(group.provider.id, model.id)"
-                                            class="favorite-btn"
-                                        >
-                                            <StarFilled v-if="configStore.isFavoriteModel(group.provider.id, model.id)" class="star-icon filled" />
-                                            <StarOutlined v-else class="star-icon" />
-                                        </a-button>
-                                        <CheckOutlined v-if="props.modelId === model.id" class="check-icon" />
-                                    </div>
-                                </div>
-                            </template>
+                                    <StarFilled v-if="configStore.isFavoriteModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data.id)" class="star-icon filled" />
+                                    <StarOutlined v-else class="star-icon" />
+                                </a-button>
+                                <CheckOutlined v-if="props.providerId === (groupedModels[item.index] as any).data.provider_id && props.modelId === (groupedModels[item.index] as any).data.id" class="check-icon" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -82,10 +84,11 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { CheckOutlined, StarOutlined, StarFilled } from '@ant-design/icons-vue'
 import { useConfigStore } from '@/stores/configStore'
+import { useAppStateStore } from '@/stores/appState'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { DialogView } from 'vue-dialog-view'
-import { useAppStateStore } from '@/stores/appState'
 import type { ModelConfig } from '@/types/config'
+import { useVirtualizer } from '@tanstack/vue-virtual'
 
 const props = defineProps({
     modelId: {
@@ -129,56 +132,50 @@ const selectedModel = computed(() => {
 })
 
 const groupedModels = computed(() => {
-    const enabledProviders = configStore.providers
-    
-    let filteredProviders = enabledProviders
-    if (showFavoritesOnly.value) {
-        filteredProviders = enabledProviders.filter(provider => 
-            configStore.models.some(model => 
-                model.provider_id === provider.id && 
-                configStore.isFavoriteModel(provider.id, model.id)
-            )
-        )
-    }
-    
-    return filteredProviders.map(provider => {
+    if (!modalVisible.value) return []; // performance optimization
+    return configStore.providers.filter(provider => provider.enabled).map(provider => {
         let models = configStore.models.filter(m => m.provider_id === provider.id)
-        
         if (showFavoritesOnly.value) {
-            models = models.filter(model => 
+            models = models.filter(model =>
                 configStore.isFavoriteModel(provider.id, model.id)
             )
         }
-        
         if (searchKeyword.value.trim()) {
-            models = models.filter(model => 
+            models = models.filter(model =>
                 model.id.toLowerCase().includes(searchKeyword.value.toLowerCase())
             )
         }
-        
-        return {
-            provider,
-            models
-        }
-    }).filter(group => group.models.length > 0)
+
+        return { provider, models }
+    }).filter(group => group.models.length > 0).flatMap(item => [
+        { type: "provider", data: item.provider },
+        ...item.models.map(model => ({ type: "model", data: model }))
+    ]);
 })
+
+const vOptions = computed(() => ({
+    count: groupedModels.value.length,
+    getScrollElement: () => (modelSelectionRef.value) || null,
+    estimateSize: () => 50,
+    overscan: 3,
+}))
+
+const virtualizer = useVirtualizer(vOptions)
+const virtualItems = computed(() => virtualizer.value.getVirtualItems())
+const totalSize = computed(() => virtualizer.value.getTotalSize())
 
 const openModal = () => {
     modalVisible.value = true
 }
 
-const selectModel = (model: ModelConfig, providerId: string) => {
-    emit('update:modelId', model.id)
+const selectModel = (providerId: string, model: ModelConfig) => {
     emit('update:providerId', providerId)
+    emit('update:modelId', model.id)
     modalVisible.value = false
 }
 
 const toggleFavorite = (providerId: string, modelId: string) => {
     configStore.toggleFavoriteModel(providerId, modelId)
-}
-
-const handleCancel = () => {
-    modalVisible.value = false
 }
 
 watch(modalVisible, async (newVal) => {
@@ -250,8 +247,12 @@ watch(modalVisible, async (newVal) => {
     color: #999;
 }
 
-.provider-group {
-    margin-bottom: 24px;
+.vItem {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .provider-header {
@@ -261,17 +262,12 @@ watch(modalVisible, async (newVal) => {
     padding: 8px 0;
     border-bottom: 1px solid #f0f0f0;
     margin-bottom: 12px;
+    position: relative;
 }
 
 .provider-name {
     font-weight: 500;
     font-size: 14px;
-}
-
-.model-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 .model-item {
@@ -283,6 +279,7 @@ watch(modalVisible, async (newVal) => {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
+    margin-bottom: 8px;
 }
 
 .model-item:hover {

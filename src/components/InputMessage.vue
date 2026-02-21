@@ -45,7 +45,7 @@
             </div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button :disabled="props.disabled" type="primary" shape="circle" @click="send">
+                <a-button :disabled="props.disabled || isEmptyMessage" type="primary" shape="circle" @click="send">
                     <LoadingOutlined v-if="props.disabled" class="loading-indicator" />
                     <span v-else-if="props.isGenerating">■</span>
                     <ArrowUpOutlined v-else />
@@ -63,7 +63,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import ModelChooser from './ModelChooser.vue'
 import { safeParseJSON, tiptap2markdown } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
+import { EMPTY_MESSAGE, EMPTY_MESSAGE_JSON, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 
 const props = withDefaults(defineProps<{
@@ -153,6 +153,10 @@ watch(() => props.modelValue, (newValue, oldValue) => {
 
 watch(() => props.disabled, (newValue) => {
     editor.value?.setEditable(!newValue)
+})
+
+const isEmptyMessage = computed(() => {
+    return editor.value?.getText().trim() === ''
 })
 
 const isDeepThinkEnabled = computed<boolean>({

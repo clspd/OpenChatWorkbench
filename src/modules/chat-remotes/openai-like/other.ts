@@ -1,25 +1,25 @@
-// adapter for OpenAI official API interface (traditional Completion API)
+// adapter for other OpenAI-compatible providers
 import type { Conversation } from "@/types/conversation";
 import { MessageFeatureType, type Message } from "@/types/message";
-import { _base_stream } from "./common";
+import { _base_stream } from "../common";
+import { GetProviderUrl } from "../provider";
 
 export async function stream(conv: Conversation, reqMsg: Message, respMsg: Message, afterOpen?: (resp: Response) => void) {
     return await _base_stream(conv, reqMsg, respMsg, {
-        buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, mode) => ({
+        buildRequestUrl: async (req, conv, reqMsg, respMsg, prov, model) => {
+            return GetProviderUrl(prov);
+        },
+        buildRequestHeaders: async (req, conv, reqMsg, respMsg, prov, model) => ({
             "authorization": `Bearer ${prov.api_key}`,
             "accept": "text/event-stream",
             "content-type": "application/json",
         }),
-        onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, mode) => {
+        onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, model) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
                 case MessageFeatureType.Thinking:
-                    if (i.value === true) req.reasoning_effort = 'high';
-                    else if (typeof i.value === 'string' && (
-                        i.value === 'none' ||
-                        i.value === 'low' ||
-                        i.value === 'medium' ||
-                        i.value === 'high'
-                    )) req.reasoning_effort = i.value;
+                    if (i.value === true) {
+                        (req as any).thinking = { type: "enabled" };
+                    }
                     break;
                 default: ; // ignore unknown feature type
             }
@@ -29,4 +29,3 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
         },
     });
 }
-

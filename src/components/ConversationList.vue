@@ -110,7 +110,7 @@ const vOptions = computed(() => ({
     count: flattenedConversations.value.length,
     getScrollElement: () => msgList.value?.parentElement || null,
     estimateSize: () => 52.625,
-    overscan: 10,
+    overscan: 5,
 }))
 
 const virtualizer = useVirtualizer(vOptions)

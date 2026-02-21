@@ -5,8 +5,8 @@ export interface ProviderConfig {
     baseURL: string
     requestPath: string
     enabled: boolean
+    compatibilityMode: string
     enableResponsesAPI?: boolean
-    pathOfResponsesAPI?: string
 }
 
 export interface ModelConfig {

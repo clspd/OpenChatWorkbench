@@ -3,11 +3,11 @@
 
 import { useConfigStore } from "@/stores/configStore";
 import type { Conversation, PendingMessageRequest } from "@/types/conversation";
-import { MessageContentType, MessageFeatureType, MessageFragmentType, MessageStatus, type Message, type MessageFragment } from "@/types/message";
+import { MessageContentType, MessageFragmentType, MessageStatus, type Message, type MessageFragment } from "@/types/message";
 import { BuildOpenAICompatibleRequestMessages } from "@/modules/chat-request/requestBuilder";
 import type { ChatCompletionChunk, ChatCompletionCreateParamsStreaming } from "openai/resources";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { GetProviderUrl, GetResponseChunkFragmentType } from "../provider";
+import { GetResponseChunkFragmentType } from "./provider";
 import { useConversationStore } from "@/stores/conversationStore";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import type { ProviderConfig, ModelConfig } from "@/types/config";
@@ -36,9 +36,18 @@ export interface _stream_options {
     // called in onclose; if provided, the default handler will be overwritten
     onClose?: (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => void,
     // called in onmessage; if provided, the default handler will be overwritten
-    onChunk?: (req: ChatCompletionCreateParamsStreaming, chunk: ChatCompletionChunk, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => void,
+    onChunk?: (req: ChatCompletionCreateParamsStreaming, chunk: any, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => void,
     // build request headers
     buildRequestHeaders: (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<Record<string, string>>,
+    // build request URL
+    buildRequestUrl: (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<string>,
+}
+
+export class APIError extends TypeError {
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = "APIError";
+    }
 }
 
 /**
@@ -97,7 +106,7 @@ export async function _base_stream(
 
     // send request.
     try {
-        await fetchEventSource(new Request(new URL(GetProviderUrl(providerInfo))), {
+        await fetchEventSource(new Request(new URL(await options.buildRequestUrl(req, conv, reqMsg, respMsg, providerInfo, modelInfo))), {
             method: "POST",
             headers: await options.buildRequestHeaders(req, conv, reqMsg, respMsg, providerInfo, modelInfo),
             body: JSON.stringify(req),
@@ -111,7 +120,7 @@ export async function _base_stream(
                     if (!response.ok) {
                         const text = await response.clone().text();
 
-                        throw new Error(`Remote API Error: ${response.status} ${response.statusText}\n\n${text}`);
+                        throw new APIError(`Remote API Error: ${response.status} ${response.statusText}\n\n${text}`);
                     }
                     const ct = response.headers.get('content-type') || '';
                     if (!ct.startsWith('text/event-stream'))
@@ -140,12 +149,12 @@ export async function _base_stream(
                 if (!data || data === '[DONE]') return;
 
                 try {
-                    const json = JSON.parse(data) as ChatCompletionChunk;
-                    if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
-
+                    const json = JSON.parse(data);
                     if (options.onChunk) {
                         options.onChunk(req, json, conv, reqMsg, respMsg, providerInfo, modelInfo);
                     } else {
+                        if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
+
                         // distinct reasoning content from content
                         const type = GetResponseChunkFragmentType(json, 0);
                         if (type !== lastResponseChunkType) {
@@ -164,18 +173,17 @@ export async function _base_stream(
                             AppendMessageFragmentChunk(respMsg, currentFragment.id, json, false);
                             conversationStore.updateConvInStore(conv.id, conv);
                         }
-
-                        requestAnimationFrame(() => {
-                            function isNearBottom(el?: Element, threshold = 30) {
-                                if (!el) return false;
-                                return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
-                            }
-                            const el = (useAppStateStore().mainContentViewEl as any)?.$el;
-                            if (isNearBottom(el)) {
-                                el.scrollTop = el.scrollHeight;
-                            }
-                        });
                     }
+                    requestAnimationFrame(() => {
+                        function isNearBottom(el?: Element, threshold = 30) {
+                            if (!el) return false;
+                            return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+                        }
+                        const el = (useAppStateStore().mainContentViewEl as any)?.$el;
+                        if (isNearBottom(el)) {
+                            el.scrollTop = el.scrollHeight;
+                        }
+                    });
                 }
                 catch (err) {
                     throw new Error("Error parsing streaming response", { cause: err });

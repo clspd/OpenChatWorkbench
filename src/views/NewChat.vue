@@ -51,11 +51,11 @@ onMounted(() => {
     }
 })
 
-watch(() => modelId.value, (newVal) => {
-    useConfigStore().selectedModelId = newVal
-})
 watch(() => providerId.value, (newVal) => {
     useConfigStore().selectedProviderId = newVal
+})
+watch(() => modelId.value, (newVal) => {
+    useConfigStore().selectedModelId = newVal
 })
 
 watch(() => userMessage.value, (newVal) => {

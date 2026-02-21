@@ -14,7 +14,8 @@
                 <p>First of all, you need to add a new provider. A provider is a service that provides the API to connect to LLM.</p>
                 <p>To edit or remove a provider, please turn to <router-link to="/settings/providers" @click="appState.showConfigGuide = false">Advanced Settings</router-link>.</p>
                 <div><b>Who provides you with the service?</b><br><span>We've loaded a common provider list. If you don't see the provider you want, please add it manually.</span></div>
-                <p><select v-model="selectedPresetProviderIdx" @change="handleUserSelectProvider" placeholder="Select a provider">
+                <p style="overflow: auto; white-space: nowrap; border-bottom: 1px solid gray; padding-bottom: 1em;">Choose: <select v-model="selectedPresetProviderIdx" @change="handleUserSelectProvider" placeholder="Select a provider">
+                    <option value="" disabled>-- Please select --</option>
                     <option v-for="(it, idx) in providers" :key="idx" :value="String(idx)" :disabled="it.disabled">{{ it.name }} ({{ it.description }})</option>
                 </select></p>
                 <form class="provider-cfg-form" method="dialog" @submit.prevent>
@@ -34,6 +35,17 @@
                         <span>Request path:&nbsp;</span>
                         <a-input required v-model:value="userCfg.path" placeholder="Please input" autocomplete="off" />
                     </label>
+                    <label>
+                        <span>Compatibility mode:&nbsp;</span>
+                        <a-radio-group v-model:value="userCfg.compatibilityMode" style="display: flex; gap: 0.5em; flex-wrap: wrap; overflow-wrap: anywhere;">
+                            <a-radio value="untested" disabled v-if="userCfg.compatibilityMode === 'untested'">Untested (The provider you selected is not tested by us)</a-radio>
+                            <template v-else>
+                                <a-radio value="openai">OpenAI or OpenAI-compatible</a-radio>
+                                <a-radio value="claude">Anthropic</a-radio>
+                                <a-radio value="gemini">Gemini</a-radio>
+                            </template>
+                        </a-radio-group>
+                    </label>
                     <a-button type="primary" @click="saveProvider" :disabled="
                     !userCfg.base || !userCfg.key || !userCfg.name || !userCfg.path
                     ">Save</a-button>
@@ -43,7 +55,10 @@
                 <h2>Model</h2>
                 <div><a href="javascript:" @click="--current">&lt;-- Previous</a>&nbsp;&nbsp;<a href="javascript:" @click="++current">Next --&gt;</a></div>
                 <p>Now you can fetch models or add a model manually.</p>
-                <p>Provider: {{ userProviderId || "N/A" }}</p>
+                <p>Provider: <select v-model="userProviderId" placeholder="Select a provider">
+                    <option value="" disabled>-- Please select --</option>
+                    <option v-for="(it, idx) in configStore.providers" :key="idx" :value="it.id">#{{ idx }} - {{ it.name }}</option>
+                </select></p>
                 <a-button type="primary" @click="fetchModels" :disabled="!userProviderId">Fetch models (automatically)</a-button>
                 <div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
                     <a-input v-model:value="userInputModelId" :disabled="!userProviderId" />
@@ -54,6 +69,7 @@
             <div v-if="current === 3">
                 <h2>You're All Set</h2>
                 <p>Enjoy the application :D</p>
+                <div style="margin-bottom: 1em;"><a href="javascript:" @click="--current">&lt;-- Previous</a></div>
                 <a-button type="primary" @click="appState.showConfigGuide = false;">Done</a-button>
             </div>
         </div>
@@ -95,6 +111,7 @@ const userCfg = ref({
     key: "",
     base: "",
     path: "",
+    compatibilityMode: "openai",
 });
 const userProviderId = ref("");
 const userInputModelId = ref("");
@@ -116,6 +133,7 @@ const handleUserSelectProvider = async (e: Event) => {
         key: "",
         base: data.baseURL,
         path: data.requestPath,
+        compatibilityMode: data.compatibilityMode || "openai",
     }
 }
 
@@ -128,6 +146,7 @@ const saveProvider = () => {
         baseURL: userCfg.value.base,
         requestPath: userCfg.value.path,
         enabled: true,
+        compatibilityMode: userCfg.value.compatibilityMode,
     });
     ++current.value;
     userCfg.value = {
@@ -135,7 +154,8 @@ const saveProvider = () => {
         key: "",
         base: "",
         path: "",
-    };
+        compatibilityMode: "openai",
+    }
 }
 
 const modelAddResult = ref("")
@@ -155,7 +175,7 @@ const fetchModels = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            throw new Error(`HTTP error! status: ${response.status}\n${await response.text()}`)
         }
         const data = await response.json()
         let err = 0;
@@ -169,6 +189,7 @@ const fetchModels = async () => {
                 }
             }
             console.log("[ConfigGuide]", "Found ", err, "errors");
+            modelAddResult.value = "Successfully added " + (data.data.length - err) + " models (" + err + " errors)";
             ++current.value;
         } else {
             modelAddResult.value = "Failed: Invalid response: " + JSON.stringify(data);

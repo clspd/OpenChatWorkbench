@@ -15,8 +15,17 @@
         </div>
 
         <div class="action-buttons">
-            <a-button type="primary" @click="handleAdd">Add Model</a-button>
-            <a-button @click="openFetchModal">Fetch Models</a-button>
+            <a-button type="primary" @click="openFetchModal">Fetch Models</a-button>
+            <a-button @click="handleAdd">Add Model manually</a-button>
+            <a-button @click="handleCleanup">Cleanup</a-button>
+        </div>
+
+        <div class="provider-group" v-if="configStore.hasZombieModels()">
+            <div class="provider-header">
+                <h3 class="provider-name">Zombie Models</h3>
+            </div>
+            <p>Zombie models are models that are not associated with any provider. They may be left over from previous configurations. Accumulating them may cause performance issues, leading to slower response times. It is recommended to clean up zombie models periodically.</p>
+            <a-button @click="handleCleanup">Cleanup Now</a-button>
         </div>
 
         <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
@@ -167,12 +176,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, h } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import type { ModelConfig, ProviderConfig } from '@/types/config'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 import { useAppStateStore } from '@/stores/appState'
+import { InfoCircleOutlined } from '@ant-design/icons-vue'
 
 const configStore = useConfigStore()
 
@@ -449,6 +459,21 @@ const handleFetchOk = async () => {
     } finally {
         isFetching.value = false
     }
+}
+
+const handleCleanup = async () => {
+    if (!await new Promise(r => Modal.confirm({
+        title: "Cleanup",
+        icon: h(InfoCircleOutlined),
+        content: "This operation will remove \"zombie\" models, which are models that are not associated with any provider. This may be caused after you deleted a provider directly. Continuing will not cause any data loss. Proceed?",
+        okText: "Cleanup",
+        okType: "primary",
+        onOk: () => r(true),
+        onCancel: () => r(false),
+    }))) return;
+
+    const cleanedCount = configStore.cleanupZombieModels()
+    message.success(`Successfully removed ${cleanedCount} zombie models`);
 }
 </script>
 
