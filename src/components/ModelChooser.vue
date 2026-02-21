@@ -32,7 +32,7 @@
                 </div>
                 <div v-if="groupedModels.length === 0" class="empty-state">
                     <p>{{ t('common:ui.modelChooser.emptyState') }}</p>
-                    <div><a href="javascript:void(0)" @click="appState.showConfigGuide = true">Open the configuration guide</a></div>
+                    <div><a href="javascript:void(0)" @click="appState.showConfigGuide = true">{{ t('common:ui.modelChooser.openConfigGuide') }}</a></div>
                 </div>
                 <div v-else style="position: relative;">
                     <div :style="{ height: totalSize + 'px' }"></div>

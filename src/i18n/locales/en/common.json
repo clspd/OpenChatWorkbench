@@ -41,7 +41,8 @@
             "title": "Select Model",
             "showFavOnly": "Show favorites only",
             "filterTooltip": "Filter by model ID",
-            "emptyState": "No models available. Please add providers and models first."
+            "emptyState": "No models available. Please add providers and models first.",
+            "openConfigGuide": "Open the configuration guide"
         },
         "state": {
             "enabled": "Enabled",

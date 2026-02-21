@@ -90,6 +90,7 @@ export async function UpdateConversationInfo(id: string, title?: string, pinned?
     const conv = await LoadConversation(id);
     if (title) {
         conv.session.title = title;
+        conv.session.title_type = "USER";
         conv.session.updated_at = Date.now();
         await UpdateConversation(id, conv);
     }

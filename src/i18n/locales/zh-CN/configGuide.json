@@ -19,7 +19,7 @@
         }
     },
     "welcome": {
-        "title": "欢迎使用配置指南",
+        "title": "欢迎使用配置向导",
         "description": "本指南将帮助您配置 OpenChatWorkbench 应用程序。",
         "startButton": "开始"
     },
