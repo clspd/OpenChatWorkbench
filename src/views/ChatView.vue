@@ -251,7 +251,9 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
     if (pos === 'top') {
         virtualizer.scrollToIndex(0)
     } else if (pos === 'bottom') {
-        virtualizer.scrollToIndex(virtualizer.getVirtualIndexes().length - 1)
+        virtualizer.scrollToIndex(virtualizer.getVirtualIndexes().length - 1, {
+            align: 'end',
+        })
     } else {
         const currentOffset = virtualizer.scrollOffset
         if (currentOffset != null) { 

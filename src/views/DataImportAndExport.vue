@@ -62,6 +62,15 @@ const setInputFile = (e: Event) => {
 const importData = async function () {
     if (!fileInput.value) return message.error('Please select a file to import.');
 
+    if (!await new Promise(r => Modal.confirm({
+        title: 'Confirm Import',
+        content: 'Are you sure you want to import the selected file? This will overwrite existing data. Never import data from those who you do not trust!',
+        okText: 'Import',
+        okType: 'danger',
+        onOk: () => r(true),
+        onCancel: () => r(false),
+    }))) return;
+
     inProgress.value = true;
     await new Promise(resolve => setTimeout(resolve, 1000)); // wait for UI update
     try {
@@ -107,11 +116,6 @@ const importData = async function () {
                 }
                 case 'kv.json': {
                     const kvData = JSON.parse(textContent);
-                    // Clear existing KV storage
-                    const existingKeys = await db.getAllKeys('kv');
-                    for (const key of existingKeys) {
-                        await db.delete('kv', key);
-                    }
                     // Add imported KV data
                     for (const [key, value] of Object.entries(kvData)) {
                         await db.put('kv', value, key);
@@ -141,7 +145,7 @@ const importData = async function () {
             }
         }
 
-        message.success('Data imported successfully.');
+        await new Promise(() => window.location.reload());
     }
     catch (e) {
         console.error('[DataImportAndExport]', 'Failed to import data:', e);
