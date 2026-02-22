@@ -243,8 +243,6 @@ watch(() => messageEditorState.files, (newVal) => {
     if (newVal) updateEditBuffer();
 })
 
-const requestScrollToTop = () => ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: 0 })
-const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
 const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
     const virtualizer = messageChainViewerRef.value?.getVirtualizer();
     if (!virtualizer) return;
@@ -267,6 +265,7 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
         }
     }
 }
+const requestScrollToBottom = () => requestScrollTo('bottom')
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
@@ -326,7 +325,7 @@ const handleSendMessage = async function () {
         await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (
             inputMessageRef.value?.focus(),
             updateChoices(messageEditorState.editMessage?.isEditing ?
-                (messageEditorState.editMessage.newChoices.push(0, 0), choices.value = messageEditorState.editMessage.newChoices) :
+                (messageEditorState.editMessage.newChoices.push(0), choices.value = messageEditorState.editMessage.newChoices) :
                 (choices.value.push(0, 0), choices.value)
             ).then(() => (
                 resolve()

@@ -82,14 +82,6 @@ const emit = defineEmits<{
 }>();
 
 defineExpose({
-    scrollToBottom() {
-        if (!chatFlow.value.length) return;
-        virtualizer.value.scrollToIndex(chatFlow.value.length - 1);
-        ((appState.mainContentViewEl as any).$el as HTMLElement).scrollTo({
-            top: ((appState.mainContentViewEl as any).$el as HTMLElement).scrollHeight,
-            behavior: 'smooth',
-        });
-    },
     requestChatFlowData() {
         return chatFlow.value
     },
@@ -108,7 +100,7 @@ const chatFlow = ref<FlatMessage[]>([]);
 const updateChatFlow = () => {
     if (!tree.value) return;
     if (props.choices.length === 0) return;
-    // console.debug('compute chatFlow with choices', props.choices.join(','))
+    console.debug('[MessageChainViewer]', 'computing chatFlow with choices', props.choices.join(','))
     try {
         chatFlow.value = FlattenConversationTree(tree.value, props.choices);
     } catch (e) {
