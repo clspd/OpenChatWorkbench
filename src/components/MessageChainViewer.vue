@@ -94,7 +94,7 @@ defineExpose({
         return chatFlow.value
     },
     getVirtualizer() {
-        return virtualizer.value;
+        return virtualizer.value
     },
 });
 
@@ -131,12 +131,14 @@ const chatFlowPref = ref<Record<number, {
 
 const viewer = ref<HTMLDivElement>();
 const contentContainerRef = ref<HTMLDivElement>()
+const isSafari = /safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|brave/i.test(navigator.userAgent));
 
 const vOptions = computed(() => ({
     count: chatFlow.value.length,
     getScrollElement: () => (appState.mainContentViewEl as any)?.$el || null,
-    estimateSize: () => 300,
-    overscan: 10,
+    estimateSize: () => 3000,
+    overscan: 5,
+    useScrollendEvent: !isSafari,
 }))
 
 const virtualizer = useVirtualizer(vOptions)

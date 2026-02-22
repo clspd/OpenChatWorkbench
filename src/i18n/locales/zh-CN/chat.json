@@ -74,5 +74,14 @@
                 "generateFailed": "生成响应失败"
             }
         }
+    },
+    "messageOperations": {
+        "copy": "复制",
+        "regenerate": "重新生成",
+        "edit": "编辑",
+        "showRaw": "显示/隐藏原始消息",
+        "like": "喜欢",
+        "dislike": "不喜欢",
+        "more": "更多操作"
     }
 }

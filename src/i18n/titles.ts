@@ -9,6 +9,7 @@ export const app_title_i18n_data: Record<string, string> = {
     "Data Management Settings": "settings:data_management.title",
     "Page Not Found": "common:page_not_found.title",
     "Data Import and Export": "interop:data_import_export.title",
+    "New Workspace": "workspace:creation.title",
     "About": "about:title",
 };
 

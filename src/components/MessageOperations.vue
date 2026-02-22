@@ -6,28 +6,46 @@
                 <div v-if="props.message.role === MessageRole.Assistant">·</div>
                 <div class="message-model" v-if="props.message.role === MessageRole.Assistant">{{ props.message.model }}</div>
             </div>
-            <a-button type="text" shape="circle" aria-label="Copy message" @click="copyMessage">
-                <CopyOutlined v-if="!copiedTimer" />
-                <CheckOutlined v-else />
-            </a-button>
-            <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)" :disabled="isPending">
-                <CompressOutlined v-if="!props.showRawMessage" />
-                <ExpandOutlined v-else />
-            </a-button>
-            <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="props.disabled || isPending">
-                <EditOutlined />
-            </a-button>
-            <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
-                <RedoOutlined />
-            </a-button>
-            <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
-                <LikeFilled v-if="currentLikeState === 1" />
-                <LikeOutlined v-else />
-            </a-button>
-            <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
-                <DislikeFilled v-if="currentLikeState === -1" />
-                <DislikeOutlined v-else />
-            </a-button>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.copy') }}</template>
+                <a-button type="text" shape="circle" aria-label="Copy message" @click="copyMessage">
+                    <CopyOutlined v-if="!copiedTimer" />
+                    <CheckOutlined v-else />
+                </a-button>
+            </a-tooltip>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.showRaw') }}</template>
+                <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)" :disabled="isPending">
+                    <CompressOutlined v-if="!props.showRawMessage" />
+                    <ExpandOutlined v-else />
+                </a-button>
+            </a-tooltip>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.edit') }}</template>
+                <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="props.disabled || isPending">
+                    <EditOutlined />
+                </a-button>
+            </a-tooltip>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.regenerate') }}</template>
+                <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                    <RedoOutlined />
+                </a-button>
+            </a-tooltip>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.like') }}</template>
+                <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                    <LikeFilled v-if="currentLikeState === 1" />
+                    <LikeOutlined v-else />
+                </a-button>
+            </a-tooltip>
+            <a-tooltip>
+                <template #title>{{ t('chat:messageOperations.dislike') }}</template>
+                <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                    <DislikeFilled v-if="currentLikeState === -1" />
+                    <DislikeOutlined v-else />
+                </a-button>
+            </a-tooltip>
             <a-dropdown trigger="click" position="top" v-if="props.message.role === MessageRole.Assistant || props.showRawMessage">
                 <template #overlay>
                     <div class="message-details-box">
@@ -65,9 +83,12 @@
                         </div>
                     </div>
                 </template>
-                <a-button type="text" shape="circle" aria-label="More options">
-                    <MoreOutlined />
-                </a-button>
+                <a-tooltip>
+                    <template #title>{{ t('chat:messageOperations.more') }}</template>
+                    <a-button type="text" shape="circle" aria-label="More options">
+                        <MoreOutlined />
+                    </a-button>
+                </a-tooltip>
             </a-dropdown>
         </div>
 

@@ -74,5 +74,14 @@
                 "generateFailed": "Failed to generate response"
             }
         }
+    },
+    "messageOperations": {
+        "copy": "Copy",
+        "regenerate": "Regenerate",
+        "edit": "Edit",
+        "showRaw": "Show/hide raw message",
+        "like": "Like",
+        "dislike": "Dislike",
+        "more": "More operations"
     }
 }

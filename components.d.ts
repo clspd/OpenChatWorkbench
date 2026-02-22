@@ -54,6 +54,7 @@ declare module 'vue' {
     ATabs: typeof import('ant-design-vue/es')['Tabs']
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATextarea: typeof import('ant-design-vue/es')['Textarea']
+    ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     CaretLeftFilled: typeof import('@ant-design/icons-vue')['CaretLeftFilled']
     CaretRightFilled: typeof import('@ant-design/icons-vue')['CaretRightFilled']
     CheckOutlined: typeof import('@ant-design/icons-vue')['CheckOutlined']
@@ -89,6 +90,7 @@ declare module 'vue' {
     SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     StatusText: typeof import('./src/components/StatusText.vue')['default']
+    UpOutlined: typeof import('@ant-design/icons-vue')['UpOutlined']
     UserOutlined: typeof import('@ant-design/icons-vue')['UserOutlined']
   }
 }

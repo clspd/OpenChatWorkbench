@@ -29,8 +29,10 @@
 
             <div class="input-message-container">
                 <div class="floating-buttons-container">
-                    <a-button @click="requestScrollToTop" shape="circle" style="margin-right: 0.5em;"><ArrowUpOutlined /></a-button>
-                    <a-button @click="requestScrollToBottom" shape="circle"><ArrowDownOutlined /></a-button>
+                    <a-button @click="requestScrollTo('top')" shape="circle"><ArrowUpOutlined /></a-button>
+                    <a-button @click="requestScrollTo('prev')" shape="circle"><UpOutlined /></a-button>
+                    <a-button @click="requestScrollTo('next')" shape="circle"><DownOutlined /></a-button>
+                    <a-button @click="requestScrollTo('bottom')" shape="circle"><ArrowDownOutlined /></a-button>
                 </div>
                 <InputMessage
                     class="input-message-p"
@@ -243,6 +245,26 @@ watch(() => messageEditorState.files, (newVal) => {
 
 const requestScrollToTop = () => ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: 0 })
 const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
+const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
+    const virtualizer = messageChainViewerRef.value?.getVirtualizer();
+    if (!virtualizer) return;
+    if (pos === 'top') {
+        virtualizer.scrollToIndex(0)
+    } else if (pos === 'bottom') {
+        virtualizer.scrollToIndex(virtualizer.getVirtualIndexes().length - 1)
+    } else {
+        const currentOffset = virtualizer.scrollOffset
+        if (currentOffset != null) { 
+            const idx = virtualizer.getVirtualItemForOffset(currentOffset);
+            // console.debug('[ChatView]', 'requestScrollTo', 'currentOffset=', currentOffset, 'idx=', idx?.index, pos);
+            if (idx?.index != null) {
+                virtualizer.scrollToIndex(idx.index + (pos === 'next' ? 1 : -1), {
+                    align: 'start',
+                });
+            }
+        }
+    }
+}
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
@@ -525,6 +547,7 @@ const cancelEditMessage = () => {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 0.5em;
+    gap: 0.5em;
     pointer-events: none;
 }
 

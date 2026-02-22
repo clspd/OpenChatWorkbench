@@ -10,6 +10,7 @@ export { reactiveLanguage as currentLanguage }
 const NS = [
     'common',
     'chat',
+    'workspace',
     'configGuide',
     'interop',
     'settings',
