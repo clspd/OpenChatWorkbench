@@ -1,22 +1,21 @@
 <template>
     <div class="message-list" ref="msgList">
-        <div v-if="props.type === 'workspace'">Workspace not implemented!!!</div>
-        <div v-if="conversationGroupsData.groups.length === 0" class="empty">
-            <a-empty />
+        <div v-if="displayContent.length === 0" class="empty">
+            <a-empty description="" />
         </div>
         <div v-else class="conversation-vlist-wrapper">
             <div v-for="vi in virtualItems" :key="vi.index" class="vItem" :data-index="vi.index" :style="{ top: vi.start + 'px' }" :ref="el => { if (el) virtualizer.measureElement(el as Element) }">
-                <div :data-index="vi.index" v-if="flattenedConversations[vi.index]?.type === 'text-mark'" class="group-label">{{ (flattenedConversations[vi.index] as FlattenedConversationIndexItemTextMark).content }}</div>
-                <a :data-index="vi.index" v-else-if="flattenedConversations[vi.index]?.type === 'conversation'"
+                <div :data-index="vi.index" v-if="displayContent[vi.index]?.type === 'text-mark'" class="group-label">{{ (displayContent[vi.index] as FlattenedConversationIndexItemTextMark).content }}</div>
+                <a :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'conversation'"
                     class="conversation-item"
-                    :class="{ 'is-selected': isActive((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.id) }"
+                    :class="{ 'is-selected': isActive((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id) }"
                     role="link"
-                    :href="getConversationUrl((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.id)"
-                    @click="handleConversationClick((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
+                    :href="getConversationUrl((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)"
+                    @click="handleConversationClick((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
                     <div class="conversation-info">
-                        <div class="conversation-title">{{ (flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
+                        <div class="conversation-title">{{ (displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
                         <div class="conversation-meta">
-                            <span class="conversation-time">{{ formatConversationTime((flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
+                            <span class="conversation-time">{{ formatConversationTime((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
                         </div>
                     </div>
                     <div class="conversation-operations">
@@ -28,7 +27,7 @@
                                         {{ t('common:ui.sidebar.conversation.operations.rename') }}
                                     </a-menu-item>
                                     <a-menu-item key="pin">
-                                        <template v-if="(flattenedConversations[vi.index] as FlattenedConversationIndexItemConversation).content.pinned">
+                                        <template v-if="(displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.pinned">
                                             <ExportOutlined />
                                             {{ t('common:ui.sidebar.conversation.operations.unpin') }}
                                         </template>
@@ -54,7 +53,7 @@
                         </a-dropdown>
                     </div>
                 </a>
-                <div :data-index="vi.index" v-else-if="flattenedConversations[vi.index]?.type === 'has-more-mark'" class="has-more-mark">
+                <div :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'has-more-mark'" class="has-more-mark">
                     Has more data (TODO: load these data...)
                 </div>
             </div>
@@ -112,10 +111,14 @@ const flattenedConversations = computed<FlattenedConversationIndexItem[]>(() => 
     return result
 });
 
+const flattenedWorkspaces: any = ref([]); // TODO
+
+const displayContent = computed(() => props.type === 'workspace' ? flattenedWorkspaces.value : flattenedConversations.value)
+
 const msgList = ref<HTMLDivElement>();
 
 const vOptions = computed(() => ({
-    count: flattenedConversations.value.length,
+    count: displayContent.value.length,
     getScrollElement: () => msgList.value?.parentElement || null,
     estimateSize: () => 52.625,
     overscan: 5,

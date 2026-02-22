@@ -13,6 +13,7 @@ export const useAppStateStore = defineStore('AppState', {
         currentConversationId_: '' as string | null,
         mainContentViewEl: null as Component | null,
         showConfigGuide: false,
+        userBlobContentUrlCache: new Map<string, string>(),
     }),
     getters: {
         currentConversationId: (state) => state.page === 'chat' ? state.currentConversationId_ : null,

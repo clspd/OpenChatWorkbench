@@ -26,6 +26,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         domPurifCfg: {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,
+        showAvatar: 'default' as 'default' | 'custom' | 'off',
     }),
     getters: {
         theme: (state): ThemeConfig => ({

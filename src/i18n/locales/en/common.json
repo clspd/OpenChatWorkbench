@@ -64,5 +64,9 @@
     },
     "conversation": {
         "defaultTitle": "New Conversation"
+    },
+    "page_not_found": {
+        "title": "Page Not Found",
+        "newChat": "New Chat"
     }
 }

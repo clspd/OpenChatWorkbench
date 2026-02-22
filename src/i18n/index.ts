@@ -11,8 +11,9 @@ const NS = [
     'common',
     'chat',
     'configGuide',
+    'interop',
     'settings',
-    'about'
+    'about',
 ]
 
 const supportedDayjsLocales: Record<string, () => Promise<any>> = {

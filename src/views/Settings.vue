@@ -28,6 +28,7 @@ import { useAppStateStore } from '@/stores/appState'
 import i18next from 'i18next';
 
 const GeneralSettings = defineAsyncComponent(() => import('@/settings/GeneralSettings.vue'))
+const PersonalizationSettings = defineAsyncComponent(() => import('@/settings/Personalization.vue'))
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
 const ModelSettings = defineAsyncComponent(() => import('@/settings/ModelSettings.vue'))
 const CacheSettings = defineAsyncComponent(() => import('@/settings/CacheSettings.vue'))
@@ -48,6 +49,11 @@ const pages = ref([
         id: 'general',
         title: i18next.t('settings:general.title'),
         component: markRaw(GeneralSettings),
+    },
+    {
+        id: 'personalization',
+        title: i18next.t('settings:personalization.title'),
+        component: markRaw(PersonalizationSettings),
     },
     {
         id: 'providers',

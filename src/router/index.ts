@@ -16,7 +16,11 @@ const router = createRouter({
       path: '/chat/c/:chatId',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
-      // props: true,
+    },
+    {
+      path: '/workspace/new',
+      name: 'new-workspace',
+      component: () => import('@/views/NewWorkspace.vue'),
     },
     {
       path: '/settings/',

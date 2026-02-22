@@ -64,5 +64,9 @@
     },
     "conversation": {
         "defaultTitle": "新对话"
+    },
+    "page_not_found": {
+        "title": "页面不存在",
+        "newChat": "新对话"
     }
 }

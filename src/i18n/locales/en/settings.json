@@ -30,6 +30,28 @@
     "chat": {
         "title": "Chat Settings"
     },
+    "personalization": {
+        "title": "Personalization",
+        "showAvatar": {
+            "title": "Show Avatar",
+            "description": "Show the avatar of user, assistant and system in the chat interface.",
+            "state": {
+                "default": "Show Default Avatar",
+                "custom": "Show Custom Avatar",
+                "off": "Hide Avatar"
+            },
+            "custom": {
+                "title": "Custom Avatar",
+                "description": "Upload a custom avatar for the user, assistant and system.",
+                "upload": "Upload Avatar",
+                "roles": {
+                    "user": "User",
+                    "assistant": "Assistant",
+                    "system": "System"
+                }
+            }
+        }
+    },
     "provider": {
         "title": "Provider Settings",
         "addProvider": "Add Provider",

@@ -3,8 +3,8 @@
         <div class="icon">
             <ExclamationCircleTwoTone />
         </div>
-        <h1>Page Not Found</h1>
-        <a-button type="primary" @click="goToNewChat">New Chat</a-button>
+        <h1>{{ t('common:page_not_found.title') }}</h1>
+        <a-button type="primary" @click="goToNewChat">{{ t('common:page_not_found.newChat') }}</a-button>
     </div>
 </template>
 

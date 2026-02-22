@@ -30,6 +30,28 @@
     "chat": {
         "title": "对话设置"
     },
+    "personalization": {
+        "title": "个性化",
+        "showAvatar": {
+            "title": "显示头像",
+            "description": "在对话界面中显示用户、助手和系统的头像。",
+            "state": {
+                "default": "显示默认头像",
+                "custom": "显示自定义头像",
+                "off": "隐藏头像"
+            },
+            "custom": {
+                "title": "自定义头像",
+                "description": "为用户、助手和系统上传自定义头像。",
+                "upload": "上传头像",
+                "roles": {
+                    "user": "用户",
+                    "assistant": "助手",
+                    "system": "系统"
+                }
+            }
+        }
+    },
     "provider": {
         "title": "提供商设置",
         "addProvider": "添加提供商",
