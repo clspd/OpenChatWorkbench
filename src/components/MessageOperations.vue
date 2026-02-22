@@ -10,36 +10,36 @@
                 <CopyOutlined v-if="!copiedTimer" />
                 <CheckOutlined v-else />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)">
+            <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)" :disabled="isPending">
                 <CompressOutlined v-if="!props.showRawMessage" />
                 <ExpandOutlined v-else />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="isPending">
+            <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="props.disabled || isPending">
                 <EditOutlined />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
+            <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                 <RedoOutlined />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
+            <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                 <LikeFilled v-if="currentLikeState === 1" />
                 <LikeOutlined v-else />
             </a-button>
-            <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="isPending">
+            <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                 <DislikeFilled v-if="currentLikeState === -1" />
                 <DislikeOutlined v-else />
             </a-button>
         </div>
 
         <div class="message-choices" v-if="props.totalChoices > 1">
-            <a-button type="text" size="small" shape="circle" aria-label="Switch to previous choice" @click="choiceAction(1, -1)" :disabled="choice === 0">
+            <a-button type="text" size="small" shape="circle" aria-label="Switch to previous choice" @click="choiceAction(1, -1)" :disabled="props.disabled || choice === 0">
                 <LeftOutlined />
             </a-button>
 
-            <a-button type="text" size="small" :aria-label="`Current choice: ${props.choice}; Total choices count: ${props.totalChoices}; click to switch choice`" @click="choiceAction(2)">
+            <a-button type="text" size="small" :aria-label="`Current choice: ${props.choice}; Total choices count: ${props.totalChoices}; click to switch choice`" @click="choiceAction(2)" :disabled="props.disabled">
                 {{ props.choice + 1 }} / {{ props.totalChoices }}
             </a-button>
 
-            <a-button type="text" size="small" shape="circle" aria-label="Switch to next choice" @click="choiceAction(1, 1)" :disabled="choice === props.totalChoices - 1">
+            <a-button type="text" size="small" shape="circle" aria-label="Switch to next choice" @click="choiceAction(1, 1)" :disabled="props.disabled || choice === props.totalChoices - 1">
                 <RightOutlined />
             </a-button>
         </div>
@@ -63,6 +63,7 @@ const props = defineProps<{
     choice: number;
     totalChoices: number;
     showRawMessage?: boolean;
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{

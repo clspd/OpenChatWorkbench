@@ -1,5 +1,10 @@
 <template>
     <div class="input-message" :data-disabled="props.disabled">
+        <div v-if="props.isEditing" class="edit-message-title">
+            <span>{{ t('common:ui.mainInput.editing.title', { id: props.editMessageId }) }}</span>
+            <div class="flexible-space"></div>
+            <a-button type="text" shape="circle" @click="emit('update:isEditing', false)"><CloseOutlined /></a-button>
+        </div>
         <editor-content v-show="!appStatePersist.usePlainInput" class="edit-message"
             :editor="editor"
         ></editor-content>
@@ -73,6 +78,8 @@ const props = withDefaults(defineProps<{
     providerId: string,
     disabled?: boolean,
     isGenerating?: boolean,
+    isEditing?: boolean,
+    editMessageId?: number,
     features: MessageFeatureItem[],
 }>(), {
     modelValue: '',
@@ -80,13 +87,21 @@ const props = withDefaults(defineProps<{
     providerId: '',
     disabled: false,
     isGenerating: false,
+    isEditing: false,
+    editMessageId: 0,
     features: () => [],
 });
 const emit = defineEmits([
     'update:modelValue', 'update:modelId', 'update:providerId', 'update:features',
     'sendMessage',
     'interruptMessage',
+    'update:isEditing',
 ])
+defineExpose({
+    setHTML(html: string) {
+        return editor.value?.commands.setContent(html);
+    },
+})
 
 const editor = ref<Editor>()
 const send = () => props.isGenerating ? emit('interruptMessage') : emit('sendMessage')
@@ -213,15 +228,23 @@ const handleAttachMenuClick = ({ key = '' }) => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 50rem;
-    padding: 1em;
     margin: 0 auto;
+    overflow: hidden;
 }
 .input-message[data-disabled="true"] {
     cursor: not-allowed;
     color: var(--color-disabled-text);
 }
+.edit-message-title {
+    background-color: #f0f0f0;
+    padding: 0.5em 0.5em 0.5em 1em;
+    user-select: none;
+    display: flex;
+    align-items: center;
+}
 .edit-message {
     flex: 1;
+    padding: 1em 1em 0 1em;
     min-height: 4em;
     max-height: calc(100vh - 20em);
     overflow: auto;
@@ -251,6 +274,7 @@ const handleAttachMenuClick = ({ key = '' }) => {
     display: flex;
     align-items: center;
     margin-top: 0.5em;
+    padding: 0 1em 1em 1em;
 }
 .model-chooser {
     margin-right: 0.5em;

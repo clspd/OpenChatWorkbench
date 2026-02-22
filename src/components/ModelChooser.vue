@@ -13,7 +13,7 @@
             <template #title>
                 {{ t('common:ui.modelChooser.title') }}
             </template>
-            <div class="model-selection" ref="modelSelectionRef">
+            <div class="model-selection" ref="modelSelectionRef" @scroll.passive="handleScroll">
                 <div class="search-bar">
                     <a-input 
                         v-model:value="searchKeyword" 
@@ -181,13 +181,19 @@ const toggleFavorite = (providerId: string, modelId: string) => {
 watch(modalVisible, async (newVal) => {
     if (newVal) {
         await nextTick()
+        // await new Promise(resolve => setTimeout(resolve))
+        await nextTick()
         if (modelSelectionRef.value) {
             modelSelectionRef.value.scrollTop = appStatePersist.modelChooserScrollPos
         }
-    } else if (modelSelectionRef.value) {
-        appStatePersist.modelChooserScrollPos = modelSelectionRef.value.scrollTop
     }
 })
+
+const handleScroll = () => {
+    if (modelSelectionRef.value && modalVisible.value) {
+        appStatePersist.modelChooserScrollPos = modelSelectionRef.value.scrollTop
+    }
+}
 </script>
 
 <style scoped>

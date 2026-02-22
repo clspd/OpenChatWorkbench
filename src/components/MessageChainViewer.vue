@@ -21,6 +21,7 @@
                     :message="chatFlow[vi.index]!.data" :convId="props.chatId"
                     :choice="getCurrentChoiceForId(chatFlow[vi.index]!.data.id)"
                     :total-choices="chatFlow[vi.index]!.choicesCount"
+                    :disabled="props.disabled"
                     @update:choice="(choice) => updateChoice(chatFlow[vi.index]!.data.id, choice)"
                     @edit-message="handleRequestEditMessage(chatFlow[vi.index]!.data.id)"
                     @regenerate-message="handleRequestRegenerateMessage(chatFlow[vi.index]!.data.id)"
@@ -69,6 +70,7 @@ import { DialogView } from 'vue-dialog-view';
 const props = defineProps<{
     chatId: string;
     choices: number[];
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -173,8 +175,7 @@ const getCurrentChoiceForId = (id: number): number => {
 
 const truncateChoicesToId = (idx: number) => {
     const clone = Array.from(props.choices);
-    if (idx < clone.length - 3) clone.splice(idx + 1);
-    return clone;
+    return clone.splice(0, idx + 1);
 }
 
 const updateChoice = (id: number, choice: number) => {
@@ -194,8 +195,9 @@ const handleModifyMessage = (id: number, type: ('regenerate' | 'edit')) => {
     clone.splice(clone.length - 1, 1, chatFlow.value.find((msg) => msg.data.id === id)?.choicesCount || 0);
     // create new request
     const parent_id = conversation.value?.messages.find((msg) => msg.id === id)?.parent_id ?? null
-    if (!parent_id && type === 'regenerate') return message.error('The message couldn\'t be regenerated.')
-    emit(("request-" + type) as any, id, parent_id, clone);
+    if (null == parent_id && type === 'regenerate') return message.error('The message couldn\'t be regenerated.')
+    if (type === 'regenerate') emit("request-regenerate", id, parent_id!, clone);
+    else emit("request-edit", id, parent_id, clone);
 }
 
 const contentEditDlgState = reactive({

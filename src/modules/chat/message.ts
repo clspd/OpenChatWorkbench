@@ -2,6 +2,8 @@
 import { MessageContentType, MessageFragmentType, MessageStatus, type FileAttachmentInfo, type Message, type MessageContent, type MessageFeatureItem, type MessageRole } from "@/types/message";
 import type { ChatCompletionChunk } from "openai/resources";
 import { GetResponseChunkFragmentType } from "../chat-remotes/provider";
+import MarkdownIt from "markdown-it";
+import { getSafeHTML } from "@/utils/htmlpurify";
 
 /**
  * Create a user or system message. Use the `role` parameter to specify the role of the message.
@@ -70,5 +72,16 @@ export function ExtractMessageText(msg: Message) {
         res.push(frag.content);
     }
     return res.join("\n\n---\n\n");
+}
+
+export function ExtractMessageHTML(msg: Message) {
+    const markdown = ExtractMessageText(msg);
+    const md = new MarkdownIt({
+        html: true,
+        breaks: true,
+        linkify: true,
+        typographer: true,
+    });
+    return getSafeHTML(md.render(markdown));
 }
 

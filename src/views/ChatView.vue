@@ -18,13 +18,13 @@
                     ref="messageChainViewerRef"
                     :chatId="props.chatId"
                     :choices="choices"
+                    :disabled="messageEditorState.editMessage?.isEditing"
                     @update:choices="handleUpdateChoices"
                     @request-regenerate="handleRequestRegenerateMessage"
+                    @request-edit="handleRequestEditMessage"
                 />
 
-                <div v-if="conversation.messages.length" style="height: 2em; display: flex; align-items: center; justify-content: center;">
-                    <!-- <div style="color: gray;">Continue your chat……</div> -->
-                </div>
+                <div v-if="conversation.messages.length" style="height: 2em; display: flex; align-items: center; justify-content: center;"></div>
             </div>
 
             <div class="input-message-container">
@@ -34,6 +34,7 @@
                 </div>
                 <InputMessage
                     class="input-message-p"
+                    ref="inputMessageRef"
                     v-model="messageEditorState.content"
                     v-model:providerId="messageEditorState.providerId"
                     v-model:modelId="messageEditorState.modelId"
@@ -41,6 +42,9 @@
                     v-model:files="messageEditorState.files"
                     :disabled="messageEditorState.isSending"
                     :is-generating="messageEditorState.isGenerating || hasGenerating"
+                    :is-editing="messageEditorState.editMessage?.isEditing"
+                    :edit-message-id="messageEditorState.editMessage?.editId"
+                    @update:is-editing="cancelEditMessage"
                     @send-message="handleSendMessage" @interrupt-message="handleInterrupt" />
                 <div class="bottom-text-overlay"></div>
             </div>
@@ -50,7 +54,7 @@
 
 <script setup lang="ts">
 // vendor
-import { ref, onMounted, watch, reactive, h, computed } from 'vue'
+import { ref, onMounted, watch, reactive, h, computed, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue';
 import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
@@ -70,7 +74,7 @@ import { LoadConversationPreference } from '@/modules/chat/convPref';
 import { GetConvNextMessageId, InsertMessageToConversation, LoadConversation } from '@/modules/chat/conversation';
 import { TraceErrorAndGetString } from '@/utils/errorTrace';
 import { tiptap2markdown } from '@/utils/parseTiptap';
-import { CreateUserMessage } from '@/modules/chat/message';
+import { CreateUserMessage, ExtractMessageHTML } from '@/modules/chat/message';
 import { GenerateResponse } from '@/modules/chat-request/respond';
 import { useConversationStore } from '@/stores/conversationStore';
 
@@ -133,23 +137,50 @@ async function InitChatMsgUI() {
     if (buffer) {
         messageEditorState.content = buffer.content
         messageEditorState.features = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
+        messageEditorState.files = buffer?.files ?? []
+        if (buffer?.isEditing) {
+            messageEditorState.editMessage = {
+                isEditing: buffer.isEditing,
+                editId: buffer.editId ?? 0,
+                parentId: buffer.parentId ?? null,
+                newChoices: buffer.newChoices ?? [],
+                oldEditorState: {
+                    content: buffer.oldEditorState?.content ?? '',
+                    features: buffer.oldEditorState?.features ?? [],
+                    files: buffer.oldEditorState?.files ?? [],
+                    providerId: useConfigStore().selectedProviderId,
+                    modelId: useConfigStore().selectedModelId,
+                    isSending: false,
+                    isGenerating: false,
+                },
+            }
+        }
     } else {
         messageEditorState.content = EMPTY_MESSAGE_JSON
         messageEditorState.features = useAppStatePersistStore().userSendMsgDefaultFeatures
+        messageEditorState.files = []
     }
 }
 
 // --------
 
-const messageEditorState = reactive<{
-    content: string,
-    modelId: string,
-    providerId: string,
-    features: MessageFeatureItem[],
-    files: FileAttachmentInfo[],
-    isSending: boolean,
-    isGenerating: boolean,
-}>({
+interface MessageEditorState {
+    content: string;
+    modelId: string;
+    providerId: string;
+    features: MessageFeatureItem[];
+    files: FileAttachmentInfo[];
+    isSending: boolean;
+    isGenerating: boolean;
+    editMessage?: {
+        isEditing: boolean;
+        editId: number;
+        parentId: number | null;
+        newChoices: number[];
+        oldEditorState: MessageEditorState | null;
+    };
+}
+const messageEditorState = reactive<MessageEditorState>({
     content: '',
     modelId: '',
     providerId: '',
@@ -157,7 +188,15 @@ const messageEditorState = reactive<{
     files: [],
     isSending: false,
     isGenerating: false,
-})
+    editMessage: {
+        isEditing: false,
+        editId: 0,
+        parentId: 0 as number | null,
+        newChoices: [] as number[],
+        oldEditorState: null as MessageEditorState | null,
+    },
+});
+const inputMessageRef = ref<InstanceType<typeof InputMessage>>();
 
 onMounted(async () => {
     messageEditorState.providerId = useConfigStore().selectedProviderId;
@@ -171,31 +210,23 @@ watch(() => messageEditorState.modelId, (newVal) => {
     useConfigStore().selectedModelId = newVal
 })
 
+const updateEditBuffer = () => useAppStateSessionStore().chatEditBuffer[props.chatId] = {
+    content: messageEditorState.content,
+    contentType: MessageContentType.Text,
+    features: messageEditorState.features,
+    files: messageEditorState.files,
+    isEditing: messageEditorState.editMessage?.isEditing ?? false,
+};
+
 watch(() => messageEditorState.content, (newVal) => {
-    if (newVal) {
-        useAppStateSessionStore().chatEditBuffer[props.chatId] = {
-            content: newVal,
-            contentType: MessageContentType.Text,
-            features: messageEditorState.features
-        }
-    }
+    if (newVal) updateEditBuffer();
 })
 watch(() => messageEditorState.features, (newVal) => {
-    if (newVal) {
-        useAppStateSessionStore().chatEditBuffer[props.chatId] = {
-            content: messageEditorState.content,
-            contentType: MessageContentType.Text,
-            features: newVal
-        }
-    }
+    if (newVal) updateEditBuffer();
 })
-
-// watch(() => choices.value, (newVal) => {
-//     if (preference.value) {
-//         preference.value.msgChainChoices = newVal;
-//         useConversationStore().updatePref(props.chatId, preference.value);
-//     }
-// })
+watch(() => messageEditorState.files, (newVal) => {
+    if (newVal) updateEditBuffer();
+})
 
 const requestScrollToTop = () => ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: 0 })
 const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom()
@@ -218,8 +249,11 @@ const handleSendMessage = async function () {
             message.error('Failed to get current message node id')
             return
         }
-        const currentNodeId = currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.data.id;
-        if (!currentNodeId) {
+        const currentNodeId =
+            messageEditorState.editMessage?.isEditing ?
+            messageEditorState.editMessage.parentId :
+            currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.data.id;
+        if (undefined === currentNodeId) { // allow null for root message
             message.error('Failed to get current message node id')
             return
         }
@@ -253,7 +287,9 @@ const handleSendMessage = async function () {
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
         await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => (conversationStore.getPref(props.chatId).then(pref => (conversationStore.updatePref(props.chatId, Object.assign(pref, {
-            msgChainChoices: (choices.value.push(0, 0), choices.value),
+            msgChainChoices: messageEditorState.editMessage?.isEditing ?
+                (messageEditorState.editMessage.newChoices.push(0, 0), choices.value = messageEditorState.editMessage.newChoices) :
+                (choices.value.push(0, 0), choices.value),
         })), resolve())))).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
@@ -283,7 +319,12 @@ const handleSendMessage = async function () {
         });
     }
     finally {
-        messageEditorState.isSending = false
+        messageEditorState.isSending = false;
+        if (messageEditorState.editMessage?.isEditing) {
+            messageEditorState.editMessage.isEditing = false;
+            messageEditorState.editMessage.parentId = null;
+            messageEditorState.editMessage.newChoices = [];
+        }
     }
 }
 
@@ -360,6 +401,43 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
     }
 }
 
+const handleRequestEditMessage = async function (id: number, parent_id: number | null, newChoices: number[]) {
+    const node = conversation.value?.messages.find((msg) => msg.id === id);
+    if (!node) {
+        message.error('Failed to get message data');
+        return;
+    }
+    if (!inputMessageRef.value) {
+        message.error('Failed to get input message ref');
+        return;
+    }
+    messageEditorState.editMessage = {
+        isEditing: true,
+        editId: id,
+        parentId: parent_id,
+        newChoices: newChoices,
+        oldEditorState: (JSON.parse(JSON.stringify(messageEditorState))),
+    };
+    inputMessageRef.value.setHTML(ExtractMessageHTML(node));
+    if (node.features) messageEditorState.features = node.features;
+    if (node.files) messageEditorState.files = node.files;
+    updateEditBuffer();
+}
+const cancelEditMessage = () => {
+    if (!messageEditorState.editMessage) return;
+    messageEditorState.editMessage.isEditing = false;
+    messageEditorState.editMessage.editId = 0;
+    messageEditorState.editMessage.parentId = null;
+    messageEditorState.editMessage.newChoices = [];
+    if (messageEditorState.editMessage.oldEditorState) {
+        Object.assign(messageEditorState, messageEditorState.editMessage.oldEditorState);
+    }
+    messageEditorState.editMessage.oldEditorState = null;
+    updateEditBuffer();
+}
+
+
+
 </script>
 
 <style scoped>
@@ -411,12 +489,6 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
     pointer-events: auto;
 }
 
-/* .bottom-text-overlay {
-    background: var(--background, #fff);
-    height: 2em;
-    position: absolute;
-    bottom: 0; right: 1em; left: 
-} */
 .bottom-text-overlay {
     background: var(--background, #fff);
     height: 1em;

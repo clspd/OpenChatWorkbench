@@ -64,6 +64,16 @@ export type ChatEditBuffer = Record<string, {
     contentType: MessageContentType;
     content: MessageContent<MessageContentType>;
     features: MessageFeatureItem[];
+    files: FileAttachmentInfo[];
+    isEditing: boolean;
+    editId?: number;
+    parentId?: number | null;
+    newChoices?: number[];
+    oldEditorState?: {
+        content: string;
+        features: MessageFeatureItem[];
+        files: FileAttachmentInfo[];
+    };
 }>
 
 export interface PendingMessageRequest {

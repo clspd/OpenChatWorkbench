@@ -35,6 +35,9 @@
                 "attachImage": "添加图片",
                 "deepThink": "深度思考",
                 "plainInput": "纯文本输入"
+            },
+            "editing": {
+                "title": "正在编辑消息 {{ id }}"
             }
         },
         "modelChooser": {

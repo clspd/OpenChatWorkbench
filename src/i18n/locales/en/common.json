@@ -35,6 +35,9 @@
                 "attachImage": "Attach Image",
                 "deepThink": "Deep Think",
                 "plainInput": "Plain Input"
+            },
+            "editing": {
+                "title": "Editing message {{ id }}"
             }
         },
         "modelChooser": {

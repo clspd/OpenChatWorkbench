@@ -57,6 +57,7 @@ declare module 'vue' {
     CaretLeftFilled: typeof import('@ant-design/icons-vue')['CaretLeftFilled']
     CaretRightFilled: typeof import('@ant-design/icons-vue')['CaretRightFilled']
     CheckOutlined: typeof import('@ant-design/icons-vue')['CheckOutlined']
+    CloseOutlined: typeof import('@ant-design/icons-vue')['CloseOutlined']
     ConversationList: typeof import('./src/components/ConversationList.vue')['default']
     CookieConsent: typeof import('./src/components/CookieConsent.vue')['default']
     DeleteOutlined: typeof import('@ant-design/icons-vue')['DeleteOutlined']
@@ -80,14 +81,12 @@ declare module 'vue' {
     PlusCircleOutlined: typeof import('@ant-design/icons-vue')['PlusCircleOutlined']
     PlusOutlined: typeof import('@ant-design/icons-vue')['PlusOutlined']
     PushpinOutlined: typeof import('@ant-design/icons-vue')['PushpinOutlined']
-    RightOutlined: typeof import('@ant-design/icons-vue')['RightOutlined']
     RobotOutlined: typeof import('@ant-design/icons-vue')['RobotOutlined']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     StatusText: typeof import('./src/components/StatusText.vue')['default']
-    UpOutlined: typeof import('@ant-design/icons-vue')['UpOutlined']
     UserOutlined: typeof import('@ant-design/icons-vue')['UserOutlined']
   }
 }
