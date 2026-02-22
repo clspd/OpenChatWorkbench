@@ -1,4 +1,5 @@
 // src/modules/statistics/usage-report.js
+// can be configured to work both as usage and as statistics report
 /* eslint-disable no-undef */
 
 /**
@@ -269,9 +270,9 @@ export default {
 
         slsUrl = env && env.SLS_URL ? String(env.SLS_URL) : '';
 
-        if (url.pathname !== '/api/v1/usage-report') {
-            return new Response('Not Found', { status: 404, headers: buildBaseHeaders(origin) });
-        }
+        // if (url.pathname !== '/api/v1/usage-report') {
+        //     return new Response('Not Found', { status: 404, headers: buildBaseHeaders(origin) });
+        // }
 
         if (request.method === 'OPTIONS') {
             return new Response(null, { status: 204, headers: buildBaseHeaders(origin) });

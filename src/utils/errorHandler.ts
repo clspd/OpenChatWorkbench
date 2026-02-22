@@ -20,7 +20,7 @@ async function handleWindowError(e: ErrorEvent) {
             fileName: e.filename,
             lineNumber: e.lineno,
             columnNumber: e.colno,
-            stack: e.error.stack || 'unknown',
+            stack: e.error?.stack || 'unknown',
         },
     }).catch(e => {});
 }

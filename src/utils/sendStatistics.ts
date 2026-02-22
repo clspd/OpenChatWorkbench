@@ -5,13 +5,6 @@ import { db } from "@/userdata";
 // usage report, categoried into Legitimate Interest, but the user can opt out
 export async function sendUsageReport(data: string) {
     if (true === await db.get('config', 'user.privacy.optOutUsageReport')) return;
-    // const response = await fetch(new URL('./usage-report', analytics_base_url), {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'text/plain',
-    //     },
-    //     body: data,
-    // });
     navigator.sendBeacon(new URL('./usage-report', analytics_base_url), data);
 }
 
