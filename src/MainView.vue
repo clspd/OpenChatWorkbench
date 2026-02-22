@@ -11,15 +11,17 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue';
+import { onMounted, type Component } from 'vue';
 import HeaderBar from './components/HeaderBar.vue'
 import Sidebar from './components/Sidebar.vue'
 import { useAppStateStore } from './stores/appState';
-import { useWindowStateStore } from '@/stores/windowState';
-import '@/utils/webcIPCMessage'
+import { DetectAndPromptLanguage } from './i18n/detector';
 
 const appState = useAppStateStore();
-const windowState = useWindowStateStore();
+
+onMounted(() => {
+    DetectAndPromptLanguage();
+})
 </script>
 
 <style scoped>
