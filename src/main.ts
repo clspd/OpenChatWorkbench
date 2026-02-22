@@ -23,6 +23,7 @@ importModule("/internal/init_config.js?ts=202602161150+0800");
 import i18next from 'i18next'
 import I18NextVue from 'i18next-vue'
 import './i18n'
+i18next.options.showSupportNotice = false;
 
 import './styles/style.css'
 import './styles/vars.css'

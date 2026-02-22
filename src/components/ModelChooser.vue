@@ -16,7 +16,7 @@
             <div class="model-selection" ref="modelSelectionRef" @scroll.passive="handleScroll">
                 <div class="search-bar">
                     <a-input 
-                        v-model:value="searchKeyword" 
+                        v-model:value="appStatePersist.modelChooserSearchKeyword" 
                         :placeholder="t('common:ui.modelChooser.filterTooltip')" 
                         allow-clear
                     >
@@ -112,7 +112,6 @@ const appState = useAppStateStore()
 const appStatePersist = useAppStatePersistStore()
 
 const modalVisible = ref(false)
-const searchKeyword = ref('')
 const modelSelectionRef = ref<HTMLElement | null>(null)
 const showFavoritesOnly = computed({
     get: () => configStore.modelChooser_showFavoritesOnly,
@@ -140,9 +139,9 @@ const groupedModels = computed(() => {
                 configStore.isFavoriteModel(provider.id, model.id)
             )
         }
-        if (searchKeyword.value.trim()) {
+        if (appStatePersist.modelChooserSearchKeyword.trim()) {
             models = models.filter(model =>
-                model.id.toLowerCase().includes(searchKeyword.value.toLowerCase())
+                model.id.toLowerCase().includes(appStatePersist.modelChooserSearchKeyword.toLowerCase())
             )
         }
 

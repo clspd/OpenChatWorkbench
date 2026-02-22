@@ -13,24 +13,30 @@
 </template>
 
 <script setup lang="ts">
-import { h, onMounted, ref } from 'vue'
+// vendor
+import { h, onMounted, ref, toRaw, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import InputMessage from '@/components/InputMessage.vue'
-import { useAppStateStore } from '@/stores/appState'
-import { watch } from 'vue'
-import { useConfigStore } from '@/stores/configStore'
-import { tiptap2markdown } from '@/utils/parseTiptap'
+import { cloneDeep } from 'lodash-es'
 import { message, Modal } from 'ant-design-vue'
+import { t } from 'i18next'
+// stores
+import { useAppStateStore } from '@/stores/appState'
+import { useConfigStore } from '@/stores/configStore'
+import { useConversationStore } from '@/stores/conversationStore'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
-import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
+// types
+import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
+// modules
 import { CreateConversation, GetConvNextMessageId, InsertMessageToConversation } from '@/modules/chat/conversation'
 import { CreateUserMessage } from '@/modules/chat/message'
-import { GenerateResponse } from '@/modules/chat-request/respond'
-import { TraceErrorAndGetString } from '@/utils/errorTrace'
-import { useConversationStore } from '@/stores/conversationStore'
 import { InitConversationPreference } from '@/modules/chat/convPref'
-import { t } from 'i18next'
+import { GenerateResponse } from '@/modules/chat-request/respond'
+// utils
+import { tiptap2markdown } from '@/utils/parseTiptap'
+import { TraceErrorAndGetString } from '@/utils/errorTrace'
+// components
+import InputMessage from '@/components/InputMessage.vue'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
@@ -120,11 +126,11 @@ const handleSendMessage = async () => {
             MessageRole.User,
             MessageContentType.Text,
             msg,
-            userMessageFiles.value
+            cloneDeep(toRaw(userMessageFiles.value))
         ));
 
         // Send request
-        await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, userMessageFeatures.value, userMessageFiles.value, () => InitConversationPreference(cid).then(pref => (useConversationStore().updatePref(cid, Object.assign(pref, {
+        await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, cloneDeep(toRaw(userMessageFeatures.value)), cloneDeep(toRaw(userMessageFiles.value)), () => InitConversationPreference(cid).then(pref => (useConversationStore().updatePref(cid, Object.assign(pref, {
             msgChainChoices: [0, 0],
         })))).then(() => resolve())).catch(e => {
             reject(e);

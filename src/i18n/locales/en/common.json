@@ -24,8 +24,13 @@
                     "rename": "Rename",
                     "pin": "Pin",
                     "unpin": "Unpin",
+                    "export": "Export",
                     "delete": "Delete"
                 }
+            },
+            "progress": {
+                "title": "Operation In Progress",
+                "content": "Please wait while the operation is being performed."
             }
         },
         "mainInput": {

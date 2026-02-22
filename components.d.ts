@@ -61,6 +61,7 @@ declare module 'vue' {
     ConversationList: typeof import('./src/components/ConversationList.vue')['default']
     CookieConsent: typeof import('./src/components/CookieConsent.vue')['default']
     DeleteOutlined: typeof import('@ant-design/icons-vue')['DeleteOutlined']
+    DownloadOutlined: typeof import('@ant-design/icons-vue')['DownloadOutlined']
     DownOutlined: typeof import('@ant-design/icons-vue')['DownOutlined']
     EditOutlined: typeof import('@ant-design/icons-vue')['EditOutlined']
     EllipsisOutlined: typeof import('@ant-design/icons-vue')['EllipsisOutlined']

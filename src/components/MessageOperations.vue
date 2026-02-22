@@ -28,12 +28,12 @@
                 <DislikeFilled v-if="currentLikeState === -1" />
                 <DislikeOutlined v-else />
             </a-button>
-            <a-dropdown trigger="click" position="top">
+            <a-dropdown trigger="click" position="top" v-if="props.message.role === MessageRole.Assistant || props.showRawMessage">
                 <template #overlay>
                     <div class="message-details-box">
                         <div class="message-detail-item">
                             <div class="message-detail-label">Provider</div>
-                            <div class="message-detail-value">{{ props.message.provider }}</div>
+                            <div class="message-detail-value">{{ props.message.providerName }}</div>
                         </div>
                         <div class="message-detail-item">
                             <div class="message-detail-label">Model</div>
@@ -50,6 +50,10 @@
                         <div class="message-detail-item">
                             <div class="message-detail-label">Time</div>
                             <div class="message-detail-value">{{ new Date(props.message.ts).toLocaleString() }}</div>
+                        </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Elapsed</div>
+                            <div class="message-detail-value">{{ computeTotalElapsed(props.message) }}ms</div>
                         </div>
                     </div>
                 </template>
@@ -149,6 +153,12 @@ const currentLikeState = computed(() => (
         (props.message.feedback === MessageFeedback.Negative ? -1 : 0))
 );
 
+const computeTotalElapsed = (msg: Message) => {
+    let total = 0n;
+    for (const i of msg.fragments) total += BigInt(String(i.elapsed ?? 0));
+    return total;
+}
+
 </script>
 
 <style scoped>
@@ -190,22 +200,33 @@ const currentLikeState = computed(() => (
     margin-right: 0.5em;
 }
 .message-details-box {
-    padding: 0.5em;
+    padding: 1em;
     border: 1px solid #d9d9d9;
     background: var(--background, #fff);
-    border-radius: 0.25em;
+    border-radius: 0.5em;
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
-    box-shadow: 0 0 0.25em rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 2em rgba(0, 0, 0, 0.1);
+    max-width: calc(100vw - 4em);
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .message-detail-item {
     display: flex;
     align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .message-detail-label {
     font-weight: bold;
     margin-right: 0.5em;
+}
+.message-detail-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 .message-choices {
     color: gray;

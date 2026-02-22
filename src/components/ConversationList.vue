@@ -37,6 +37,10 @@
                                             {{ t('common:ui.sidebar.conversation.operations.pin') }}
                                         </template>
                                     </a-menu-item>
+                                    <a-menu-item key="export">
+                                        <DownloadOutlined />
+                                        {{ t('common:ui.sidebar.conversation.operations.export') }}
+                                    </a-menu-item>
                                     <a-menu-divider />
                                     <a-menu-item key="delete" style="color: var(--danger-color, #ff4d4f);">
                                         <DeleteOutlined />
@@ -55,12 +59,19 @@
                 </div>
             </div>
         </div>
+
+        <DialogView v-model="showProgressDialog" :closable="false">
+            <template #title>{{ t('common:ui.sidebar.progress.title') }}</template>
+            <div>{{ t('common:ui.sidebar.progress.content') }}</div>
+        </DialogView>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { DialogView } from 'vue-dialog-view'
 import { useConversationStore } from '@/stores/conversationStore'
 import { formatConversationTime } from '@/utils/conversationGroup'
 import { useWindowStateStore } from '@/stores/windowState'
@@ -68,10 +79,10 @@ import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import type { FlattenedConversationIndexItem, FlattenedConversationIndexItemConversation, FlattenedConversationIndexItemTextMark } from '@/types/conversation'
 import { handleRequestDeleteConversation, handleRequestRenameConversation } from '@/modules/ui-utils/convManager'
-import { useAppStateStore } from '@/stores/appState'
 import { LoadConversationPreference } from '@/modules/chat/convPref'
+import { getConvPath, getConvPrefPath } from '@/modules/chat/path'
 import { UpdateConversationInfo } from '@/modules/chat/conversation'
-import { message } from 'ant-design-vue'
+import { fs } from '@/userdata'
 
 const router = useRouter()
 const route = useRoute()
@@ -83,8 +94,6 @@ const props = defineProps({
     },
 })
 const emit = defineEmits(['initialized'])
-
-const appState = useAppStateStore();
 
 const conversationGroupsData = computed(() => {
     return conversationStore.groupedConversationsList
@@ -104,7 +113,6 @@ const flattenedConversations = computed<FlattenedConversationIndexItem[]>(() => 
 });
 
 const msgList = ref<HTMLDivElement>();
-const fontSizeMeasurer = ref<HTMLDivElement>();
 
 const vOptions = computed(() => ({
     count: flattenedConversations.value.length,
@@ -136,6 +144,8 @@ onMounted(async () => {
     emit('initialized')
 })
 
+const showProgressDialog = ref(false);
+
 const handleConvMenuClick = (key: string, index: number) => {
     switch (key) {
         case 'delete':
@@ -160,6 +170,36 @@ const handleConvMenuClick = (key: string, index: number) => {
                     message.error("Failed to update conversation preference: " + e);
                 });
             }
+            break;
+        case 'export':
+            if (flattenedConversations.value[index]?.type !== 'conversation') 
+                return message.error("Only conversations can be exported.");
+            showProgressDialog.value = true;
+            import('fflate').then(async ({ zip }) => {
+                const id = (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id;
+                const msgFile = await fs.readFile(getConvPath(id));
+                const prefFile = await fs.readFile(getConvPrefPath(id));
+                const zipFile = await new Promise<Uint8Array<ArrayBuffer>>((r, j) => zip({
+                    [id + ".json"]: msgFile,
+                    [id + ".pref.json"]: prefFile,
+                }, {}, (err, data) => err ? j(err) : r(data as Uint8Array<ArrayBuffer>)));
+                const blob = new Blob([zipFile], { type: "application/zip" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = id + ".zip";
+                a.click();
+                document.body.appendChild(a);
+                setTimeout(() => {
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                }, 1000);
+                message.success("Conversation exported successfully");
+            }).catch(e => {
+                message.error("Failed to export conversation: " + e);
+            }).finally(() => {
+                showProgressDialog.value = false;
+            });
             break;
         default: ;
     }

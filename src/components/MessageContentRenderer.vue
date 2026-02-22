@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import { MessageContentType, MessageFragmentType, MessageStatus, type Message } from '@/types/message';
 import { LoadingOutlined } from '@ant-design/icons-vue';
@@ -63,6 +63,7 @@ const collapseThoughtContent = ref(false);
 const toggleThoughtContent = () => {
     collapseThoughtContent.value = !collapseThoughtContent.value;
 }
+watch(() => props.message, () => collapseThoughtContent.value = false);
 
 </script>
 

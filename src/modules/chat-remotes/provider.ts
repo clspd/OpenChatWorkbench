@@ -18,7 +18,7 @@ export function GetResponseChunkFragmentType(chunk: ChatCompletionChunk, choiceI
     if (!choice) return null;
     if (typeof (choice.delta as any).reasoning_content === 'string' && (!!(choice.delta as any).reasoning_content)) //  reasoning_content is not a standard property
         return MessageFragmentType.Think;
-    else if (choice.delta.content != undefined)
+    else if (!!choice.delta.content)
         return MessageFragmentType.Response;
     else
         return null;

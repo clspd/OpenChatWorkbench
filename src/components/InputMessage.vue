@@ -61,16 +61,20 @@
 </template>
 
 <script setup lang="ts">
+// vendor
 import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue'
+import { t } from 'i18next'
+import { cloneDeep } from 'lodash-es'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
-import ModelChooser from './ModelChooser.vue'
+// utils, types, stores
 import { safeParseJSON, tiptap2markdown } from '@/utils/parseTiptap'
 import { EMPTY_MESSAGE, MessageFeatureType, type MessageFeatureItem } from '@/types/message'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
-import { t } from 'i18next'
+// components
+import ModelChooser from './ModelChooser.vue'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -100,6 +104,9 @@ const emit = defineEmits([
 defineExpose({
     setHTML(html: string) {
         return editor.value?.commands.setContent(html);
+    },
+    focus() {
+        editor.value?.commands.focus()
     },
 })
 
@@ -184,7 +191,7 @@ const isDeepThinkEnabled = computed<boolean>({
     set: (newVal: boolean) => {
         if (isDeepThinkEnabled.value === newVal) return;
         if (!props.features.some((item) => item.type === MessageFeatureType.Thinking)) {
-            const newArray = structuredClone(toRaw(props.features));
+            const newArray = cloneDeep(toRaw(props.features));
             newArray.push({ type: MessageFeatureType.Thinking, value: newVal });
             emit('update:features', newArray);
             return;

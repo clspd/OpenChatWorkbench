@@ -16,7 +16,7 @@
             <div class="messages-container">
                 <MessageChainViewer
                     ref="messageChainViewerRef"
-                    :chatId="props.chatId"
+                    :chatId="chatId"
                     :choices="choices"
                     :disabled="messageEditorState.editMessage?.isEditing"
                     @update:choices="handleUpdateChoices"
@@ -55,7 +55,8 @@
 <script setup lang="ts">
 // vendor
 import { ref, onMounted, watch, reactive, h, computed, toRaw } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { cloneDeep } from 'lodash-es';
 import { message, Modal } from 'ant-design-vue';
 import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
 import { t } from 'i18next';
@@ -80,12 +81,14 @@ import { GenerateResponse } from '@/modules/chat-request/respond';
 import { useConversationStore } from '@/stores/conversationStore';
 
 const router = useRouter()
+const route = useRoute()
 const props = defineProps({
     chatId: {
         type: String,
         default: '',
     },
 });
+const chatId = computed(() => typeof route.params.chatId === 'string' ? route.params.chatId : props.chatId)
 
 const appState = useAppStateStore()
 const conversationStore = useConversationStore()
@@ -95,9 +98,10 @@ const conversation = ref<Conversation>();
 const preference = ref<ConversationUserPref>();
 const choices = ref<number[]>([]);
 const messageChainViewerRef = ref<InstanceType<typeof MessageChainViewer>>();
-const hasGenerating = computed(() => conversationStore.requestsInProgress.has(props.chatId) || messageEditorState.isGenerating);
+const hasGenerating = computed(() => conversationStore.requestsInProgress.has(chatId.value) || messageEditorState.isGenerating);
 
-watch(() => props.chatId, (newVal) => {
+watch(() => chatId.value, (newVal) => {
+    console.debug('[ChatView]', 'Load chat, chatId=', newVal)
     queueMicrotask(() => LoadChat().finally(() => {
         if (conversation.value && conversation.value.session.title) {
             appState.setTitle(conversation.value.session.title)
@@ -110,17 +114,20 @@ watch(() => props.chatId, (newVal) => {
 
 async function LoadChat() {
     conversation.value = undefined
-    if (!props.chatId) {
+    if (!chatId.value) {
         notFound.value = true;
         return;
     }
 
     try {
-        conversation.value = await LoadConversation(props.chatId);
-        preference.value = await LoadConversationPreference(props.chatId);
-        choices.value = preference.value.msgChainChoices;
+        const conv = await LoadConversation(chatId.value);
+        const pref = await LoadConversationPreference(chatId.value);
+        // if (await FixInterruptedConversationData(conv)) conversationStore.updateConvInStore(chatId.value, conv);
+        conversation.value = conv;
+        preference.value = pref;
+        choices.value = pref.msgChainChoices;
         notFound.value = false;
-        appState.currentConversationId_ = props.chatId;
+        appState.currentConversationId_ = chatId.value;
 
         requestAnimationFrame(() => requestScrollToBottom());
     } catch {
@@ -134,7 +141,7 @@ async function LoadChat() {
 
 async function InitChatMsgUI() {
     if (!conversation.value) return;
-    const buffer = useAppStateSessionStore().chatEditBuffer[props.chatId];
+    const buffer = useAppStateSessionStore().chatEditBuffer[chatId.value];
     if (buffer) {
         messageEditorState.content = buffer.content
         messageEditorState.features = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
@@ -200,6 +207,7 @@ const messageEditorState = reactive<MessageEditorState>({
 const inputMessageRef = ref<InstanceType<typeof InputMessage>>();
 
 onMounted(async () => {
+    console.debug('[ChatView]', 'Mounted at', Date.now(), 'chatId=', chatId.value)
     messageEditorState.providerId = useConfigStore().selectedProviderId;
     messageEditorState.modelId = useConfigStore().selectedModelId;
 });
@@ -211,12 +219,16 @@ watch(() => messageEditorState.modelId, (newVal) => {
     useConfigStore().selectedModelId = newVal
 })
 
-const updateEditBuffer = () => useAppStateSessionStore().chatEditBuffer[props.chatId] = {
+const updateEditBuffer = () => useAppStateSessionStore().chatEditBuffer[chatId.value] = {
     content: messageEditorState.content,
     contentType: MessageContentType.Text,
     features: messageEditorState.features,
     files: messageEditorState.files,
     isEditing: messageEditorState.editMessage?.isEditing ?? false,
+    editId: messageEditorState.editMessage?.editId,
+    parentId: messageEditorState.editMessage?.parentId,
+    newChoices: messageEditorState.editMessage?.newChoices,
+    oldEditorState: messageEditorState.editMessage?.oldEditorState ?? undefined,
 };
 
 watch(() => messageEditorState.content, (newVal) => {
@@ -274,24 +286,24 @@ const handleSendMessage = async function () {
         }
 
         // add user request to conversation
-        const reqId = await GetConvNextMessageId(props.chatId);
-        await InsertMessageToConversation(props.chatId, CreateUserMessage(
+        const reqId = await GetConvNextMessageId(chatId.value);
+        await InsertMessageToConversation(chatId.value, CreateUserMessage(
             reqId,
             currentNodeId,
             MessageRole.User,
             MessageContentType.Text,
             msg,
-            messageEditorState.files
+            cloneDeep(toRaw(messageEditorState.files))
         ));
 
         // Send request
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
-        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, reqId, model.id, provider.id, messageEditorState.features, messageEditorState.files, () => (conversationStore.getPref(props.chatId).then(pref => (conversationStore.updatePref(props.chatId, Object.assign(pref, {
+        await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (conversationStore.getPref(chatId.value).then(pref => (conversationStore.updatePref(chatId.value, Object.assign(pref, {
             msgChainChoices: messageEditorState.editMessage?.isEditing ?
                 (messageEditorState.editMessage.newChoices.push(0, 0), choices.value = messageEditorState.editMessage.newChoices) :
                 (choices.value.push(0, 0), choices.value),
-        })), resolve())))).catch(e => {
+        })), inputMessageRef.value?.focus(), resolve())))).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
@@ -309,7 +321,7 @@ const handleSendMessage = async function () {
         messageEditorState.content = EMPTY_MESSAGE_JSON;
         messageEditorState.features = useAppStatePersistStore().userSendMsgDefaultFeatures;
         messageEditorState.files = [];
-        delete useAppStateSessionStore().chatEditBuffer[props.chatId];
+        delete useAppStateSessionStore().chatEditBuffer[chatId.value];
     }
     catch (e) {
         console.error('[ChatView]', "Error sending message:", e);
@@ -335,7 +347,7 @@ const handleInterrupt = async function () {
         return
     }
 
-    const convInfo = conversationStore.requestsInProgress.get(props.chatId)
+    const convInfo = conversationStore.requestsInProgress.get(chatId.value)
     if (!convInfo) {
         message.error(t('chat:chatView.errors.notGenerating'))
         return
@@ -351,13 +363,13 @@ const handleInterrupt = async function () {
 
 const handleUpdateChoices = async (newVal: number[]) => {
     choices.value = newVal;
-    preference.value = await conversationStore.getPref(props.chatId);
+    preference.value = await conversationStore.getPref(chatId.value);
     if (!preference.value) {
         message.error(t('chat:chatView.errors.getConversationPref'))
         return
     }
     preference.value.msgChainChoices = newVal;
-    await conversationStore.updatePref(props.chatId, preference.value);
+    await conversationStore.updatePref(chatId.value, preference.value);
 }
 
 const handleRequestRegenerateMessage = async function (id: number, parent_id: number, newChoices: number[]) {
@@ -372,7 +384,14 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
         // Send request
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
-        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, parent_id, messageEditorState.modelId, messageEditorState.providerId, messageEditorState.features, data.files, () => (resolve(), void(choices.value = newChoices))).catch(e => {
+        await new Promise<void>((resolve, reject) => GenerateResponse(
+            chatId.value,
+            parent_id,
+            messageEditorState.modelId,
+            messageEditorState.providerId,
+            cloneDeep(toRaw(messageEditorState.features)),
+            cloneDeep(toRaw(data.files)),
+        () => (choices.value = newChoices, inputMessageRef.value?.focus(), resolve())).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
@@ -420,6 +439,7 @@ const handleRequestEditMessage = async function (id: number, parent_id: number |
     if (node.features) messageEditorState.features = node.features;
     if (node.files) messageEditorState.files = node.files;
     updateEditBuffer();
+    requestAnimationFrame(() => inputMessageRef.value?.focus());
 }
 const cancelEditMessage = () => {
     if (!messageEditorState.editMessage) return;

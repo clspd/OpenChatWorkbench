@@ -157,3 +157,7 @@ export async function EditMessageInConversation(id: string, msgId: number, newMs
     await useConversationStore().updateConvInStore(id, conv);
 }
 
+// export function FixInterruptedConversationData(data: Conversation): boolean {
+//     if (data)
+// }
+

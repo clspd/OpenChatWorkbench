@@ -55,6 +55,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, toRaw, watch } from 'vue';
 import { message } from 'ant-design-vue';
+import { cloneDeep } from 'lodash-es';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { t } from 'i18next';
 import { ConvertConversationToTree } from '@/modules/chat-tree/tree';
@@ -107,7 +108,7 @@ const chatFlow = ref<FlatMessage[]>([]);
 const updateChatFlow = () => {
     if (!tree.value) return;
     if (props.choices.length === 0) return;
-    console.debug('compute chatFlow with choices', props.choices.join(','))
+    // console.debug('compute chatFlow with choices', props.choices.join(','))
     try {
         chatFlow.value = FlattenConversationTree(tree.value, props.choices);
     } catch (e) {
@@ -210,9 +211,9 @@ const handleRequestEditMessage = (id: number) => {
     const data = conversation.value?.messages.find((msg) => msg.id === id);
     if (!data) return message.error(t('chat:messageChain.error.cannotEdit'))
     if (data.role === MessageRole.User) handleModifyMessage(id, 'edit');
-    else { 
+    else {
         contentEditDlgState.msgId = id;
-        contentEditDlgState.frag = structuredClone(toRaw(data.fragments));
+        contentEditDlgState.frag = cloneDeep(toRaw(data.fragments));
         contentEditDlgState.show = true;
     }
 }

@@ -24,8 +24,13 @@
                     "rename": "重命名",
                     "pin": "置顶",
                     "unpin": "取消置顶",
+                    "export": "导出",
                     "delete": "删除"
                 }
+            },
+            "progress": {
+                "title": "操作进行中",
+                "content": "请稍候，操作正在进行中。"
             }
         },
         "mainInput": {
