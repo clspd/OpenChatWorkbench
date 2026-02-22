@@ -1,5 +1,4 @@
 // attachment.ts: message attachment create & management
-
 import { fs } from "@/userdata";
 import { getChatAttachmentPath } from "./path";
 

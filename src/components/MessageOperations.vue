@@ -32,6 +32,14 @@
                 <template #overlay>
                     <div class="message-details-box">
                         <div class="message-detail-item">
+                            <div class="message-detail-label">Message ID</div>
+                            <div class="message-detail-value">{{ props.message.id }}</div>
+                        </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Parent node</div>
+                            <div class="message-detail-value">{{ props.message.parent_id ?? 'null' }}</div>
+                        </div>
+                        <div class="message-detail-item">
                             <div class="message-detail-label">Provider</div>
                             <div class="message-detail-value">{{ props.message.providerName }}</div>
                         </div>

@@ -19,7 +19,7 @@
                     :chatId="chatId"
                     :choices="choices"
                     :disabled="messageEditorState.editMessage?.isEditing"
-                    @update:choices="handleUpdateChoices"
+                    @update:choices="updateChoices"
                     @request-regenerate="handleRequestRegenerateMessage"
                     @request-edit="handleRequestEditMessage"
                 />
@@ -299,11 +299,15 @@ const handleSendMessage = async function () {
         // Send request
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
-        await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (conversationStore.getPref(chatId.value).then(pref => (conversationStore.updatePref(chatId.value, Object.assign(pref, {
-            msgChainChoices: messageEditorState.editMessage?.isEditing ?
+        await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (
+            inputMessageRef.value?.focus(),
+            updateChoices(messageEditorState.editMessage?.isEditing ?
                 (messageEditorState.editMessage.newChoices.push(0, 0), choices.value = messageEditorState.editMessage.newChoices) :
-                (choices.value.push(0, 0), choices.value),
-        })), inputMessageRef.value?.focus(), resolve())))).catch(e => {
+                (choices.value.push(0, 0), choices.value)
+            ).then(() => (
+                resolve()
+            ))
+        )).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
@@ -361,7 +365,7 @@ const handleInterrupt = async function () {
     convInfo.cancelToken.abort();
 }
 
-const handleUpdateChoices = async (newVal: number[]) => {
+const updateChoices = async (newVal: number[]) => {
     choices.value = newVal;
     preference.value = await conversationStore.getPref(chatId.value);
     if (!preference.value) {
@@ -391,7 +395,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
             messageEditorState.providerId,
             cloneDeep(toRaw(messageEditorState.features)),
             cloneDeep(toRaw(data.files)),
-        () => (choices.value = newChoices, inputMessageRef.value?.focus(), resolve())).catch(e => {
+        () => (inputMessageRef.value?.focus(), choices.value = newChoices, updateChoices(newChoices).then(() => resolve()))).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
@@ -441,6 +445,7 @@ const handleRequestEditMessage = async function (id: number, parent_id: number |
     updateEditBuffer();
     requestAnimationFrame(() => inputMessageRef.value?.focus());
 }
+
 const cancelEditMessage = () => {
     if (!messageEditorState.editMessage) return;
     messageEditorState.editMessage.isEditing = false;
