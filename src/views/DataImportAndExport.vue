@@ -62,8 +62,94 @@ const setInputFile = (e: Event) => {
 const importData = async function () {
     if (!fileInput.value) return message.error('Please select a file to import.');
 
-    // TODO: Implement import data
-    message.error('Not implemented yet');
+    inProgress.value = true;
+    await new Promise(resolve => setTimeout(resolve, 1000)); // wait for UI update
+    try {
+        // Read the file as ArrayBuffer
+        const fileBuffer = await fileInput.value.arrayBuffer();
+        
+        // Unzip the file
+        const fflate = await import('fflate');
+        const unzipped = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
+            fflate.unzip(new Uint8Array(fileBuffer), (err, data) => {
+                if (err) reject(err);
+                else resolve(data);
+            });
+        });
+
+        const configStore = useConfigStore();
+        
+        // Process each extracted file
+        for (const [filename, content] of Object.entries(unzipped)) {
+            const textContent = new TextDecoder().decode(content);
+            
+            switch (filename) {
+                case 'providers.json': {
+                    const providers = JSON.parse(textContent);
+                    configStore.providers = providers;
+                    break;
+                }
+                case 'models.json': {
+                    const models = JSON.parse(textContent);
+                    configStore.models = models;
+                    break;
+                }
+                case 'selectedProviderAndModel.json': {
+                    const { provider, model } = JSON.parse(textContent);
+                    configStore.selectedProviderId = provider;
+                    configStore.selectedModelId = model;
+                    break;
+                }
+                case 'modelChooserShowFavoriteOnly.json': {
+                    const showFavoritesOnly = JSON.parse(textContent);
+                    configStore.modelChooser_showFavoritesOnly = showFavoritesOnly;
+                    break;
+                }
+                case 'kv.json': {
+                    const kvData = JSON.parse(textContent);
+                    // Clear existing KV storage
+                    const existingKeys = await db.getAllKeys('kv');
+                    for (const key of existingKeys) {
+                        await db.delete('kv', key);
+                    }
+                    // Add imported KV data
+                    for (const [key, value] of Object.entries(kvData)) {
+                        await db.put('kv', value, key);
+                    }
+                    break;
+                }
+                default:
+                    // Handle filesystem files (prefix with 'filesystem/')
+                    if (filename.startsWith('filesystem/')) {
+                        const filePath = filename.substring('filesystem'.length);
+                        // Create directories if they don't exist
+                        const dirParts = filePath.split('/').filter(Boolean);
+                        if (dirParts.length > 1) {
+                            let currentDir = '/';
+                            for (let i = 0; i < dirParts.length - 1; i++) {
+                                currentDir += dirParts[i] + '/';
+                                try {
+                                    await fs.stat(currentDir);
+                                } catch {
+                                    await fs.mkdir(currentDir);
+                                }
+                            }
+                        }
+                        // Write the file
+                        await fs.writeFile(filePath, content);
+                    }
+            }
+        }
+
+        message.success('Data imported successfully.');
+    }
+    catch (e) {
+        console.error('[DataImportAndExport]', 'Failed to import data:', e);
+        message.error('Failed to import data: ' + e);
+    }
+    finally {
+        inProgress.value = false;
+    }
 }
 
 // --------

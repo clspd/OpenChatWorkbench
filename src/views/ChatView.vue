@@ -372,10 +372,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
         // Send request
         messageEditorState.isGenerating = true;
         ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
-        const modelId = data.model;
-        const providerId = data.provider;
-        const features = data.features;
-        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, parent_id, modelId, providerId, features, data.files, () => (resolve(), choices.value = newChoices)).catch(e => {
+        await new Promise<void>((resolve, reject) => GenerateResponse(props.chatId, parent_id, messageEditorState.modelId, messageEditorState.providerId, messageEditorState.features, data.files, () => (resolve(), void(choices.value = newChoices))).catch(e => {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({

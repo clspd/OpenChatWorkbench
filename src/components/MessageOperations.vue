@@ -28,6 +28,35 @@
                 <DislikeFilled v-if="currentLikeState === -1" />
                 <DislikeOutlined v-else />
             </a-button>
+            <a-dropdown trigger="click" position="top">
+                <template #overlay>
+                    <div class="message-details-box">
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Provider</div>
+                            <div class="message-detail-value">{{ props.message.provider }}</div>
+                        </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Model</div>
+                            <div class="message-detail-value">{{ props.message.model }}</div>
+                        </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Features</div>
+                            <div class="message-detail-value">
+                                <div v-for="(feature, idx) in props.message.features" :key="idx">
+                                    {{ feature.type }}: {{ feature.value }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Time</div>
+                            <div class="message-detail-value">{{ new Date(props.message.ts).toLocaleString() }}</div>
+                        </div>
+                    </div>
+                </template>
+                <a-button type="text" shape="circle" aria-label="More options">
+                    <MoreOutlined />
+                </a-button>
+            </a-dropdown>
         </div>
 
         <div class="message-choices" v-if="props.totalChoices > 1">
@@ -48,7 +77,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { CopyOutlined, CheckOutlined, EditOutlined, RedoOutlined, LikeOutlined, DislikeOutlined, CompressOutlined, ExpandOutlined, LeftOutlined, RightOutlined, LikeFilled, DislikeFilled } from '@ant-design/icons-vue';
+import { CopyOutlined, CheckOutlined, EditOutlined, RedoOutlined, LikeOutlined, DislikeOutlined, CompressOutlined, ExpandOutlined, LeftOutlined, RightOutlined, LikeFilled, DislikeFilled, MoreOutlined } from '@ant-design/icons-vue';
 import { MessageFeedback, MessageRole, MessageStatus, type Message } from '@/types/message';
 import { message } from 'ant-design-vue';
 import { ExtractMessageText } from '@/modules/chat/message';
@@ -140,6 +169,8 @@ const currentLikeState = computed(() => (
 .message-info {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    overflow: hidden;
 }
 .message-info > button {
     color: gray;
@@ -156,6 +187,24 @@ const currentLikeState = computed(() => (
     overflow: auto;
 }
 .message-meta > * {
+    margin-right: 0.5em;
+}
+.message-details-box {
+    padding: 0.5em;
+    border: 1px solid #d9d9d9;
+    background: var(--background, #fff);
+    border-radius: 0.25em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    box-shadow: 0 0 0.25em rgba(0, 0, 0, 0.1);
+}
+.message-detail-item {
+    display: flex;
+    align-items: center;
+}
+.message-detail-label {
+    font-weight: bold;
     margin-right: 0.5em;
 }
 .message-choices {

@@ -15,7 +15,7 @@ export async function streamResponse(
     model: ModelConfig,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
-    afterOpen?: (resp: Response) => void,
+    onCreated?: (msg: Message) => void | Promise<void>,
 ): Promise<number> {
     // check if there is an ongoing request
     if (useConversationStore().requestsInProgress.has(conv.id))
@@ -49,6 +49,7 @@ export async function streamResponse(
     conv.messages.push(msg);
     UpdateConversationInfo(conv.id);
     useConversationStore().updateConvInStore(conv.id, conv);
+    if (onCreated) await onCreated(msg);
 
     // create stream
     const providerUrl = GetProviderUrl(provider);
@@ -69,7 +70,7 @@ export async function streamResponse(
             MessageStreamer["other-" + provider.compatibilityMode] ??
             MessageStreamer["other-openai"]!
         )();
-        await streamer(conv, req, msg, afterOpen);
+        await streamer(conv, req, msg);
     }
     catch (e) {
         throw new Error("Failed to stream response", { cause: e });

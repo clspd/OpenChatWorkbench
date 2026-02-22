@@ -1,5 +1,5 @@
 // chat-request/respond.ts: functions about message respond
-import type { FileAttachmentInfo, MessageFeatureItem } from "@/types/message";
+import type { FileAttachmentInfo, Message, MessageFeatureItem } from "@/types/message";
 import { streamResponse } from "../chat-remotes/streamResponse";
 import { LoadConversation } from "../chat/conversation";
 import { useConfigStore } from "@/stores/configStore";
@@ -13,6 +13,7 @@ import { useAppStatePersistStore } from "@/stores/appStatePersist";
  * @param provider The provider name.
  * @param features The message features.
  * @param files The file attachment infos.
+ * @param onCreated The callback function when the response message is created.
  * @param updateUserPreference Whether to update user preference.
  * @returns the response message id
  */
@@ -23,7 +24,7 @@ export async function GenerateResponse(
     provider: string,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
-    onopen?: (resp: Response) => void,
+    onCreated?: (msg: Message) => void | Promise<void>,
     updateUserPreference = true,
 ): Promise<number> {
     const conversation = await LoadConversation(convId);
@@ -40,6 +41,6 @@ export async function GenerateResponse(
         appStatePersist.userSendMsgDefaultFeatures = features;
     }
 
-    return await streamResponse(conversation, reqId, providerCfg, modelCfg, features, files, onopen);
+    return await streamResponse(conversation, reqId, providerCfg, modelCfg, features, files, onCreated);
 }
 

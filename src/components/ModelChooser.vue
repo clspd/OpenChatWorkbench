@@ -181,7 +181,6 @@ const toggleFavorite = (providerId: string, modelId: string) => {
 watch(modalVisible, async (newVal) => {
     if (newVal) {
         await nextTick()
-        // await new Promise(resolve => setTimeout(resolve))
         await nextTick()
         if (modelSelectionRef.value) {
             modelSelectionRef.value.scrollTop = appStatePersist.modelChooserScrollPos
