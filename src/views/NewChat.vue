@@ -65,7 +65,9 @@ watch(() => userMessage.value, (newVal) => {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: newVal,
             contentType: MessageContentType.Text,
-            features: userMessageFeatures.value
+            features: userMessageFeatures.value,
+            files: userMessageFiles.value,
+            isEditing: false,
         }
     }
 })
@@ -74,7 +76,9 @@ watch(() => userMessageFeatures.value, (newVal) => {
         useAppStateSessionStore().chatEditBuffer["_"] = {
             content: userMessage.value,
             contentType: MessageContentType.Text,
-            features: newVal
+            features: newVal,
+            files: userMessageFiles.value,
+            isEditing: false,
         }
     }
 }, { deep: true })
