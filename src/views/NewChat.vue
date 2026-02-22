@@ -30,6 +30,7 @@ import { GenerateResponse } from '@/modules/chat-request/respond'
 import { TraceErrorAndGetString } from '@/utils/errorTrace'
 import { useConversationStore } from '@/stores/conversationStore'
 import { InitConversationPreference } from '@/modules/chat/convPref'
+import { t } from 'i18next'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
@@ -85,11 +86,11 @@ watch(() => userMessageFeatures.value, (newVal) => {
 
 const handleSendMessage = async () => {
     if (userMessage.value === '') {
-        message.error('Please enter a message')
+        message.error(t('chat:newChat.errors.enterMessage'))
         return
     }
     if (isSending.value) {
-        message.error('Please wait for the previous message to be sent')
+        message.error(t('chat:newChat.errors.waitPrevious'))
         return
     }
     
@@ -98,7 +99,7 @@ const handleSendMessage = async () => {
         const model = useConfigStore().models.find(m => m.id === modelId.value)
         
         if (!provider || !model || !provider.enabled || !model.enabled) {
-            message.error('Please select a valid model')
+            message.error(t('chat:newChat.errors.selectValidModel'))
             return
         }
 
@@ -106,7 +107,7 @@ const handleSendMessage = async () => {
 
         const cid = await CreateConversation();
         if (!cid) {
-            message.error('Failed to create conversation')
+            message.error(t('chat:newChat.errors.createConversation'))
             return
         }
 
@@ -129,9 +130,9 @@ const handleSendMessage = async () => {
             reject(e);
             console.error('[NewChat]', "Error generating response:", e);
             Modal.error({
-                title: "Failed to generate response",
+                title: t('chat:newChat.modal.titles.generateFailed'),
                 content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-                okText: "Cancel",
+                okText: t('chat:newChat.modal.cancel'),
             });
         }).finally(() => {
             resolve();
@@ -146,7 +147,7 @@ const handleSendMessage = async () => {
         router.push(`/chat/c/${cid}`);
     } catch (error) {
         console.error('[NewChat]', "Error sending message:", error);
-        message.error('Failed to send message: ' + error)
+        message.error(t('chat:newChat.errors.sendMessage') + ': ' + error)
         isSending.value = false
     }
 }

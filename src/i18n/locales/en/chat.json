@@ -10,5 +10,69 @@
                 "error": "Failed to delete conversation: {{error}}"
             }
         }
+    },
+    "messageChain": {
+        "emptyState": "No message",
+        "error": {
+            "dataCorrupted": "Data corrupted",
+            "cannotRegenerate": "The message couldn't be regenerated.",
+            "cannotEdit": "The message couldn't be edited."
+        },
+        "editDialog": {
+            "title": "Edit Message {{ id }}",
+            "fragment": {
+                "title": "Fragment {{ id }}",
+                "delete": "Delete fragment",
+                "cannotEdit": "This fragment couldn't be edited."
+            },
+            "buttons": {
+                "save": "Save",
+                "cancel": "Cancel"
+            }
+        },
+        "warnings": {
+            "invalidChoices": "Invalid choices, reset to default choices."
+        }
+    },
+    "chatView": {
+        "emptyState": {
+            "title": "Conversation Not Found",
+            "goToHome": "Go to Home"
+        },
+        "errors": {
+            "enterMessage": "Please enter a message",
+            "waitPrevious": "Please wait for the previous message to be sent",
+            "getMessageNodeId": "Failed to get current message node id",
+            "selectValidModel": "Please select a valid model",
+            "stateError": "State error",
+            "notGenerating": "The message is not generating.",
+            "notInterruptable": "The message is not interruptable.",
+            "getConversationPref": "Failed to get conversation preference",
+            "getMessageData": "Failed to get message data",
+            "getInputRef": "Failed to get input message ref"
+        },
+        "modal": {
+            "cancel": "Cancel",
+            "titles": {
+                "generateFailed": "Failed to generate response",
+                "sendFailed": "Failed to send message",
+                "regenerateFailed": "Failed to regenerate message"
+            }
+        }
+    },
+    "newChat": {
+        "errors": {
+            "enterMessage": "Please enter a message",
+            "waitPrevious": "Please wait for the previous message to be sent",
+            "selectValidModel": "Please select a valid model",
+            "createConversation": "Failed to create conversation",
+            "sendMessage": "Failed to send message"
+        },
+        "modal": {
+            "cancel": "Cancel",
+            "titles": {
+                "generateFailed": "Failed to generate response"
+            }
+        }
     }
 }

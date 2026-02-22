@@ -3,8 +3,8 @@
         <div v-if="notFound" class="empty-view">
             <div class="empty-view-content">
                 <CloseCircleFilled style="font-size: 64px; color: #ff4d4f;" />
-                <h1>Conversation Not Found</h1>
-                <div><a-button type="primary" @click="router.push('/')">Go to Home</a-button></div>
+                <h1>{{ t('chat:chatView.emptyState.title') }}</h1>
+                <div><a-button type="primary" @click="router.push('/')">{{ t('chat:chatView.emptyState.goToHome') }}</a-button></div>
             </div>
         </div>
 
@@ -58,6 +58,7 @@ import { ref, onMounted, watch, reactive, h, computed, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue';
 import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
+import { t } from 'i18next';
 // components
 import InputMessage from '@/components/InputMessage.vue'
 import MessageChainViewer from '@/components/MessageChainViewer.vue';
@@ -233,11 +234,11 @@ const requestScrollToBottom = () => messageChainViewerRef.value?.scrollToBottom(
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
-        message.error('Please enter a message')
+        message.error(t('chat:chatView.errors.enterMessage'))
         return
     }
     if (messageEditorState.isSending) {
-        message.error('Please wait for the previous message to be sent')
+        message.error(t('chat:chatView.errors.waitPrevious'))
         return
     }
 
@@ -246,7 +247,7 @@ const handleSendMessage = async function () {
         // get current message node id
         const currentMsgNodeIdData = messageChainViewerRef.value?.requestChatFlowData();
         if (!currentMsgNodeIdData) {
-            message.error('Failed to get current message node id')
+            message.error(t('chat:chatView.errors.getMessageNodeId'))
             return
         }
         const currentNodeId =
@@ -254,7 +255,7 @@ const handleSendMessage = async function () {
             messageEditorState.editMessage.parentId :
             currentMsgNodeIdData[currentMsgNodeIdData.length - 1]?.data.id;
         if (undefined === currentNodeId) { // allow null for root message
-            message.error('Failed to get current message node id')
+            message.error(t('chat:chatView.errors.getMessageNodeId'))
             return
         }
 
@@ -262,13 +263,13 @@ const handleSendMessage = async function () {
         const model = useConfigStore().models.find(m => m.id === messageEditorState.modelId)
 
         if (!provider || !model || !provider.enabled || !model.enabled) {
-            message.error('Please select a valid model')
+            message.error(t('chat:chatView.errors.selectValidModel'))
             return
         }
 
         const msg = tiptap2markdown(messageEditorState.content)
         if (!msg.trim()) {
-            message.error('Please enter a message')
+            message.error(t('chat:chatView.errors.enterMessage'))
             return
         }
 
@@ -294,9 +295,9 @@ const handleSendMessage = async function () {
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
-                title: "Failed to generate response",
+                title: t('chat:chatView.modal.titles.generateFailed'),
                 content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-                okText: "Cancel",
+                okText: t('chat:chatView.modal.cancel'),
             });
         }).finally(() => {
             messageEditorState.isGenerating = false
@@ -313,9 +314,9 @@ const handleSendMessage = async function () {
     catch (e) {
         console.error('[ChatView]', "Error sending message:", e);
         Modal.error({
-            title: "Failed to send message",
+            title: t('chat:chatView.modal.titles.sendFailed'),
             content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-            okText: "Cancel",
+            okText: t('chat:chatView.modal.cancel'),
         });
     }
     finally {
@@ -330,18 +331,18 @@ const handleSendMessage = async function () {
 
 const handleInterrupt = async function () {
     if (!messageEditorState.isGenerating && !hasGenerating.value) {
-        message.error('State error')
+        message.error(t('chat:chatView.errors.stateError'))
         return
     }
 
     const convInfo = conversationStore.requestsInProgress.get(props.chatId)
     if (!convInfo) {
-        message.error('The message is not generating.')
+        message.error(t('chat:chatView.errors.notGenerating'))
         return
     }
 
     if (!convInfo.cancelToken) {
-        message.error('The message is not interruptable.')
+        message.error(t('chat:chatView.errors.notInterruptable'))
         return
     }
 
@@ -352,7 +353,7 @@ const handleUpdateChoices = async (newVal: number[]) => {
     choices.value = newVal;
     preference.value = await conversationStore.getPref(props.chatId);
     if (!preference.value) {
-        message.error('Failed to get conversation preference')
+        message.error(t('chat:chatView.errors.getConversationPref'))
         return
     }
     preference.value.msgChainChoices = newVal;
@@ -365,7 +366,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
     try {
         const data = conversation.value?.messages.find((msg) => msg.id === id);
         if (!data || (!data.model) || (!data.provider) || (typeof data.model !== 'string') || !data.features || !data.files) {
-            message.error('Failed to get message data');
+            message.error(t('chat:chatView.errors.getMessageData'));
             return;
         }
         // Send request
@@ -378,9 +379,9 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
             reject(e);
             console.error('[ChatView]', "Error generating response:", e);
             Modal.error({
-                title: "Failed to generate response",
+                title: t('chat:chatView.modal.titles.generateFailed'),
                 content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-                okText: "Cancel",
+                okText: t('chat:chatView.modal.cancel'),
             });
         }).finally(() => {
             messageEditorState.isGenerating = false
@@ -391,9 +392,9 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
     catch (e) {
         console.error('[ChatView]', "Error regenerating message:", e);
         Modal.error({
-            title: "Failed to regenerate message",
+            title: t('chat:chatView.modal.titles.regenerateFailed'),
             content: h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
-            okText: "Cancel",
+            okText: t('chat:chatView.modal.cancel'),
         });
     }
     finally {
@@ -404,11 +405,11 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
 const handleRequestEditMessage = async function (id: number, parent_id: number | null, newChoices: number[]) {
     const node = conversation.value?.messages.find((msg) => msg.id === id);
     if (!node) {
-        message.error('Failed to get message data');
+        message.error(t('chat:chatView.errors.getMessageData'));
         return;
     }
     if (!inputMessageRef.value) {
-        message.error('Failed to get input message ref');
+        message.error(t('chat:chatView.errors.getInputRef'));
         return;
     }
     messageEditorState.editMessage = {

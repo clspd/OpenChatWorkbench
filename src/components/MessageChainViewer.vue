@@ -1,7 +1,7 @@
 <template>
     <div class="message-chain-viewer" ref="viewer" :class="{'empty': chatFlow.length === 0}">
         <div v-if="chatFlow.length === 0">
-            <a-empty description="No message" />
+            <a-empty :description="t('chat:messageChain.emptyState')" />
         </div>
         <div v-else class="content-container" ref="contentContainerRef">
             <div :style="{ height: totalSize + 'px' }"></div>
@@ -15,7 +15,7 @@
                     :message="chatFlow[vi.index]!.data"
                     :show-raw="chatFlowPref[vi.index]?.showRaw"
                 />
-                <div v-else class="err-data-corrupted">Data corrupted</div>
+                <div v-else class="err-data-corrupted">{{ t('chat:messageChain.error.dataCorrupted') }}</div>
 
                 <MessageOperations v-if="chatFlow[vi.index]"
                     :message="chatFlow[vi.index]!.data" :convId="props.chatId"
@@ -33,19 +33,19 @@
         </div>
 
         <DialogView c_if="contentEditDlgState.show" v-model="contentEditDlgState.show" class="fragment-editor">
-            <template #title>Edit Message {{contentEditDlgState.msgId}}</template>
+            <template #title>{{ t('chat:messageChain.editDialog.title', { id: contentEditDlgState.msgId }) }}</template>
             <div v-for="(frag, idx) in contentEditDlgState.frag" :key="idx" class="fragment">
                 <div class="fragment-edit-title">Fragment {{frag.id}} <a href="javascript:" class="fragment-btn-delete" @click="contentEditDlgState.frag.splice(idx, 1)">Delete fragment</a></div>
                 <a-textarea v-if="frag.contentType === MessageContentType.Text"
                     auto-size
                     v-model:value="frag.content" />
-                <div v-else>This fragment couldn't be edited.</div>
+                <div v-else>{{ t('chat:messageChain.editDialog.fragment.cannotEdit') }}</div>
             </div>
             <div style="flex: 1;"></div>
             <template #footer>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5em;">
-                    <a-button type="primary" @click="handleSaveEdit">Save</a-button>
-                    <a-button @click="contentEditDlgState.show = false">Cancel</a-button>
+                    <a-button type="primary" @click="handleSaveEdit">{{ t('chat:messageChain.editDialog.buttons.save') }}</a-button>
+                    <a-button @click="contentEditDlgState.show = false">{{ t('chat:messageChain.editDialog.buttons.cancel') }}</a-button>
                 </div>
             </template>
         </DialogView>
@@ -56,6 +56,7 @@
 import { computed, reactive, ref, toRaw, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { useVirtualizer } from '@tanstack/vue-virtual';
+import { t } from 'i18next';
 import { ConvertConversationToTree } from '@/modules/chat-tree/tree';
 import { useConversationStore } from '@/stores/conversationStore';
 import { FixChoiceChain, FlattenConversationTree, GetDefaultChoices, type FlatMessage } from '@/modules/chat-tree/flat';
@@ -112,7 +113,7 @@ const updateChatFlow = () => {
     } catch (e) {
         const defaultChoices = GetDefaultChoices(tree.value);
         if ((props.choices.join(',')) !== (defaultChoices.join(','))) {
-            message.warn("Invalid choices, reset to default choices.");
+            message.warn(t('chat:messageChain.warnings.invalidChoices'));
             console.trace(e)
             emit('update:choices', defaultChoices);
         } else {
@@ -195,7 +196,7 @@ const handleModifyMessage = (id: number, type: ('regenerate' | 'edit')) => {
     clone.splice(clone.length - 1, 1, chatFlow.value.find((msg) => msg.data.id === id)?.choicesCount || 0);
     // create new request
     const parent_id = conversation.value?.messages.find((msg) => msg.id === id)?.parent_id ?? null
-    if (null == parent_id && type === 'regenerate') return message.error('The message couldn\'t be regenerated.')
+    if (null == parent_id && type === 'regenerate') return message.error(t('chat:messageChain.error.cannotRegenerate'))
     if (type === 'regenerate') emit("request-regenerate", id, parent_id!, clone);
     else emit("request-edit", id, parent_id, clone);
 }
@@ -207,7 +208,7 @@ const contentEditDlgState = reactive({
 })
 const handleRequestEditMessage = (id: number) => {
     const data = conversation.value?.messages.find((msg) => msg.id === id);
-    if (!data) return message.error('The message couldn\'t be edited.')
+    if (!data) return message.error(t('chat:messageChain.error.cannotEdit'))
     if (data.role === MessageRole.User) handleModifyMessage(id, 'edit');
     else { 
         contentEditDlgState.msgId = id;
@@ -231,7 +232,7 @@ const handleRequestLikeMessage = (id: number, newState: MessageFeedback) => {
 const handleSaveEdit = async () => {
     if (!contentEditDlgState.show) return;
     const msg = conversation.value?.messages.find((msg) => msg.id === contentEditDlgState.msgId);
-    if (!msg) return message.error('The message couldn\'t be edited.')
+    if (!msg) return message.error(t('chat:messageChain.error.cannotEdit'))
     msg.fragments = contentEditDlgState.frag;
     conversationStore.updateConvInStore(props.chatId, conversation.value);
     contentEditDlgState.show = false;
