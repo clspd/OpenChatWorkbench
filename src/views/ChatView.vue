@@ -321,7 +321,7 @@ const handleSendMessage = async function () {
 
         // Send request
         messageEditorState.isGenerating = true;
-        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+        requestScrollToBottom();
         await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (
             inputMessageRef.value?.focus(),
             updateChoices(messageEditorState.editMessage?.isEditing ?
@@ -342,7 +342,7 @@ const handleSendMessage = async function () {
             messageEditorState.isGenerating = false
             resolve();
         }));
-        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+        requestScrollToBottom();
 
         // clear send buffer
         messageEditorState.content = EMPTY_MESSAGE_JSON;
@@ -410,7 +410,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
         }
         // Send request
         messageEditorState.isGenerating = true;
-        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+        requestScrollToBottom();
         await new Promise<void>((resolve, reject) => GenerateResponse(
             chatId.value,
             parent_id,
@@ -430,7 +430,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
             messageEditorState.isGenerating = false
             resolve();
         }));
-        ((appState.mainContentViewEl as any).$el as HTMLElement)?.scrollTo({ top: (messageChainViewerRef.value?.getVirtualizer().getTotalSize() ?? 0) + 100 })
+        requestScrollToBottom();
     }
     catch (e) {
         console.error('[ChatView]', "Error regenerating message:", e);

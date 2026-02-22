@@ -184,7 +184,7 @@ export async function _base_stream(
                         }
                     }
                     requestAnimationFrame(() => {
-                        function isNearBottom(el?: Element, threshold = 30) {
+                        function isNearBottom(el?: Element, threshold = 50) {
                             if (!el) return false;
                             return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
                         }

@@ -255,6 +255,13 @@ const handleAttachMenuClick = ({ key = '' }) => {
     min-height: 4em;
     max-height: calc(100vh - 20em);
     overflow: auto;
+    outline: none !important;
+}
+textarea.edit-message {
+    resize: none;
+    border: none;
+    min-height: 6em;
+    border-radius: 0;
 }
 .edit-message > * {
     outline: none !important;
@@ -280,7 +287,7 @@ const handleAttachMenuClick = ({ key = '' }) => {
 .bottom-view {
     display: flex;
     align-items: center;
-    margin-top: 0.5em;
+    margin-top: 1em;
     padding: 0 1em 1em 1em;
 }
 .model-chooser {
