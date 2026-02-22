@@ -16,6 +16,7 @@ async function handleWindowError(e: ErrorEvent) {
         type: 'runtime-error',
         errorType: 'error',
         errorMessage: e.message ?? 'Unknown error',
+        env: location.hostname,
         ctx: {
             fileName: e.filename,
             lineNumber: e.lineno,
@@ -37,6 +38,7 @@ async function handleWindowUnhandledRejection(e: PromiseRejectionEvent) {
         type: 'runtime-error',
         errorType: 'error',
         errorMessage: reason,
+        env: location.hostname,
         ctx: {
             promise: String(e.promise)
         },
