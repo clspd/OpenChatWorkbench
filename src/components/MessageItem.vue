@@ -21,6 +21,7 @@
                     class="f-reference"
                     :references="props.message.files"
                     :can-remove="false"
+                    :disabled="props.disabled"
                 />
 
                 <div class="message-body">
@@ -52,6 +53,7 @@ const router = useRouter();
 const props = defineProps<{
     message: Message;
     showRaw?: boolean;
+    disabled?: boolean;
 }>();
 
 const avatarUrl = ref('');

@@ -14,6 +14,7 @@
                 <MessageItem v-if="chatFlow[vi.index]"
                     :message="chatFlow[vi.index]!.data"
                     :show-raw="chatFlowPref[vi.index]?.showRaw"
+                    :disabled="props.disabled"
                 />
                 <div v-else class="err-data-corrupted">{{ t('chat:messageChain.error.dataCorrupted') }}</div>
 

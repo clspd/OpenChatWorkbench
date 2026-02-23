@@ -3,7 +3,7 @@
         <div v-if="props.isEditing" class="edit-message-title">
             <span>{{ t('common:ui.mainInput.editing.title', { id: props.editMessageId }) }}</span>
             <div class="flexible-space"></div>
-            <a-button type="text" shape="circle" @click="emit('update:isEditing', false)"><CloseOutlined /></a-button>
+            <a-button type="text" shape="circle" :disabled="props.disabled" @click="emit('update:isEditing', false)"><CloseOutlined /></a-button>
         </div>
         <MessageFileReferences
             v-if="props.files.length > 0 || hasUploading"
@@ -11,6 +11,7 @@
             class="file-ref"
             :references="files"
             :has-uploading="hasUploading"
+            :disabled="props.disabled"
             @remove-file="removeFile"
         />
         <editor-content v-show="!appStatePersist.usePlainInput" class="edit-message"

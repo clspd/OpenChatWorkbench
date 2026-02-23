@@ -1,6 +1,6 @@
 <template>
    <div class="file-reference-container" ref="container" @wheel.prevent="transformWheel">
-        <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)">
+        <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)" :data-disabled="props.disabled">
             <div class="file-icon">
                 <FileOutlined />
             </div>
@@ -9,7 +9,7 @@
                 <div class="file-size">{{ file.size }}B</div>
             </div>
             <div class="file-operation" @click.stop @keydown.stop>
-                <a-button type="text" shape="circle" @click.stop="emit('remove-file', file.id)" v-if="props.canRemove">
+                <a-button type="text" shape="circle" @click.stop="emit('remove-file', file.id)" v-if="props.canRemove" :disabled="props.disabled">
                     <CloseOutlined />
                 </a-button>
             </div>
@@ -41,9 +41,11 @@ const props = withDefaults(defineProps<{
     references: FileAttachmentInfo[],
     hasUploading?: boolean,
     canRemove?: boolean,
+    disabled?: boolean,
 }>(), {
     hasUploading: false,
     canRemove: true,
+    disabled: false,
 });
 
 const emit = defineEmits<{
@@ -77,6 +79,7 @@ const transformWheel = (e: WheelEvent) => {
 const previewElement = ref<HTMLCommonFilePreviewElement>();
 
 const previewFile = (id: string) => {
+    if (props.disabled) return;
     previewId.value = id;
     showPreview.value = true;
 }
@@ -153,6 +156,10 @@ const downloadCurrentFile = async () => {
     gap: 6px;
     transition: all 0.2s;
     cursor: pointer;
+}
+
+.file-reference-item[data-disabled="true"] {
+    cursor: not-allowed;
 }
 
 .file-reference-item:hover {
