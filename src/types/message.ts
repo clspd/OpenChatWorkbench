@@ -25,6 +25,10 @@ export enum MessageFeedback {
 export interface FileAttachmentInfo {
     id: string; // file UUID
     name: string;
+    type: string;
+    size: number;
+    hash: string;
+    referenceCount: number;
 }
 
 export interface MessageFragment {

@@ -1,13 +1,18 @@
 <template>
     <div class="model-chooser">
-        <a-button @click="openModal" class="model-selector-btn" :disabled="props.disabled" aria-label="click to select model">
-            <span v-if="selectedModel" class="model-name">
-                {{ selectedModel.name }}
-            </span>
-            <span v-else class="model-placeholder">
-                {{ t('common:ui.modelChooser.title') }}
-            </span>
-        </a-button>
+        <a-tooltip>
+            <template #title>
+                {{ t('common:ui.modelChooser.title') }} - {{ selectedModel?.name || t('common:ui.modelChooser.notSelected') }} - {{ t('common:ui.modelChooser.tooltip') }}
+            </template>
+            <a-button @click="openModal" class="model-selector-btn" :disabled="props.disabled" aria-label="click to select model">
+                <span v-if="selectedModel" class="model-name">
+                    {{ selectedModel.name }}
+                </span>
+                <span v-else class="model-placeholder">
+                    {{ t('common:ui.modelChooser.title') }}
+                </span>
+            </a-button>
+        </a-tooltip>
 
         <dialog-view v-model="modalVisible" :close-on-click-mask="true" style="max-width: 500px; width: calc(100% - 2em);">
             <template #title>
@@ -106,6 +111,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelId', 'update:providerId'])
+
+defineExpose({
+    open: () => {
+        modalVisible.value = true
+    },
+    close: () => {
+        modalVisible.value = false
+    },
+})
 
 const configStore = useConfigStore()
 const appState = useAppStateStore()

@@ -1,14 +1,16 @@
-import { Input, Modal } from 'ant-design-vue'
-import { h, ref, type PropType } from 'vue'
+import { t } from 'i18next';
+import { h, ref } from 'vue'
 
 export async function prompt(
     prompt: string,
     title: string,
     defaultValue?: string,
     type: "number" | "reset" | "submit" | "button" | "time" | "image" | "text" | "search" | "hidden" | "color" | "checkbox" | "radio" | "range" | "date" | "url" | "email" | "week" | "month" | "datetime-local" | "file" | "password" | "tel" = "text",
-    okText = 'OK',
-    cancelText = 'Cancel'
+    okText = t("common:ui.dialog.ok"),
+    cancelText = t("common:ui.dialog.cancel")
 ) {
+    const { Input, Modal } = await import('ant-design-vue');
+    const { QuestionCircleOutlined } = await import('@ant-design/icons-vue');
     const value = ref(defaultValue ?? "");
     const content = h({
         render: () => h('div', null, [
@@ -25,6 +27,7 @@ export async function prompt(
         content,
         okText,
         cancelText,
+        icon: h(QuestionCircleOutlined, { style: { color: 'var(--color-primary, #1890ff)' } }),
         onOk: () => r(value.value),
         onCancel: () => r(null),
     }))

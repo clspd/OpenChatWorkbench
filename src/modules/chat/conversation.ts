@@ -1,5 +1,5 @@
 // conversation.ts: manage and load conversations.
-import { SchemaVersion, type Message } from "@/types/message";
+import { MessageFeatureType, SchemaVersion, type Message } from "@/types/message";
 import type { Conversation } from "@/types/conversation";
 import { fs } from "@/userdata";
 import { getConvPath, getConvPrefPath } from "./path";
@@ -8,8 +8,9 @@ import { AddConversationToIndex, GetCurrentConvIndexId, RemoveConversationFromAn
 import { useConversationStore } from "@/stores/conversationStore";
 import { InitConversationPreference, LoadConversationPreference, UpdateConversationPreferenceInternal } from "./convPref";
 import i18next from "i18next";
+import { DeleteAttachment } from "./attachment";
 
-export const CONVERSATION_MAX_MESSAGE_COUNT = 2500;
+export const CONVERSATION_MAX_MESSAGE_COUNT = 10000;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
 
 export async function CreateConversation(title = i18next.t("common:conversation.defaultTitle")): Promise<string> {
@@ -120,6 +121,18 @@ export async function DeleteConversation(id: string) {
         store.requestsInProgress.delete(id);
         await new Promise(r => requestAnimationFrame(r));
     }
+    // delete related attachments
+    try {
+        const conv = await LoadConversation(id);
+        for (const msg of conv.messages) {
+            for (const f of msg.files) {
+                await DeleteAttachment(f.id);
+            }
+        }
+    }
+    catch (e) {
+        console.warn("[DeleteConversation]", "Unable to delete attachments for conversation", id, ": " + e);
+    }
     // cleanup index
     await RemoveConversationFromAnyIndex(id);
     // remove from memory cache
@@ -142,7 +155,10 @@ export async function InsertMessageToConversation(id: string, message: Message) 
 
 export async function GetConvNextMessageId(cid: string) {
     const conv = await LoadConversation(cid);
-    return conv.messages.length + 1;
+    let expect = conv.messages.length + 1;
+    while (conv.messages.find(m => m.id === expect) && expect < CONVERSATION_MAX_MESSAGE_COUNT + 2) expect++;
+    if (expect > CONVERSATION_MAX_MESSAGE_COUNT + 1) throw new Error("Conversation message count exceeds maximum limit.");
+    return expect;
 }
 
 export async function EditMessageInConversation(id: string, msgId: number, newMsg: Message) {
@@ -156,8 +172,4 @@ export async function EditMessageInConversation(id: string, msgId: number, newMs
     // update conversation
     await useConversationStore().updateConvInStore(id, conv);
 }
-
-// export function FixInterruptedConversationData(data: Conversation): boolean {
-//     if (data)
-// }
 

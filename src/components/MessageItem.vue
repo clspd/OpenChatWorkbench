@@ -5,15 +5,22 @@
     props.message.role === MessageRole.User || 
     props.message.role === MessageRole.Assistant">
             <div class="message-item" :data-role="msgRoleIdentifyMap[props.message.role]">
-                <div class="message-avatar">
+                <div class="message-avatar" v-if="appStatePersist.showAvatar !== 'off'">
                     <div class="message-avatar-icon" v-if="appStatePersist.showAvatar === 'default' || avatarUrl === 'N/A'">
-                        <UserOutlined v-if="props.message.role === MessageRole.User" />
-                        <RobotOutlined v-if="props.message.role === MessageRole.Assistant" />
+                        <UserOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.User" />
+                        <RobotOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.Assistant" />
                     </div>
                     <div class="message-avatar-icon" v-else-if="appStatePersist.showAvatar === 'custom'">
-                        <img v-if="avatarUrl" :src="avatarUrl" :alt="props.message.role" />
+                        <img @click="confirmEditAvatar" v-if="avatarUrl" :src="avatarUrl" :alt="props.message.role" />
                     </div>
                 </div>
+
+                <MessageFileReferences
+                    v-if="props.message.files.length > 0"
+                    class="f-reference"
+                    :references="props.message.files"
+                    :can-remove="false"
+                />
 
                 <div class="message-body">
                     <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
@@ -27,14 +34,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { MessageRole, type Message } from '@/types/message';
-import { msgRoleIdentifyMap, prettyMsgRole } from "@/modules/chat/msgRoleMap";
+import { msgRoleIdentifyMap } from "@/modules/chat/msgRoleMap";
 import MessageContentRenderer from './MessageContentRenderer.vue';
 import { GetCustomAvatarUrl } from '@/utils/userCustomAvatar';
+import { Modal } from 'ant-design-vue';
+import { t } from 'i18next';
+import { useRouter } from 'vue-router';
+import MessageFileReferences from './MessageFileReferences.vue';
 
 const appStatePersist = useAppStatePersistStore();
+const router = useRouter();
 
 const props = defineProps<{
     message: Message;
@@ -55,18 +67,37 @@ onMounted(() => {
     }
 });
 
+const confirmEditAvatar = () => {
+    Modal.confirm({
+        title: t("chat:messageOperations.editAvatar.title"),
+        content: t("chat:messageOperations.editAvatar.content"),
+        okText: t("common:ui.dialog.ok"),
+        cancelText: t("common:ui.dialog.cancel"),
+        onOk() {
+            router.push("/settings/personalization");
+        },
+    })
+}
+
 </script>
 
 <style scoped>
+.message-item-container {
+    overflow: hidden;
+}
+
 .message-item {
     display: flex;
     flex-direction: column;
 }
+
 .message-item .message-avatar {
     display: flex;
     flex-direction: column;
     margin-bottom: 0.5em;
+    cursor: pointer;
 }
+
 .message-item[data-role="system"] {
     align-items: center;
 }
@@ -89,6 +120,11 @@ onMounted(() => {
     width: 40px;
     height: 40px;
     padding: 0;
+}
+
+.f-reference {
+    margin-bottom: 0.5em;
+    max-width: 50em;
 }
 
 /* Message body:

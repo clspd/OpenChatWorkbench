@@ -1,6 +1,19 @@
 {
     "appName": "Open Chat Workbench",
     "ui": {
+        "dialog": {
+            "ok": "OK",
+            "cancel": "Cancel",
+            "yes": "Yes",
+            "no": "No",
+            "abort": "Abort",
+            "retry": "Retry",
+            "ignore": "Ignore"
+        },
+        "state": {
+            "enabled": "Enabled",
+            "disabled": "Disabled"
+        },
         "header": {
             "moreOptions": {
                 "newConv": "New Conversation",
@@ -39,10 +52,19 @@
                 "attachFile": "Attach File",
                 "attachImage": "Attach Image",
                 "deepThink": "Deep Think",
-                "plainInput": "Plain Input"
+                "plainInput": "Plain Input",
+                "showMoreOptions": "Show More Options"
             },
             "editing": {
                 "title": "Editing message {{ id }}"
+            },
+            "confirmUploadNonTextFile": {
+                "title": "Confirm Upload Non-Text File",
+                "content": "The file \"{{ fileName }}\" you chosen doesn't seem to be a text file and its size is {{ fileSize }} in MiB. If you add a non-text file and generate response, you may encounter unintended payment. Are you sure you want to add it?"
+            },
+            "confirmUploadLargeFile": {
+                "title": "Confirm Upload Large File",
+                "content": "The file \"{{ fileName }}\" you chosen is {{ fileSize }} in MiB. If you add a large file and generate response, you may encounter more payment. Are you sure you want to add it?"
             }
         },
         "modelChooser": {
@@ -50,11 +72,18 @@
             "showFavOnly": "Show favorites only",
             "filterTooltip": "Filter by model ID",
             "emptyState": "No models available. Please add providers and models first.",
-            "openConfigGuide": "Open the configuration guide"
+            "openConfigGuide": "Open the configuration guide",
+            "notSelected": "Not selected",
+            "tooltip": "Click or use Ctrl+/ to open"
         },
-        "state": {
-            "enabled": "Enabled",
-            "disabled": "Disabled"
+        "fileChooser": {
+            "dnd": {
+                "dropFiles": "Drop files to add",
+                "error": {
+                    "emptyTransfer": "Empty drag event transfer",
+                    "wrongType": "Contains {{ count }} files with wrong type"
+                }
+            }
         },
         "newChat": {
             "greeting": {

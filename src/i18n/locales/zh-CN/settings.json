@@ -11,10 +11,19 @@
         },
         "chat": {
             "title": "对话",
-            "legend": "消息发送方式",
-            "options": {
-                "enter": "Enter",
-                "ctrl-enter": "Ctrl + Enter"
+            "sendMsgWith": {
+                "legend": "消息发送方式",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            },
+            "attachOptions": {
+                "legend": "附件选项",
+                "throttleSingleFileSize": {
+                    "title": "Throttle 单文件大小",
+                    "description": "单个文件附件的 Throttle 大小（MB）。如果文件大小超过此值，我们将询问您是否继续。"
+                }
             }
         },
         "accessibility": {
@@ -116,8 +125,8 @@
         "selectProvider": "请选择提供商！",
         "inputModelID": "请输入模型 ID ！",
         "modelDeletedSuccessfully": "模型删除成功",
-        "modelsToggledSuccessfully": "已{newState} {providerName} 的 {scope} 个模型",
-        "modelEditorDamaged": "模型编辑器状态已损坏，请重新加载页面重试",
+        "modelsToggledSuccessfully": "已 {{newState}} {{scope}} 个模型 {{providerName}}",
+        "modelEditorDamaged": "编辑器状态已损坏，请重新加载页面",
         "modelUpdatedSuccessfully": "模型更新成功",
         "modelAddedSuccessfully": "模型添加成功",
         "operationFailed": "操作失败：",
@@ -199,6 +208,16 @@
         "privacyPolicy": "隐私政策",
         "importExportData": "导入和导出数据",
         "deleteAllConversations": "删除所有对话",
+        "storageUsage": {
+            "failedToGetUsage": "无法获取使用情况数据: {{error}}",
+            "brief": "当前已使用 {{used}}MiB ({{usedByte}}B) 存储空间配额 (已用 {{percent}}%)，总配额 {{total}}MiB。"
+        },
+        "persistStorage": {
+            "desc": "持久存储",
+            "notSupported": "您的浏览器不支持持久存储。",
+            "optOut": "请前往浏览器设置撤销持久存储。",
+            "failedToPersist": "无法持久存储。请尝试退出无痕模式（如果您正在使用），增加互动，使用 Ctrl+D 添加页面为书签，将应用程序安装为渐进式 Web 应用程序（PWA），或手动增加 Chrome 中的站点参与度（chrome://site-engagement/）。"
+        },
         "clearAllData": "清除所有数据",
         "clearData": {
             "title": "确定吗？",

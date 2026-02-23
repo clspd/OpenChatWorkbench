@@ -79,7 +79,7 @@ export async function _base_stream(
     if (options.onInitRequest) await options.onInitRequest(conv, reqMsg, respMsg);
     const req: ChatCompletionCreateParamsStreaming = {
         model: model,
-        messages: BuildOpenAICompatibleRequestMessages(
+        messages: await BuildOpenAICompatibleRequestMessages(
             conv,
             reqMsg.id,
             // config

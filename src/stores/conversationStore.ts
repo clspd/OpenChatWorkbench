@@ -1,11 +1,12 @@
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Conversation, ConversationGroup, ConversationIndex, ConversationIndexItem, ConversationUserPref, PendingMessageRequest } from '@/types/conversation'
 import { fs } from '@/userdata';
-import { getChatIndexPath, getConvPath, getConvPrefPath } from '@/modules/chat/path';
-import { dumpConversationData, dumpConversationPref } from '@/modules/chat/dumper';
+import { getAttachmentIndexPath, getChatIndexPath, getConvPath } from '@/modules/chat/path';
+import { dumpConversationData } from '@/modules/chat/dumper';
 import { groupConversationsByTime } from '@/utils/conversationGroup';
 import { LoadConversationPreference, UpdateConversationPreferenceInternal } from '@/modules/chat/convPref';
+import type { FileAttachmentInfo } from '@/types/message';
+import { SaveAttachmentIndex } from '@/modules/chat/attachment';
 
 /**
  * Temporarily caches the conversation and message data.
@@ -17,6 +18,8 @@ export const useConversationStore = defineStore('conversation', {
         conversations: new Map<string, Conversation>(),
         preferences: new Map<string, ConversationUserPref>(),
         requestsInProgress: new Map<string, PendingMessageRequest>(),
+        attaIndexCurrentId: 0,
+        attachmentsIndex: new Map<string, FileAttachmentInfo>(),
     }),
 
     actions: {
@@ -67,6 +70,10 @@ export const useConversationStore = defineStore('conversation', {
         },
         hasPendingMessage(convId: string) {
             return this.requestsInProgress.has(convId);
+        },
+        async setAttachmentIndex(hash: string, info: FileAttachmentInfo) {
+            this.attachmentsIndex.set(hash, info);
+            await SaveAttachmentIndex();
         },
     },
 

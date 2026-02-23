@@ -1,6 +1,6 @@
 <template>
     <div class="new-workspace">
-        Not implemented yet
+        {{ t("workspace:comingSoon") }}
     </div>
 </template>
 
@@ -20,6 +20,7 @@ onMounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
+    padding: 1em;
 }
 </style>
 

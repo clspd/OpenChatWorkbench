@@ -1,6 +1,9 @@
+import { cloneDeep } from "lodash-es";
+import { useAppStatePersistStore } from "@/stores/appStatePersist";
 import type { Conversation } from "@/types/conversation";
 import { MessageContentType, MessageFragmentType, MessageRole, type Message } from "@/types/message";
 import type { ChatCompletionMessageParam, ChatCompletionContentPart, ChatCompletionContentPartText } from "openai/resources";
+import { GetAttachmentById, MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE, MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE } from "../chat/attachment";
 
 export class ConvCircularReferenceError extends TypeError {
     constructor(message = "The conversation contains a Circular Reference", options?: any) {
@@ -34,7 +37,11 @@ export const RequestBuilderDefaultConfig: RequestBuilderConfig = {
 }
 
 // trace message chain and generate OpenAI-API Compatible Request Messages array
-export function BuildOpenAICompatibleRequestMessages(conv: Conversation, tailNodeId: number, config: RequestBuilderConfig = RequestBuilderDefaultConfig) {
+export async function BuildOpenAICompatibleRequestMessages(conv: Conversation, tailNodeId: number, config?: RequestBuilderConfig) {
+    if (!config) {
+        const defaultConfig = useAppStatePersistStore().defaultBuilderConfig ?? RequestBuilderDefaultConfig;
+        config = defaultConfig;
+    }
     const result: ChatCompletionMessageParam[] = [];
     const messageId2IndexMap = new Map<number, number>();
 
@@ -62,14 +69,14 @@ export function BuildOpenAICompatibleRequestMessages(conv: Conversation, tailNod
             case MessageRole.User:
                 result.push({
                     role: Ocw2OaiMap.role[msg.role],
-                    content: BuildOpenAICompatibleRequestMessageContent(msg, config),
+                    content: await BuildOpenAICompatibleRequestMessageContent(msg, config),
                 });
                 break;
             case MessageRole.Assistant:
             case MessageRole.System:
                 result.push({
                     role: Ocw2OaiMap.role[msg.role],
-                    content: BuildOpenAICompatibleRequestMessageContent_TextOnly(msg, config),
+                    content: await BuildOpenAICompatibleRequestMessageContent_TextOnly(msg, config),
                 });
                 break;
             
@@ -82,12 +89,61 @@ export function BuildOpenAICompatibleRequestMessages(conv: Conversation, tailNod
     return result.reverse();
 }
 
+function blobToDataURL(blob: Blob) {
+    return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+export async function IntegrateMessageFilesToContext(msg: Message, config: RequestBuilderConfig) {
+    const result: ChatCompletionContentPart[] = [];
+    // 1st round: check file size
+    let totalSize = 0;
+    for (const f of msg.files) {
+        if (f.type.startsWith("image/")) continue;
+        totalSize += f.size;
+    }
+    if (totalSize > MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE) throw new Error(`Total size of files (${totalSize} bytes) exceeds max allowed size (${MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE} bytes)`);
+    // 2nd round: add data
+    for (const f of msg.files) try {
+        const fileContent = await GetAttachmentById(f.id);
+        if (f.type.startsWith("image/")) {
+            if (config.stringOnly) throw new Error("The message includes image content but stringOnly is set");
+            result.push({
+                type: "image_url",
+                image_url: {
+                    url: await blobToDataURL(fileContent),
+                },
+            });
+        }
+        else if (fileContent.size < MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE) {
+            result.push({
+                type: "text",
+                text: `<file>\n<name>${f.name}</name>\n<content>\n${await fileContent.text()}\n</content>\n</file>`,
+            });
+        }
+        else throw new Error(`File ${f.name} is too large (${fileContent.size} bytes), max allowed size is ${MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE} bytes`);
+    } catch (e) {
+        result.push({
+            type: "text",
+            text: `<file>\n<name>${f.name}</name>\n<error>${e}</error>\n</file>`,
+        });
+    }
+    return result;
+}
+
 // build content from message fragments
-export function BuildOpenAICompatibleRequestMessageContent(msg: Message, config: RequestBuilderConfig, prefersString = true) {
-    const isTextOnly = msg.fragments.every(f => f.contentType === MessageContentType.Text);
+export async function BuildOpenAICompatibleRequestMessageContent(msg: Message, config: RequestBuilderConfig, prefersString = true) {
+    const isTextOnly = msg.fragments.every(f => f.contentType === MessageContentType.Text) && msg.files.every(f => !f.type.startsWith("image/"));
     if (prefersString && isTextOnly) return BuildOpenAICompatibleRequestMessageContent_TextOnly(msg, config);
     if (!isTextOnly && config.stringOnly) throw new Error("The message includes non-text content but stringOnly is set");
     const result: ChatCompletionContentPart[] = [];
+    // add files first
+    result.push(...await IntegrateMessageFilesToContext(msg, config));
+    // add message fragments
     for (const f of msg.fragments) {
         switch (f.contentType) {
             case MessageContentType.Text:
@@ -106,14 +162,20 @@ export function BuildOpenAICompatibleRequestMessageContent(msg: Message, config:
 }
 
 // build content string from message fragments (text only)
-export function BuildOpenAICompatibleRequestMessageContent_TextOnly(msg: Message, config: RequestBuilderConfig): string {
+export async function BuildOpenAICompatibleRequestMessageContent_TextOnly(msg: Message, config: RequestBuilderConfig): Promise<string> {
     // retrieve message fragments to build content
     const result: string[] = []; // for compatibility (OpenAI API supports types, but some 3p-providers don't)
+    // add files first
+    result.push(...(await IntegrateMessageFilesToContext(msg, Object.assign(cloneDeep(config), {
+        stringOnly: true,
+    }))).map(f => (f as ChatCompletionContentPartText).text));
+    // add message fragments
     for (const f of msg.fragments) {
         switch (f.type) {
             case MessageFragmentType.Think:
-                if (!config.includeThinking) break; 
-                // [[fallthrough]]
+                if (!config.includeThinking) break;
+                result.push(`<think>\n${f.content}\n</think>`);
+                break;
             case MessageFragmentType.Request:
             case MessageFragmentType.Response:
                 if (f.contentType !== MessageContentType.Text) throw new Error("Non-text message has been provided to text-only builder");

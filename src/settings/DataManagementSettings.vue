@@ -21,6 +21,21 @@
         <hr style="width: 100%;">
 
         <div class="setting-item">
+            <div>{{ t('settings:data_management.storageUsage.brief', usageData.brief) }}</div>
+            <a-descriptions v-if="usageData.details.hasData" :column="1" :bordered="true">
+                <a-descriptions-item label="IndexedDB">{{ usageData.details.idb }}</a-descriptions-item>
+                <a-descriptions-item label="Service Worker Registration">{{ usageData.details.sw }}</a-descriptions-item>
+                <a-descriptions-item label="Cache Storage">{{ usageData.details.cache }}</a-descriptions-item>
+                <a-descriptions-item label="File System">{{ usageData.details.fs }}</a-descriptions-item>
+                <a-descriptions-item label="Other">{{ usageData.details.other }}</a-descriptions-item>
+            </a-descriptions>
+        </div>
+
+        <div class="setting-item">
+            <a-checkbox :checked="isPersistStorage" @update:checked="setPersistStorage">{{ t('settings:data_management.persistStorage.desc') }}</a-checkbox>
+        </div>
+
+        <div class="setting-item">
             <a-button type="primary" @click="clearData" danger>{{ t('settings:data_management.clearAllData') }}</a-button>
         </div>
 
@@ -80,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, defineComponent, h } from 'vue'
+import { ref, onMounted, watch, defineComponent, h, reactive } from 'vue'
 import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
 import { db, db_name, fs, setShowDbExpiredDialog } from '@/userdata'
@@ -91,6 +106,8 @@ import { parse } from 'cookie'
 import { isServiceWorkerActive } from '@/utils/swApi'
 import { chatAttachmentBasePath, chatIndexBasePath, getConvPath, getConvPrefPath } from '@/modules/chat/path'
 import { t } from 'i18next'
+import { SaveAttachmentIndex } from '@/modules/chat/attachment'
+import { useConversationStore } from '@/stores/conversationStore'
 
 const router = useRouter()
 
@@ -114,6 +131,92 @@ const privacyPolicy = () => {
 
 const portData = () => {
     router.push('/interop/data-import-and-export');
+}
+
+const usageData = reactive({
+    brief: {
+        used: '0',
+        usedByte: '0',
+        total: '0',
+        totalByte: '0',
+        percent: '0',
+    },
+    details: {
+        hasData: false,
+        idb: '0',
+        sw: '0',
+        cache: '0',
+        fs: '0',
+        other: '0',
+    },
+});
+const isPersistStorage = ref(false);
+onMounted(() => {
+    if (navigator.storage && typeof navigator.storage.estimate === 'function') {
+        navigator.storage.estimate().then((result: any) => {
+            const { usage, quota, usageDetails } = result;
+            if (usage) {
+                usageData.brief.used = (usage / 1024 / 1024).toFixed(2);
+                usageData.brief.usedByte = String(Math.ceil(usage));
+            } else {
+                usageData.brief.used = usageData.brief.usedByte = "Unknown";
+            }
+            if (quota) {
+                usageData.brief.total = (quota / 1024 / 1024).toFixed(2);
+                usageData.brief.totalByte = String(Math.ceil(quota));
+            } else {
+                usageData.brief.total = usageData.brief.totalByte = "Unknown";
+            }
+            if (usage && quota) {
+                usageData.brief.percent = ((usage / quota) * 100).toFixed(4);
+            } else {
+                usageData.brief.percent = "Unknown";
+            }
+            if (usageDetails) {
+                // console.log("[DataManagementSettings] usageDetails:", usageDetails);
+                usageData.details.hasData = true;
+                usageData.details.idb = String(usageDetails.indexedDB ?? "Unknown");
+                usageData.details.sw = String(usageDetails.serviceWorkerRegistrations ?? "Unknown");
+                usageData.details.cache = String(usageDetails.caches ?? "Unknown");
+                usageData.details.fs = String(usageDetails.fileSystem ?? "Unknown");
+                if (usage) {
+                    usageData.details.other = String(
+                        usage -
+                        (usageDetails.indexedDB ?? 0) -
+                        (usageDetails.serviceWorkerRegistrations ?? 0) -
+                        (usageDetails.caches ?? 0) -
+                        (usageDetails.fileSystem ?? 0)
+                    );
+                } else {
+                    usageData.details.other = "Unknown";
+                }
+            } else {
+                usageData.details.hasData = false;
+            }
+        }).catch((e) => {
+            message.error(t('settings:data_management.storageUsage.failedToGetUsage', { error: String(e) }));
+        });
+    }
+    if (navigator.storage && typeof navigator.storage.persist === 'function' && typeof navigator.storage.persisted === 'function') {
+        navigator.storage.persisted().then((persisted) => {
+            isPersistStorage.value = persisted;
+        }).catch(() => { });
+    }
+})
+const setPersistStorage = async (checked: boolean) => {
+    if (!navigator.storage || typeof navigator.storage.persist !== 'function' || typeof navigator.storage.persisted !== 'function') {
+        return message.error(t('settings:data_management.persistStorage.notSupported'));
+    }
+    if (checked) {
+        Promise.race([navigator.storage.persist(), new Promise(_ => setTimeout(() => _(false), 5000))]).then((persisted) => {
+            if (persisted) isPersistStorage.value = true;
+            else throw new Error('Failed to persist storage.');
+        }).catch(() => {
+            message.error(t('settings:data_management.persistStorage.failedToPersist'));
+        });
+    } else {
+        message.info(t('settings:data_management.persistStorage.optOut'));
+    }
 }
 
 const clearDataState = ref<{
@@ -219,6 +322,8 @@ const deleteAllConversations = async () => {
         await fs.rm(chatAttachmentBasePath, { recursive: true });
         await fs.rm(getConvPath(''), { recursive: true });
         await fs.rm(getConvPrefPath(''), { recursive: true });
+        useConversationStore().attachmentsIndex.clear();
+        await SaveAttachmentIndex();
     }
     catch (e) {
         message.error(t('settings:data_management.messages.deleteAllConversations.failed', { error: e }));

@@ -32,6 +32,11 @@
         },
         "warnings": {
             "invalidChoices": "分支无效，已重置为默认选择。"
+        },
+        "switchBranch": {
+            "title": "切换分支",
+            "content": "请输入新分支索引",
+            "invalidChoices": "分支索引无效。"
         }
     },
     "chatView": {
@@ -82,6 +87,10 @@
         "showRaw": "显示/隐藏原始消息",
         "like": "喜欢",
         "dislike": "不喜欢",
-        "more": "更多操作"
+        "more": "更多操作",
+        "editAvatar": {
+            "title": "编辑头像",
+            "content": "是否前往编辑头像？"
+        }
     }
 }

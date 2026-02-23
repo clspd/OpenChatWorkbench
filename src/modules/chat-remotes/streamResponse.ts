@@ -37,7 +37,7 @@ export async function streamResponse(
         providerName: provider.name,
         model: model.id,
         features,
-        files,
+        files: [], // this is an assistant message; files should only appear in user message
         fragments: [],
         has_pending_fragment: true,
         usage: {

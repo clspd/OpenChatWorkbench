@@ -7,6 +7,7 @@
             v-model:providerId="providerId"
             v-model:features="userMessageFeatures"
             v-model:files="userMessageFiles"
+            globalDnD
             :disabled="isSending"
             @send-message="handleSendMessage" />
     </div>

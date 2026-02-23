@@ -9,11 +9,13 @@ export const chatBasePath = "data/";
 export const chatIndexBasePath = chatBasePath + "index/";
 export const chatIndexCurrentFile = chatIndexBasePath + "current";
 export const chatAttachmentBasePath = chatBasePath + "attachment/";
+export const chatAttachmentIndexCurrentFile = chatIndexBasePath + "atta.current";
 export const chatPersonalizationDataBasePath = chatBasePath + "personalization/";
 export const getConvPath = (id: string) => chatBasePath + 'conversations/' + id;
 export const getConvPrefPath = (id: string) => chatBasePath + 'conv_pref/' + id;
 export const getChatIndexPath = (n: number) => chatIndexBasePath + n;
 export const getChatAttachmentPath = (aid: string) => chatAttachmentBasePath + aid;
+export const getAttachmentIndexPath = (n: number) => chatIndexBasePath + "atta." + n;
 
 export async function createChatBaseStructure() {
     const ensureDir = async (path: string) => (((await fs.exists(path)) && (await fs.stat(path)).isDirectory()) || await fs.mkdir(path));

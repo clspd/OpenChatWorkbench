@@ -19,6 +19,7 @@ import { InitConvIndex } from "./modules/chat/convIndex";
 import { GetTitleI18nKeyByText } from "./i18n/titles";
 import i18next from "i18next";
 import { SetupI18n } from "./i18n";
+import { InitAttachmentIndex } from "./modules/chat/attachment";
 
 export default async function init(app: ReturnType<typeof import('vue').createApp>) {
     // register service worker
@@ -75,6 +76,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     useConversationStore();
 
     await InitConvIndex();
+    await InitAttachmentIndex();
     
     if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 

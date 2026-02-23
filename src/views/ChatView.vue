@@ -42,6 +42,7 @@
                     v-model:modelId="messageEditorState.modelId"
                     v-model:features="messageEditorState.features"
                     v-model:files="messageEditorState.files"
+                    globalDnD
                     :disabled="messageEditorState.isSending"
                     :is-generating="messageEditorState.isGenerating || hasGenerating"
                     :is-editing="messageEditorState.editMessage?.isEditing"

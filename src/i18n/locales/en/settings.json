@@ -11,10 +11,19 @@
         },
         "chat": {
             "title": "Chat",
-            "legend": "Send Message with...",
-            "options": {
-                "enter": "Enter",
-                "ctrl-enter": "Ctrl + Enter"
+            "sendMsgWith": {
+                "legend": "Send Message with...",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            },
+            "attachOptions": {
+                "legend": "Attachment Options",
+                "throttleSingleFileSize": {
+                    "title": "Throttle Single File Size",
+                    "description": "The throttle size of a single file attachment in MB. If the file size exceeds this value, we will ask you."
+                }
             }
         },
         "accessibility": {
@@ -116,7 +125,7 @@
         "selectProvider": "Please select a provider!",
         "inputModelID": "Please input model ID!",
         "modelDeletedSuccessfully": "Model deleted successfully",
-        "modelsToggledSuccessfully": "{newState} {scope} models for {providerName}",
+        "modelsToggledSuccessfully": "{{newState}} {{scope}} models for {{providerName}}",
         "modelEditorDamaged": "The state of the model editor has been damaged, please reload the page to try again",
         "modelUpdatedSuccessfully": "Model updated successfully",
         "modelAddedSuccessfully": "Model added successfully",
@@ -199,6 +208,16 @@
         "privacyPolicy": "Privacy Policy",
         "importExportData": "Import & Export Data",
         "deleteAllConversations": "Delete All Conversations",
+        "storageUsage": {
+            "failedToGetUsage": "Failed to get storage usage: {{error}}",
+            "brief": "Currently {{used}}MiB ({{usedByte}}B) of {{total}}MiB ({{totalByte}}B) storage quota ({{percent}}%) is used."
+        },
+        "persistStorage": {
+            "desc": "Persist storage",
+            "notSupported": "Your browser does not support persist storage.",
+            "optOut": "Please go to browser settings to opt out of persist storage.",
+            "failedToPersist": "Failed to persist storage. Please try to quit the incognito mode (if you're using it), interact more with the site, add the page to bookmarks using Ctrl+D, install as Progressive Web Application (PWA), or manually increases the engagement level in chrome://site-engagement/ ."
+        },
         "clearAllData": "Clear All Data",
         "clearData": {
             "title": "Are you sure?",

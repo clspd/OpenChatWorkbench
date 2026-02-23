@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <DialogView c_if="contentEditDlgState.show" v-model="contentEditDlgState.show" class="fragment-editor">
+        <DialogView v-if="contentEditDlgState.show" v-model="contentEditDlgState.show" class="fragment-editor">
             <template #title>{{ t('chat:messageChain.editDialog.title', { id: contentEditDlgState.msgId }) }}</template>
             <div v-for="(frag, idx) in contentEditDlgState.frag" :key="idx" class="fragment">
                 <div class="fragment-edit-title">Fragment {{frag.id}} <a href="javascript:" class="fragment-btn-delete" @click="contentEditDlgState.frag.splice(idx, 1)">Delete fragment</a></div>
@@ -257,6 +257,7 @@ const handleSaveEdit = async () => {
     box-sizing: border-box;
     max-width: calc(50rem);
     overflow-wrap: anywhere;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }

@@ -7,14 +7,20 @@ import { LoadConversationPreference } from "../chat/convPref";
 import { t } from "i18next";
 
 export async function handleRequestDeleteConversation(cid: string, showConfirm = true, router?: Router) {
-    const conv = await LoadConversation(cid);
+    const convTitle = await (async () => {
+        try {
+            const conv = await LoadConversation(cid);
+            return conv.session.title;
+        }
+        catch { return cid }
+    })();
     let res = false;
     if (showConfirm) {
         res = await new Promise<boolean>((r, j) => Modal.confirm({
             title: t('chat:management.requests.delete.title'),
             content: h('div', null, [
                 h('span', null, t('chat:management.requests.delete.content')),
-                h('span', { style: { userSelect: 'all', fontWeight: 'bold' } }, conv.session.title),
+                h('span', { style: { userSelect: 'all', fontWeight: 'bold' } }, convTitle),
                 h('span', null, '?'),
             ]),
             okText: t('chat:management.requests.delete.okText'),

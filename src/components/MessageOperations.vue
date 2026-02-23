@@ -81,6 +81,13 @@
                             <div class="message-detail-label">Elapsed</div>
                             <div class="message-detail-value">{{ computeTotalElapsed(props.message) }}ms</div>
                         </div>
+                        <div class="message-detail-item">
+                            <div class="message-detail-label">Status</div>
+                            <div class="message-detail-value">{{ props.message.status }}</div>
+                        </div>
+                        <div class="message-detail-item" v-if="canForceStop">
+                            <div class="message-detail-value"><a href="javascript:" @click.prevent="doForceStop">Force stop</a></div>
+                        </div>
                     </div>
                 </template>
                 <a-tooltip>
@@ -97,7 +104,7 @@
                 <LeftOutlined />
             </a-button>
 
-            <a-button type="text" size="small" :aria-label="`Current choice: ${props.choice}; Total choices count: ${props.totalChoices}; click to switch choice`" @click="choiceAction(2)" :disabled="props.disabled">
+            <a-button type="text" size="small" :aria-label="`Current choice: ${props.choice + 1}; Total choices count: ${props.totalChoices}; click to switch choice`" @click="choiceAction(2)" :disabled="props.disabled">
                 {{ props.choice + 1 }} / {{ props.totalChoices }}
             </a-button>
 
@@ -110,14 +117,16 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { CopyOutlined, CheckOutlined, EditOutlined, RedoOutlined, LikeOutlined, DislikeOutlined, CompressOutlined, ExpandOutlined, LeftOutlined, RightOutlined, LikeFilled, DislikeFilled, MoreOutlined } from '@ant-design/icons-vue';
-import { MessageFeedback, MessageRole, MessageStatus, type Message } from '@/types/message';
 import { message } from 'ant-design-vue';
-import { ExtractMessageText } from '@/modules/chat/message';
+import { CopyOutlined, CheckOutlined, EditOutlined, RedoOutlined, LikeOutlined, DislikeOutlined, CompressOutlined, ExpandOutlined, LeftOutlined, RightOutlined, LikeFilled, DislikeFilled, MoreOutlined } from '@ant-design/icons-vue';
 import dayjs from 'dayjs';
+import { t } from 'i18next';
+import { MessageFeedback, MessageRole, MessageStatus, type Message } from '@/types/message';
+import { ExtractMessageText } from '@/modules/chat/message';
 import { msgRoleIdentifyMap } from '@/modules/chat/msgRoleMap';
 import { prompt } from '@/utils/prompt';
 import { useConversationStore } from '@/stores/conversationStore';
+import { LoadConversation } from '@/modules/chat/conversation';
 
 const props = defineProps<{
     convId: string;
@@ -166,10 +175,13 @@ const choiceAction = async (type: number, data?: number) => {
         if (newPos < 0 || newPos >= props.totalChoices) return;
         emit('update:choice', newPos);
     } else if (type === 2) {
-        const newPos = await prompt("Please input new choice", "Switch branch", String(props.choice + 1), "number");
+        const newPos = await prompt(
+            t('chat:messageChain.switchBranch.content'),
+            t('chat:messageChain.switchBranch.title'),
+            String(props.choice + 1), "number");
         if (newPos == null) return;
         if (Number.isNaN(Number(newPos)) || Number(newPos) < 1 || Number(newPos) > props.totalChoices) {
-            message.error("Invalid choice index.");
+            message.error(t('chat:messageChain.switchBranch.invalidChoices'));
             return;
         }
         emit('update:choice', Number(newPos) - 1);
@@ -187,6 +199,25 @@ const computeTotalElapsed = (msg: Message) => {
     for (const i of msg.fragments) total += BigInt(String(i.elapsed ?? 0));
     return total;
 }
+
+const canForceStop = computed(() => {
+    return props.message.status === MessageStatus.WIP && !conversationStore.hasPendingMessage(props.convId);
+});
+
+const doForceStop = async () => {
+    try {
+        const conv = await LoadConversation(props.convId);
+        if (!conv) return;
+        const msg = conv.messages.find(m => m.id === props.message.id);
+        if (!msg) return;
+        msg.status = MessageStatus.Error;
+        msg.has_pending_fragment = false;
+        conversationStore.updateConvInStore(props.convId, conv);
+    } catch (e) {
+        message.error("Unable to force stop message: " + e);
+    }
+}
+
 
 </script>
 

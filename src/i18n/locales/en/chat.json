@@ -32,6 +32,11 @@
         },
         "warnings": {
             "invalidChoices": "Invalid choices, reset to default choices."
+        },
+        "switchBranch": {
+            "title": "Switch branch",
+            "content": "Please input new branch index",
+            "invalidChoices": "Invalid choices index."
         }
     },
     "chatView": {
@@ -82,6 +87,10 @@
         "showRaw": "Show/hide raw message",
         "like": "Like",
         "dislike": "Dislike",
-        "more": "More operations"
+        "more": "More operations",
+        "editAvatar": {
+            "title": "Edit avatar",
+            "content": "Do you want to edit the avatar?"
+        }
     }
 }

@@ -1,13 +1,11 @@
 // appStatePersistStore: These datas are **persistent** data which stores the user's preferences.
-
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { fs } from '@/userdata'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 import type { MessageFeatureItem } from '@/types/message'
 import type { Config as DomPurifyConfig } from 'dompurify'
 import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
-import { app_name_id } from '@/config'
+import { RequestBuilderDefaultConfig } from '@/modules/chat-request/requestBuilder'
 // import { debounce } from '@tanstack/vue-virtual'
 
 // const notifyBrothers = debounce(window, () => window.localStorage.setItem(app_name_id + "@statePersistUpdated", "" + Math.random()), 100);
@@ -15,7 +13,7 @@ import { app_name_id } from '@/config'
 export const useAppStatePersistStore = defineStore('AppStatePersist', {
     state: () => ({
         language: 'en',
-        fontSizeGlobal: 0,
+        fontSizeGlobal: 14,
         modelChooserScrollPos: 0,
         modelChooserSearchKeyword: '',
         sidebarCollapsed: false,
@@ -27,6 +25,8 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,
         showAvatar: 'default' as 'default' | 'custom' | 'off',
+        fileUploadThrottleSize: 2, // MiB
+        defaultBuilderConfig: RequestBuilderDefaultConfig,
     }),
     getters: {
         theme: (state): ThemeConfig => ({
