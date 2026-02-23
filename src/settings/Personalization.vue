@@ -18,6 +18,11 @@
                 <p>{{ t('settings:personalization.showAvatar.custom.roles.system') }}: <input type="file" autocomplete="off" accept="image/*" @change="e => changeAvatar('system', e)" /> <input type="button" value="Reset" @click="resetAvatar('system')" /></p>
             </div>
         </a-card>
+
+        <a-card :title="t('settings:personalization.defaultSystemPrompt.title')">
+            <p>{{ t('settings:personalization.defaultSystemPrompt.description') }}</p>
+            <a-textarea v-model:value="appStatePersist.defaultSystemPrompt" :rows="10" />
+        </a-card>
         
     </div>
 </template>

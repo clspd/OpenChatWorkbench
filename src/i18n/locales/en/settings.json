@@ -64,6 +64,10 @@
                 "success_reset": "Avatar reset successfully.",
                 "error": "Failed to change avatar. Please try again. Error: {{e}}"
             }
+        },
+        "defaultSystemPrompt": {
+            "title": "Default System Prompt",
+            "description": "The default system prompt to use when no custom prompt is provided."
         }
     },
     "provider": {
