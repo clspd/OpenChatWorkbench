@@ -7,9 +7,26 @@
             v-model:providerId="providerId"
             v-model:features="userMessageFeatures"
             v-model:files="userMessageFiles"
+            isCreatingConversation
             globalDnD
             :disabled="isSending"
+            @edit-system-prompt="showSystemPromptEditor = true"
             @send-message="handleSendMessage" />
+        
+        <DialogView v-model="showSystemPromptEditor" :close-on-click-mask="true" class="system-prompt-editor">
+            <template #title>
+                {{ t('common:ui.newChat.systemPrompt.title') }}
+            </template>
+
+            <a-textarea autofocus v-model:value="systemPrompt" class="system-prompt-textarea" :placeholder="t('common:ui.newChat.systemPrompt.placeholder')"></a-textarea>
+
+            <template #footer>
+                <div class="sys-prompt-editor-footer">
+                    <a-button type="primary" @click="showSystemPromptEditor = false">{{ t('common:ui.dialog.save') }}</a-button>
+                    <a-button @click="systemPrompt = ''" v-if="false">{{ t('common:ui.dialog.clear') }}</a-button>
+                </div>
+            </template>
+        </DialogView>
     </div>
 </template>
 
@@ -38,6 +55,7 @@ import { tiptap2markdown } from '@/utils/parseTiptap'
 import { TraceErrorAndGetString } from '@/utils/errorTrace'
 // components
 import InputMessage from '@/components/InputMessage.vue'
+import { DialogView } from 'vue-dialog-view'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
@@ -46,31 +64,40 @@ const modelId = ref('')
 const providerId = ref('')
 const router = useRouter()
 const isSending = ref(false)
+const showSystemPromptEditor = ref(false)
+const systemPrompt = ref('')
+
+const appState = useAppStateStore()
+const configStore = useConfigStore()
+const appStatePersist = useAppStatePersistStore()
+const appStateSession = useAppStateSessionStore()
 
 onMounted(() => {
     useAppStateStore().setTitle('')
-    providerId.value = useConfigStore().selectedProviderId
-    modelId.value = useConfigStore().selectedModelId
-    const buffer = useAppStateSessionStore().chatEditBuffer["_"]
+    providerId.value = configStore.selectedProviderId
+    modelId.value = configStore.selectedModelId
+    const buffer = appStateSession.chatEditBuffer["_"]
     if (buffer) {
         userMessage.value = buffer.content
-        userMessageFeatures.value = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
+        userMessageFeatures.value = buffer?.features ?? appStatePersist.userSendMsgDefaultFeatures
+        systemPrompt.value = buffer?.systemPrompt ?? appStatePersist.defaultSystemPrompt
     } else {
         userMessage.value = EMPTY_MESSAGE_JSON
-        userMessageFeatures.value = useAppStatePersistStore().userSendMsgDefaultFeatures
+        userMessageFeatures.value = appStatePersist.userSendMsgDefaultFeatures
+        systemPrompt.value = appStatePersist.defaultSystemPrompt
     }
 })
 
 watch(() => providerId.value, (newVal) => {
-    useConfigStore().selectedProviderId = newVal
+    configStore.selectedProviderId = newVal
 })
 watch(() => modelId.value, (newVal) => {
-    useConfigStore().selectedModelId = newVal
+    configStore.selectedModelId = newVal
 })
 
 watch(() => userMessage.value, (newVal) => {
     if (newVal) {
-        useAppStateSessionStore().chatEditBuffer["_"] = {
+        appStateSession.chatEditBuffer["_"] = {
             content: newVal,
             contentType: MessageContentType.Text,
             features: userMessageFeatures.value,
@@ -81,7 +108,7 @@ watch(() => userMessage.value, (newVal) => {
 })
 watch(() => userMessageFeatures.value, (newVal) => {
     if (newVal) {
-        useAppStateSessionStore().chatEditBuffer["_"] = {
+        appStateSession.chatEditBuffer["_"] = {
             content: userMessage.value,
             contentType: MessageContentType.Text,
             features: newVal,
@@ -90,6 +117,19 @@ watch(() => userMessageFeatures.value, (newVal) => {
         }
     }
 }, { deep: true })
+
+watch(() => systemPrompt.value, (newVal) => {
+    if (newVal) {
+        appStateSession.chatEditBuffer["_"] = {
+            content: userMessage.value,
+            contentType: MessageContentType.Text,
+            features: userMessageFeatures.value,
+            files: userMessageFiles.value,
+            isEditing: false,
+            systemPrompt: newVal,
+        }
+    }
+})
 
 const handleSendMessage = async () => {
     if (userMessage.value === '') {
@@ -102,8 +142,8 @@ const handleSendMessage = async () => {
     }
     
     try {
-        const provider = useConfigStore().providers.find(p => p.id === providerId.value)
-        const model = useConfigStore().models.find(m => m.id === modelId.value)
+        const provider = configStore.providers.find(p => p.id === providerId.value)
+        const model = configStore.models.find(m => m.id === modelId.value)
         
         if (!provider || !model || !provider.enabled || !model.enabled) {
             message.error(t('chat:newChat.errors.selectValidModel'))
@@ -112,7 +152,7 @@ const handleSendMessage = async () => {
 
         const msg = tiptap2markdown(userMessage.value)
 
-        const cid = await CreateConversation();
+        const cid = await CreateConversation(msg.length > 30 ? msg.substring(0, 30) : msg);
         if (!cid) {
             message.error(t('chat:newChat.errors.createConversation'))
             return
@@ -120,10 +160,25 @@ const handleSendMessage = async () => {
 
         isSending.value = true
         // add user request to conversation
-        const reqId = await GetConvNextMessageId(cid);
+        let reqId = await GetConvNextMessageId(cid), oldReqId: number | null = null;
+
+        const hasSystemPrompt = !!systemPrompt.value;
+        if (hasSystemPrompt) {
+            await InsertMessageToConversation(cid, CreateUserMessage(
+                reqId,
+                null,
+                MessageRole.System,
+                MessageContentType.Text,
+                systemPrompt.value,
+                []
+            ));
+            oldReqId = reqId;
+            reqId = await GetConvNextMessageId(cid);
+        }
+
         await InsertMessageToConversation(cid, CreateUserMessage(
             reqId,
-            null,
+            oldReqId,
             MessageRole.User,
             MessageContentType.Text,
             msg,
@@ -132,7 +187,7 @@ const handleSendMessage = async () => {
 
         // Send request
         await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, cloneDeep(toRaw(userMessageFeatures.value)), cloneDeep(toRaw(userMessageFiles.value)), () => InitConversationPreference(cid).then(pref => (useConversationStore().updatePref(cid, Object.assign(pref, {
-            choices: [0, 0],
+            choices: hasSystemPrompt ? [0, 0, 0] : [0, 0],
         })))).then(() => resolve())).catch(e => {
             reject(e);
             console.error('[NewChat]', "Error generating response:", e);
@@ -168,5 +223,23 @@ const handleSendMessage = async () => {
     align-items: center;
     justify-content: center;
     padding: 1em;
+}
+
+.system-prompt-editor {
+    width: 100%;
+    height: 100%;
+}
+
+.system-prompt-textarea {
+    flex: 1;
+    resize: none;
+    padding: 0.5em;
+    border-radius: 10px;
+}
+
+.sys-prompt-editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5em;
 }
 </style>

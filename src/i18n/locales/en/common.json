@@ -8,7 +8,9 @@
             "no": "No",
             "abort": "Abort",
             "retry": "Retry",
-            "ignore": "Ignore"
+            "ignore": "Ignore",
+            "save": "Save",
+            "clear": "Clear"
         },
         "state": {
             "enabled": "Enabled",
@@ -54,6 +56,9 @@
                 "attachImage": "Attach Image",
                 "deepThink": "Deep Think",
                 "plainInput": "Plain Input",
+                "systemPrompt": "System Prompt",
+                "systemPromptDesc": "Add a system prompt to guide the model's behavior.",
+                "systemPromptNotAvailableReason": "Only when creating a new conversation can you edit the system prompt",
                 "showMoreOptions": "Show More Options"
             },
             "editing": {
@@ -94,11 +99,21 @@
         "newChat": {
             "greeting": {
                 "_1": "How can I assist with you today?"
+            },
+            "systemPrompt": {
+                "title": "System Prompt",
+                "placeholder": "Add a system prompt to guide the model's behavior."
             }
         }
     },
     "conversation": {
-        "defaultTitle": "New Conversation"
+        "defaultTitle": "New Conversation",
+        "rename": {
+            "title": "Rename Conversation",
+            "content": "Enter new name for the conversation:",
+            "emptyNameErr": "Conversation name cannot be empty",
+            "nameTooLongErr": "Conversation name cannot be longer than {{n}} characters"
+        }
     },
     "page_not_found": {
         "title": "Page Not Found",

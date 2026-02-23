@@ -21,7 +21,8 @@
                     :disabled="messageEditorState.editMessage?.isEditing"
                     @update:choices="updateChoices"
                     @request-regenerate="handleRequestRegenerateMessage"
-                    @request-edit="handleRequestEditMessage"
+                    @request-edit-and-send="handleRequestEditMessage"
+                    @request-edit-only="handleRequestEditedMessage"
                 />
 
                 <div v-if="conversation.messages.length" style="height: 2em; display: flex; align-items: center; justify-content: center;"></div>
@@ -68,7 +69,7 @@ import InputMessage from '@/components/InputMessage.vue'
 import MessageChainViewer from '@/components/MessageChainViewer.vue';
 // types
 import type { ConversationUserPref, Conversation } from '@/types/conversation';
-import { EMPTY_MESSAGE_JSON, MessageContentType, MessageRole, type FileAttachmentInfo, type MessageFeatureItem } from '@/types/message';
+import { EMPTY_MESSAGE_JSON, MessageContentType, MessageRole, type FileAttachmentInfo, type Message, type MessageFeatureItem } from '@/types/message';
 // stores
 import { useAppStateStore } from '@/stores/appState';
 import { useConfigStore } from '@/stores/configStore';
@@ -267,6 +268,12 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
     }
 }
 const requestScrollToBottom = () => requestScrollTo('bottom')
+
+const coreSendMessage = async function (
+
+) {
+
+}
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
@@ -468,6 +475,22 @@ const handleRequestEditMessage = async function (id: number, parent_id: number |
     if (node.files) messageEditorState.files = node.files;
     updateEditBuffer();
     requestAnimationFrame(() => inputMessageRef.value?.focus());
+}
+
+const handleRequestEditedMessage = async function (newData: Message, parent_id: number | null, newChoices: number[]) {
+    try {
+        const fullData = await LoadConversation(chatId.value);
+        fullData.messages.push(newData);
+        const pref = await conversationStore.getPref(chatId.value);
+        pref.choices = newChoices;
+        await conversationStore.updateConvInStore(chatId.value, fullData);
+        await conversationStore.updatePref(chatId.value, pref);
+        choices.value = newChoices;
+    }
+    catch (e) {
+        console.error('[ChatView]', "Error editing message:", e);
+        message.error(String(e))
+    }
 }
 
 const cancelEditMessage = () => {

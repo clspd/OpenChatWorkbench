@@ -82,6 +82,7 @@ import { LoadConversationPreference } from '@/modules/chat/convPref'
 import { getConvPath, getConvPrefPath } from '@/modules/chat/path'
 import { UpdateConversationInfo } from '@/modules/chat/conversation'
 import { fs } from '@/userdata'
+import { t } from 'i18next'
 
 const router = useRouter()
 const route = useRoute()
@@ -165,8 +166,12 @@ const handleConvMenuClick = (key: string, index: number) => {
             break;
         case 'rename':
             if (displayContent.value[index]?.type === 'conversation') {
-                (import("@/utils/prompt")).then(({ prompt }) => prompt("Enter new name for the conversation:", "Rename Conversation", (displayContent.value[index] as FlattenedConversationIndexItemConversation).content.title).then(v => {
-                    if (!v) return;
+                (import("@/utils/prompt")).then(({ prompt }) => prompt(
+                    t("common:conversation.rename.content"), t("common:conversation.rename.title"), (displayContent.value[index] as FlattenedConversationIndexItemConversation).content.title
+                ).then(v => {
+                    if (null == v) return;
+                    if (!v) return message.error(t("common:conversation.rename.emptyNameErr"));
+                    if (v.length > 256) return message.error(t("common:conversation.rename.nameTooLongErr", { n: 256 }));
                     handleRequestRenameConversation((displayContent.value[index] as FlattenedConversationIndexItemConversation).content.id, v);
                 }));
             }

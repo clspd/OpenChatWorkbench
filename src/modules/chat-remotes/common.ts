@@ -42,6 +42,8 @@ export interface _stream_options {
     buildRequestHeaders: (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<Record<string, string>>,
     // build request URL
     buildRequestUrl: (req: ChatCompletionCreateParamsStreaming, conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<string>,
+    // build request
+    buildRequest?: (conv: Conversation, reqMsg: Message, respMsg: Message, provider: ProviderConfig, model: ModelConfig) => Promise<any>,
 }
 
 export class APIError extends TypeError {
@@ -77,7 +79,7 @@ export async function _base_stream(
 
     // build request JSON
     if (options.onInitRequest) await options.onInitRequest(conv, reqMsg, respMsg);
-    const req: ChatCompletionCreateParamsStreaming = {
+    const req: ChatCompletionCreateParamsStreaming = options.buildRequest ? await options.buildRequest(conv, reqMsg, respMsg, providerInfo, modelInfo) : {
         model: model,
         messages: await BuildOpenAICompatibleRequestMessages(
             conv,
@@ -141,7 +143,6 @@ export async function _base_stream(
             onclose() {
                 if (options.onClose) options.onClose(req, conv, reqMsg, respMsg, providerInfo, modelInfo);
                 else try {
-                    if (currentFragment) currentFragment.elapsed = Date.now() - currentFragment.ts;
                     respMsg.has_pending_fragment = false;
                     UpdateConversationInfo(conv.id);
                     conversationStore.updateConvInStore(conv.id, conv);

@@ -16,7 +16,8 @@
         "error": {
             "dataCorrupted": "Data corrupted",
             "cannotRegenerate": "The message couldn't be regenerated.",
-            "cannotEdit": "The message couldn't be edited."
+            "cannotEdit": "The message couldn't be edited.",
+            "cannotCreateNewBranch": "Unable to create branch: {{error}}"
         },
         "thinking": {
             "wip": "Thinking...",
@@ -29,6 +30,7 @@
                 "delete": "Delete fragment",
                 "cannotEdit": "This fragment couldn't be edited."
             },
+            "createNewBranch": "Create new branch",
             "buttons": {
                 "save": "Save",
                 "cancel": "Cancel"

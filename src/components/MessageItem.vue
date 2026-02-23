@@ -9,6 +9,7 @@
                     <div class="message-avatar-icon" v-if="appStatePersist.showAvatar === 'default' || avatarUrl === 'N/A'">
                         <UserOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.User" />
                         <RobotOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.Assistant" />
+                        <SettingOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.System" />
                     </div>
                     <div class="message-avatar-icon" v-else-if="appStatePersist.showAvatar === 'custom'">
                         <img @click="confirmEditAvatar" v-if="avatarUrl" :src="avatarUrl" :alt="props.message.role" />
@@ -98,12 +99,11 @@ const confirmEditAvatar = () => {
     cursor: pointer;
 }
 
-.message-item[data-role="system"] {
-    align-items: center;
-}
+.message-item[data-role="system"],
 .message-item[data-role="user"] {
     align-items: flex-end;
 }
+.message-item[data-role="system"] .message-avatar,
 .message-item[data-role="user"] .message-avatar {
     text-align: right;
 }
@@ -131,10 +131,17 @@ const confirmEditAvatar = () => {
 show user message as bubble 
 show assistant message as text
 */
+.message-item[data-role="system"] > .message-body,
 .message-item[data-role="user"] > .message-body {
     padding: 0.5em;
     border-radius: 1em;
-    background-color: #e0ebff;
+    background-color: var(--message-bgcolor);
+}
+.message-item[data-role="user"] > .message-body {
+    --message-bgcolor: var(--message-user-bgcolor, #e0ebff);
+}
+.message-item[data-role="system"] > .message-body {
+    --message-bgcolor: var(--message-system-bgcolor, #f0f0f0);
 }
 
 </style>

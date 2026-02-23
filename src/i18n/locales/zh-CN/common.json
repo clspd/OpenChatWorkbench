@@ -8,7 +8,9 @@
             "no": "否",
             "abort": "中止",
             "retry": "重试",
-            "ignore": "忽略"
+            "ignore": "忽略",
+            "save": "保存",
+            "clear": "清除"
         },
         "state": {
             "enabled": "已启用",
@@ -54,6 +56,9 @@
                 "attachImage": "添加图片",
                 "deepThink": "深度思考",
                 "plainInput": "纯文本输入",
+                "systemPrompt": "系统提示",
+                "systemPromptDesc": "添加一个系统提示，以指导模型的行为。",
+                "systemPromptNotAvailableReason": "只有在创建新对话时才能编辑系统提示",
                 "showMoreOptions": "显示更多"
             },
             "editing": {
@@ -94,11 +99,21 @@
         "newChat": {
             "greeting": {
                 "_1": "今天有什么可以帮到你？"
+            },
+            "systemPrompt": {
+                "title": "系统提示",
+                "placeholder": "添加一个系统提示，以指导模型的行为。"
             }
         }
     },
     "conversation": {
-        "defaultTitle": "新对话"
+        "defaultTitle": "新对话",
+        "rename": {
+            "title": "重命名对话",
+            "content": "请输入新名称:",
+            "emptyNameErr": "对话名称不能为空",
+            "nameTooLongErr": "对话名称不能超过 {{n}} 个字符"
+        }
     },
     "page_not_found": {
         "title": "页面不存在",

@@ -65,6 +65,7 @@ export type ChatEditBuffer = Record<string, {
     content: MessageContent<MessageContentType>;
     features: MessageFeatureItem[];
     files: FileAttachmentInfo[];
+    systemPrompt?: string;
     isEditing: boolean;
     editId?: number;
     parentId?: number | null;

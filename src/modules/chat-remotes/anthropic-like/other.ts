@@ -5,6 +5,8 @@ import { _base_stream, APIError } from "../common";
 import { GetProviderUrl, GetResponseChunkFragmentType } from "../provider";
 import { AppendMessageFragmentChunk } from "@/modules/chat/message";
 import { useConversationStore } from "@/stores/conversationStore";
+import { BuildOpenAICompatibleRequestMessages } from "@/modules/chat-request/requestBuilder";
+import { useAppStatePersistStore } from "@/stores/appStatePersist";
 
 export async function stream(conv: Conversation, reqMsg: Message, respMsg: Message, afterOpen?: (resp: Response) => void) {
     // In Anthropic API, we don't need to manually maintain the state
@@ -21,6 +23,26 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
             "accept": "text/event-stream",
             "content-type": "application/json",
             "anthropic-version": "2023-06-01",
+        }),
+        buildRequest: async (conv, reqMsg, respMsg, provider, model) => ({
+            model: model.id,
+            messages: [{
+                role: "user",
+                content: await BuildOpenAICompatibleRequestMessages(conv, respMsg.id, {
+                    stringOnly: true,
+                    includeSystem: false,
+                    includeAssistant: true,
+                    includeUser: true,
+                    includeThinking: useAppStatePersistStore().defaultBuilderConfig.includeThinking,
+                }),
+            }],
+            system: (await BuildOpenAICompatibleRequestMessages(conv, respMsg.id, {
+                stringOnly: true,
+                includeThinking: false,
+                includeSystem: true,
+                includeAssistant: false,
+                includeUser: false,
+            }))[0] ?? undefined,
         }),
         onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, model) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {

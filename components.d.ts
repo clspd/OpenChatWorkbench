@@ -94,6 +94,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SearchOutlined: typeof import('@ant-design/icons-vue')['SearchOutlined']
     SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
+    SettingsOutlined: typeof import('@ant-design/icons-vue')['SettingsOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     StatusText: typeof import('./src/components/StatusText.vue')['default']
     UpOutlined: typeof import('@ant-design/icons-vue')['UpOutlined']

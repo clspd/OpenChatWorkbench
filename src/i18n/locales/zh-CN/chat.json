@@ -16,7 +16,8 @@
         "error": {
             "dataCorrupted": "数据损坏",
             "cannotRegenerate": "无法重新生成此消息。",
-            "cannotEdit": "无法编辑此消息。"
+            "cannotEdit": "无法编辑此消息。",
+            "cannotCreateNewBranch": "无法创建新分支：{{error}}"
         },
         "thinking": {
             "wip": "正在思考",
@@ -29,6 +30,7 @@
                 "delete": "删除片段",
                 "cannotEdit": "无法编辑此片段。"
             },
+            "createNewBranch": "创建新分支",
             "buttons": {
                 "save": "保存",
                 "cancel": "取消"

@@ -27,11 +27,17 @@ export const Ocw2OaiMap = {
 }
 
 export interface RequestBuilderConfig {
+    includeSystem: boolean;
+    includeAssistant: boolean;
+    includeUser: boolean;
     includeThinking: boolean;
     stringOnly: boolean;
 }
 
 export const RequestBuilderDefaultConfig: RequestBuilderConfig = {
+    includeSystem: true,
+    includeAssistant: true,
+    includeUser: true,
     includeThinking: false,
     stringOnly: false,
 }
@@ -67,13 +73,17 @@ export async function BuildOpenAICompatibleRequestMessages(conv: Conversation, t
         // save to result
         switch (msg.role) {
             case MessageRole.User:
+                if (!config.includeUser) break;
                 result.push({
                     role: Ocw2OaiMap.role[msg.role],
                     content: await BuildOpenAICompatibleRequestMessageContent(msg, config),
                 });
                 break;
-            case MessageRole.Assistant:
             case MessageRole.System:
+                if (!config.includeSystem) break;
+                // [[fallthrough]]
+            case MessageRole.Assistant:
+                if (msg.role === MessageRole.Assistant && !config.includeAssistant) break;
                 result.push({
                     role: Ocw2OaiMap.role[msg.role],
                     content: await BuildOpenAICompatibleRequestMessageContent_TextOnly(msg, config),

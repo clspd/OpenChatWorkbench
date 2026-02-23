@@ -232,7 +232,7 @@ const doForceStop = async () => {
     justify-content: flex-end;
     gap: 0.5em;
 }
-.message-operations[data-role="user"] {
+.message-operations[data-role="user"], .message-operations[data-role="system"] {
     flex-direction: row;
     justify-content: flex-start;
 }

@@ -90,6 +90,11 @@ watch(() => showPreview.value, (newValue) => {
             const file = await GetAttachmentById(previewId.value);
             const tempUrl = URL.createObjectURL(file);
             await previewElement.value.init(async () => tempUrl, info.type, info.name);
+            const sr = previewElement.value.shadowRoot;
+            if (sr) {
+                const app = sr.querySelector("#app") as HTMLElement;
+                if (app) app.style.padding = "0";
+            }
         }
         catch (e) {
             showPreview.value = false;

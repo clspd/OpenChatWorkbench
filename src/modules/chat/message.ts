@@ -57,8 +57,10 @@ export function AppendMessageFragmentChunk(msg: Message, fragmentId: number, chu
             case MessageFragmentType.Response:
                 fragment.content += choice.delta.content;
                 break;
-            default: ;
+            default:
+                return false;
         }
+        fragment.elapsed = Date.now() - fragment.ts;
         return true;
     }
 }

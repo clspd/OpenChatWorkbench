@@ -41,11 +41,19 @@
                                 {{ t('common:ui.mainInput.options.deepThink') }}
                                 <span class="keybd-shortcut-tip">Ctrl+\; Ctrl+3</span>
                             </a-menu-item>
+                            <a-menu-item key="systemPrompt" :disabled="!props.isCreatingConversation">
+                                <a-tooltip placement="right">
+                                    <template #title>{{ props.isCreatingConversation ? t('common:ui.mainInput.options.systemPromptDesc') : t('common:ui.mainInput.options.systemPromptNotAvailableReason') }}</template>
+                                    <SettingOutlined />
+                                    {{ t('common:ui.mainInput.options.systemPrompt') }}
+                                    <span class="keybd-shortcut-tip">Ctrl+'; Ctrl+4</span>
+                                </a-tooltip>
+                            </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="plainInput" :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 {{ t('common:ui.mainInput.options.plainInput') }}
-                                <span class="keybd-shortcut-tip">Ctrl+4</span>
+                                <span class="keybd-shortcut-tip">Ctrl+5</span>
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -118,6 +126,7 @@ const props = withDefaults(defineProps<{
     editMessageId?: number,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
+    isCreatingConversation?: boolean,
     globalDnD?: boolean,
 }>(), {
     modelValue: '',
@@ -129,12 +138,14 @@ const props = withDefaults(defineProps<{
     editMessageId: 0,
     features: () => [],
     files: () => [],
+    isCreatingConversation: false,
     globalDnD: false,
 });
 const emit = defineEmits([
     'update:modelValue', 'update:modelId', 'update:providerId', 'update:features', 'update:files',
     'sendMessage',
     'interruptMessage',
+    'editSystemPrompt',
     'update:isEditing',
 ])
 defineExpose({
@@ -188,6 +199,7 @@ onMounted(() => {
                         editor.value?.commands.insertContent('<br>')
                         return true
                     }
+                    if (props.isGenerating) return false
                     event.preventDefault()
                     send()
                     return true
@@ -329,6 +341,9 @@ const handleAttachMenuClick = (key: string) => {
     if (key === 'plainInput') {
         appStatePersist.usePlainInput = !appStatePersist.usePlainInput
     }
+    if (key === 'systemPrompt') {
+        emit("editSystemPrompt");
+    }
     if (key === 'attachFile' || key === 'attachImage') {
         fileChooserType.value = 'file';
         fileChooserAccept.value = key === 'attachFile' ? '*' : 'image/*';
@@ -351,6 +366,10 @@ const handleMoreOptButtonShortcut = (e: KeyboardEvent) => {
             handleAttachMenuClick('deepThink');
             break;
         case '4':
+        case "'":
+            handleAttachMenuClick('systemPrompt');
+            break;
+        case '5':
             handleAttachMenuClick('plainInput');
             break;
         default: return;

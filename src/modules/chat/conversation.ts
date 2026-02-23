@@ -13,8 +13,9 @@ import { DeleteAttachment } from "./attachment";
 export const CONVERSATION_MAX_MESSAGE_COUNT = 10000;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
 
-export async function CreateConversation(title = i18next.t("common:conversation.defaultTitle")): Promise<string> {
+export async function CreateConversation(title?: string): Promise<string> {
     const id = crypto.randomUUID(), ts = Date.now();
+    if (!title) title = i18next.t("common:conversation.defaultTitle");
 
     // create Preference File
     await InitConversationPreference(id);

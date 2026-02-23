@@ -37,12 +37,13 @@
             <div v-for="(frag, idx) in contentEditDlgState.frag" :key="idx" class="fragment">
                 <div class="fragment-edit-title">Fragment {{frag.id}} <a href="javascript:" class="fragment-btn-delete" @click="contentEditDlgState.frag.splice(idx, 1)">Delete fragment</a></div>
                 <a-textarea v-if="frag.contentType === MessageContentType.Text"
-                    auto-size
+                    style="height: calc(100vh - 15em); resize: none;"
                     v-model:value="frag.content" />
                 <div v-else>{{ t('chat:messageChain.editDialog.fragment.cannotEdit') }}</div>
             </div>
             <div style="flex: 1;"></div>
             <template #footer>
+                <a-checkbox v-model:checked="contentEditDlgState.createNewBranch" style="margin-bottom: 0.5em;">{{ t('chat:messageChain.editDialog.createNewBranch') }}</a-checkbox>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5em;">
                     <a-button type="primary" @click="handleSaveEdit">{{ t('chat:messageChain.editDialog.buttons.save') }}</a-button>
                     <a-button @click="contentEditDlgState.show = false">{{ t('chat:messageChain.editDialog.buttons.cancel') }}</a-button>
@@ -58,16 +59,18 @@ import { message } from 'ant-design-vue';
 import { cloneDeep } from 'lodash-es';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { t } from 'i18next';
-import { ConvertConversationToTree } from '@/modules/chat-tree/tree';
+import { DialogView } from 'vue-dialog-view';
 import { useConversationStore } from '@/stores/conversationStore';
-import { FixChoiceChain, FlattenConversationTree, GetDefaultChoices, type FlatMessage } from '@/modules/chat-tree/flat';
 import { useAppStateStore } from '@/stores/appState';
+import { ConvertConversationToTree } from '@/modules/chat-tree/tree';
+import { FixChoiceChain, FlattenConversationTree, GetDefaultChoices, type FlatMessage } from '@/modules/chat-tree/flat';
 import { msgRoleIdentifyMap } from "@/modules/chat/msgRoleMap";
+import { GetConvNextMessageId } from '@/modules/chat/conversation';
+import { MessageContentType, MessageFeedback, MessageRole, MessageStatus, type Message, type MessageFragment } from '@/types/message';
+import type { ConversationTreeNode } from '@/types/chat-tree';
+import { TraceErrorAndGetString } from '@/utils/errorTrace';
 import MessageItem from '@/components/MessageItem.vue';
 import MessageOperations from '@/components/MessageOperations.vue';
-import { MessageContentType, MessageFeedback, MessageFragmentType, MessageRole, type MessageFragment } from '@/types/message';
-import type { ConversationTreeNode } from '@/types/chat-tree';
-import { DialogView } from 'vue-dialog-view';
 
 const props = withDefaults(defineProps<{
     chatId: string;
@@ -81,7 +84,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
     (e: 'update:choices', choices: number[]): void;
     (e: 'request-regenerate', id: number, parent_id: number, newChoices: number[]): void;
-    (e: 'request-edit', id: number, parent_id: number | null, newChoices: number[]): void;
+    (e: 'request-edit-and-send', id: number, parent_id: number | null, newChoices: number[]): void;
+    (e: 'request-edit-only', newMsg: Message, parent_id: number | null, newChoices: number[]): void;
 }>();
 
 defineExpose({
@@ -110,7 +114,7 @@ const updateChatFlow = () => {
         const defaultChoices = GetDefaultChoices(tree.value);
         if ((props.choices.join(',')) !== (defaultChoices.join(','))) {
             message.warn(t('chat:messageChain.warnings.invalidChoices'));
-            console.trace(e)
+            console.trace("[MessageChainViewer] invalid choices", e)
             emit('update:choices', defaultChoices);
         } else {
             throw e;
@@ -196,13 +200,14 @@ const handleModifyMessage = (id: number, type: ('regenerate' | 'edit')) => {
     const parent_id = conversation.value?.messages.find((msg) => msg.id === id)?.parent_id ?? null
     if (null == parent_id && type === 'regenerate') return message.error(t('chat:messageChain.error.cannotRegenerate'))
     if (type === 'regenerate') emit("request-regenerate", id, parent_id!, clone);
-    else emit("request-edit", id, parent_id, clone);
+    else emit("request-edit-and-send", id, parent_id, clone);
 }
 
 const contentEditDlgState = reactive({
     show: false,
     msgId: 0,
     frag: [] as MessageFragment[],
+    createNewBranch: false,
 })
 const handleRequestEditMessage = (id: number) => {
     const data = conversation.value?.messages.find((msg) => msg.id === id);
@@ -212,6 +217,7 @@ const handleRequestEditMessage = (id: number) => {
         contentEditDlgState.msgId = id;
         contentEditDlgState.frag = cloneDeep(toRaw(data.fragments));
         contentEditDlgState.show = true;
+        contentEditDlgState.createNewBranch = (data.role === MessageRole.System) ? true : false;
     }
 }
 
@@ -231,9 +237,37 @@ const handleSaveEdit = async () => {
     if (!contentEditDlgState.show) return;
     const msg = conversation.value?.messages.find((msg) => msg.id === contentEditDlgState.msgId);
     if (!msg) return message.error(t('chat:messageChain.error.cannotEdit'))
-    msg.fragments = contentEditDlgState.frag;
-    conversationStore.updateConvInStore(props.chatId, conversation.value);
-    contentEditDlgState.show = false;
+    if (!contentEditDlgState.createNewBranch) {
+        msg.fragments = contentEditDlgState.frag;
+        conversationStore.updateConvInStore(props.chatId, conversation.value);
+        contentEditDlgState.show = false;
+        return;
+    }
+    // clone message and create new branch
+    try {
+        const newMsg = cloneDeep(msg);
+        newMsg.id = await GetConvNextMessageId(props.chatId);
+        newMsg.parent_id = msg.parent_id;
+        newMsg.fragments = contentEditDlgState.frag;
+        newMsg.ts = Date.now();
+        newMsg.feedback = MessageFeedback.NotProvided;
+        newMsg.status = MessageStatus.Finished;
+
+        const idx = getIdxChoicePathIndex(msg.id);
+        if (idx === -1) throw new Error("Data corrupted");
+        const clone = truncateChoicesToId(idx);
+        if (!clone || !tree.value) throw new Error("Data corrupted");
+        clone.splice(clone.length - 1, 1, chatFlow.value.find((m) => m.data.id === msg.id)?.choicesCount || 0);
+        // create new request
+        const parent_id = conversation.value?.messages.find((m) => m.id === msg.id)?.parent_id ?? null
+        emit("request-edit-only", newMsg, parent_id, clone);
+    }
+    catch (e) {
+        message.error(t('chat:messageChain.error.cannotCreateNewBranch', { error: TraceErrorAndGetString(e) }));
+    }
+    finally {
+        contentEditDlgState.show = false;
+    }
 }
 
 </script>
@@ -264,11 +298,9 @@ const handleSaveEdit = async () => {
     display: flex;
     flex-direction: column;
 }
-.vItem[data-role="user"] {
+.vItem[data-role="user"],
+.vItem[data-role="system"] {
     align-items: flex-end;
-}
-.vItem[data-role="system"] > .message-operations {
-    display: none;
 }
 .vItem + .vItem {
     margin-top: 1em;
