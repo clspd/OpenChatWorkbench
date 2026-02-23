@@ -184,16 +184,6 @@ export async function _base_stream(
                             conversationStore.updateConvInStore(conv.id, conv);
                         }
                     }
-                    requestAnimationFrame(() => {
-                        function isNearBottom(el?: Element, threshold = 50) {
-                            if (!el) return false;
-                            return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
-                        }
-                        const el = (useAppStateStore().mainContentViewEl as any)?.$el;
-                        if (isNearBottom(el)) {
-                            el.scrollTop = el.scrollHeight;
-                        }
-                    });
                 }
                 catch (err) {
                     throw new Error("Error parsing streaming response", { cause: err });

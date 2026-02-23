@@ -258,7 +258,6 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
         const currentOffset = virtualizer.scrollOffset
         if (currentOffset != null) { 
             const idx = virtualizer.getVirtualItemForOffset(currentOffset);
-            // console.debug('[ChatView]', 'requestScrollTo', 'currentOffset=', currentOffset, 'idx=', idx?.index, pos);
             if (idx?.index != null) {
                 virtualizer.scrollToIndex(idx.index + (pos === 'next' ? 1 : -1), {
                     align: 'start',

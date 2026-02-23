@@ -97,5 +97,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
         document.head.appendChild(document.createElement('style')).textContent = `dialog._b4102a3b79656a37 { height: calc(100vh - 2em); }`
     }
     
+    // preload some frequently used modules
+    import('@/utils/prompt').catch(() => {});
 
 };
