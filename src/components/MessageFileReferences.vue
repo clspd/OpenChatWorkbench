@@ -1,6 +1,6 @@
 <template>
    <div class="file-reference-container" ref="container" @wheel.prevent="transformWheel">
-        <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0">
+        <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)">
             <div class="file-icon">
                 <FileOutlined />
             </div>
@@ -8,21 +8,33 @@
                 <div class="file-name">{{ file.name }}</div>
                 <div class="file-size">{{ file.size }}B</div>
             </div>
-            <div class="file-operation">
-                <a-button type="text" shape="circle" @click="emit('remove-file', file.id)" v-if="props.canRemove">
+            <div class="file-operation" @click.stop @keydown.stop>
+                <a-button type="text" shape="circle" @click.stop="emit('remove-file', file.id)" v-if="props.canRemove">
                     <CloseOutlined />
                 </a-button>
             </div>
         </div>
         <div v-if="hasUploading" class="file-reference-item">
-            Uploading...
+            {{ t("common:ui.mainInput.uploading") }}
         </div>
+
+        <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog" close-on-click-mask>
+            <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
+            <common-file-preview class="preview-body" ref="previewElement" />
+            <a-button type="primary" aria-label="Download" shape="circle" @click="downloadCurrentFile" class="floating-file-dl-btn"><DownloadOutlined /></a-button>
+        </DialogView>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { FileAttachmentInfo } from '@/types/message';
+import { DialogView } from 'vue-dialog-view';
+import { nextTick } from 'vue';
+import { message } from 'ant-design-vue';
+import "common-file-preview";
+import { HTMLCommonFilePreviewElement } from 'common-file-preview';
+import { GetAttachmentById } from '@/modules/chat/attachment';
 
 const props = withDefaults(defineProps<{
     references: FileAttachmentInfo[],
@@ -49,6 +61,8 @@ defineExpose({
 })
 
 const container = ref<HTMLElement>();
+const showPreview = ref(false);
+const previewId = ref("");
 
 const transformWheel = (e: WheelEvent) => {
     e.preventDefault();
@@ -59,7 +73,53 @@ const transformWheel = (e: WheelEvent) => {
     })
 }
 
+const previewElement = ref<HTMLCommonFilePreviewElement>();
 
+const previewFile = (id: string) => {
+    previewId.value = id;
+    showPreview.value = true;
+}
+
+watch(() => showPreview.value, (newValue) => {
+    if (newValue) nextTick(async () => {
+        try {
+            if (!previewElement.value) throw "Preview element not found";
+            const info = props.references.find((item) => item.id === previewId.value);
+            if (!info) throw "File info not found";
+            const file = await GetAttachmentById(previewId.value);
+            const tempUrl = URL.createObjectURL(file);
+            await previewElement.value.init(async () => tempUrl, info.type, info.name);
+        }
+        catch (e) {
+            showPreview.value = false;
+            message.error("Unable to preview file: " + e);
+        }
+    })
+})
+
+const downloadCurrentFile = async () => {
+    if (!previewId.value) return;
+    try {
+        const info = props.references.find((item) => item.id === previewId.value);
+        if (!info) return;
+        const file = await GetAttachmentById(previewId.value);
+        const tempUrl = URL.createObjectURL(file);
+        const a = document.createElement("a");
+        a.href = tempUrl;
+        a.download = info.name;
+        a.hidden = true;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(tempUrl);
+        }, 1000);
+    }
+    catch (e) {
+        showPreview.value = false;
+        message.error("Unable to download file: " + e);
+    }
+}
 
 </script>
 
@@ -92,4 +152,21 @@ const transformWheel = (e: WheelEvent) => {
 .file-reference-item:hover {
     background-color: var(--file-reference-hover-bg-color, #f0f0f0);
 }
+
+.preview-dialog {
+    width: 100%;
+    height: 100%;
+}
+
+.preview-body {
+    flex: 1;
+}
+
+.floating-file-dl-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+
 </style>

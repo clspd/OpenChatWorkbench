@@ -15,7 +15,7 @@
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.showRaw') }}</template>
-                <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)" :disabled="isPending">
+                <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)">
                     <CompressOutlined v-if="!props.showRawMessage" />
                     <ExpandOutlined v-else />
                 </a-button>

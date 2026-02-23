@@ -23,11 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
+import { message } from 'ant-design-vue';
+import { t } from 'i18next';
 import { useAppStateStore } from '@/stores/appState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent';
-import { message } from 'ant-design-vue';
 import { fs } from '@/userdata';
 import { chatPersonalizationDataBasePath } from '@/modules/chat/path';
 import { clearAvatarCache } from '@/utils/userCustomAvatar';
@@ -50,22 +51,22 @@ const changeAvatar = async (role: 'user' | 'assistant' | 'system', e: Event) => 
         clearAvatarCache();
         await fs.writeFile(chatPersonalizationDataBasePath + "useravatar_" + role, new Uint8Array(await file.arrayBuffer()));
         target.value = '';
-        message.success('Avatar changed successfully.');
+        message.success(t('settings:personalization.showAvatar.feedback.success'));
     }
     catch (e) {
-        message.error('Failed to change avatar. Please try again. ' + e);
+        message.error(t('settings:personalization.showAvatar.feedback.error', { e }));
     }
 }
 
 const resetAvatar = (role: 'user' | 'assistant' | 'system') => {
     fs.unlink(chatPersonalizationDataBasePath + "useravatar_" + role).then(() => clearAvatarCache()).then(() => {
-        message.success('Avatar reset successfully.');
+        message.success(t('settings:personalization.showAvatar.feedback.success_reset'));
     }).catch((e) => {
         if (e && (e as any).code === 'ENOENT') {
-            message.success('Avatar reset successfully.');
+            message.success(t('settings:personalization.showAvatar.feedback.success_reset'));
         }
         else {
-            message.error('Failed to reset avatar. Please try again. ' + e);
+            message.error(t('settings:personalization.showAvatar.feedback.error', { e }));
         }
     });
 }

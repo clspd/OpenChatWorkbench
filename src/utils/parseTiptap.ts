@@ -86,7 +86,7 @@ export function convertSimpleTiptapToMarkdown(doc: JSONContent): string {
                 const language = node.attrs?.language || ''
                 if (node.content) {
                     const content = node.content.map(convertNode).join('')
-                    return `\`\`\`${language}\n${content}\`\`\`\n\n`
+                    return `\`\`\`${language}\n${content}\n\`\`\`\n\n`
                 }
                 return ''
 

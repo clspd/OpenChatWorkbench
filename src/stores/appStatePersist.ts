@@ -27,6 +27,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         showAvatar: 'default' as 'default' | 'custom' | 'off',
         fileUploadThrottleSize: 2, // MiB
         defaultBuilderConfig: RequestBuilderDefaultConfig,
+        defaultSystemPrompt: '',
     }),
     getters: {
         theme: (state): ThemeConfig => ({

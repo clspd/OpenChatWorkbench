@@ -3,7 +3,7 @@
         <template v-if="settingId === ''">
             <h2 style="margin-top: 0;">{{ t('settings:title') }}</h2>
 
-            <a-list bordered :data-source="pages">
+            <a-list bordered :data-source="pages" class="settings-list">
                 <template #renderItem="{ item }">
                     <a-list-item tabindex="0" class="settings-entrance"
                         @click="goSetting(item)" @keydown.enter="goSetting(item)">
@@ -26,6 +26,7 @@ import { defineAsyncComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStateStore } from '@/stores/appState'
 import i18next from 'i18next';
+import { domain_name_main_root } from '@/config';
 
 const GeneralSettings = defineAsyncComponent(() => import('@/settings/GeneralSettings.vue'))
 const PersonalizationSettings = defineAsyncComponent(() => import('@/settings/Personalization.vue'))
@@ -80,14 +81,20 @@ const pages = ref([
         title: i18next.t('settings:about'),
         anotherPage: '/about/',
     },
+    {
+        id: 'help',
+        title: i18next.t('settings:help'),
+        anotherSite: "https://" + domain_name_main_root + "/docs/",
+    },
 ])
 
 onMounted(() => {
     if (props.settingId === '') useAppStateStore().setTitle('Settings')
 })
 
-const goSetting = (item: { id: string; anotherPage?: string }) => {
+const goSetting = (item: { id: string; anotherPage?: string; anotherSite?: string }) => {
     if (item.anotherPage) { router.push(item.anotherPage); return }
+    if (item.anotherSite) { window.open(item.anotherSite, '_blank'); return }
     router.push(`/settings/${item.id}`);
 }
 watch(() => props.settingId, (newVal, oldVal) => {
@@ -104,6 +111,10 @@ watch(() => props.settingId, (newVal, oldVal) => {
     display: flex;
     flex-direction: column;
     padding: 1em;
+}
+.settings-list {
+    border-radius: 10px;
+    overflow: hidden;
 }
 .settings-entrance {
     cursor: pointer;

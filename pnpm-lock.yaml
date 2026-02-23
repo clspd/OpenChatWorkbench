@@ -47,6 +47,9 @@ importers:
       ant-design-vue:
         specifier: 4.2.6
         version: 4.2.6(vue@3.5.26(typescript@5.9.3))
+      common-file-preview:
+        specifier: ^5.6.5
+        version: 5.6.5
       cookie:
         specifier: ^1.1.1
         version: 1.1.1
@@ -1072,6 +1075,9 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
+
+  common-file-preview@5.6.5:
+    resolution: {integrity: sha512-588oshn6uCdce+WyJR0PvwrFX8SLHhcsCDzutXN99gUCXCSIYeOfxN/cY0Tu0G2gnvYIhJa4dJ6ASaHx2+xT7w==}
 
   compare-func@2.0.0:
     resolution: {integrity: sha512-zHig5N+tPWARooBnb0Zx1MFcdfpyJrfTJ3Y5L+IFvUm8rM74hHz66z0gw0x4tijh5CorKkKUCnW82R2vmpeCRA==}
@@ -3356,6 +3362,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  common-file-preview@5.6.5: {}
 
   compare-func@2.0.0:
     dependencies:

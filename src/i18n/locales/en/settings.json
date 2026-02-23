@@ -58,6 +58,11 @@
                     "assistant": "Assistant",
                     "system": "System"
                 }
+            },
+            "feedback": {
+                "success": "Avatar changed successfully.",
+                "success_reset": "Avatar reset successfully.",
+                "error": "Failed to change avatar. Please try again. Error: {{e}}"
             }
         }
     },
@@ -278,5 +283,6 @@
             "pleaseCloseTab": "Please close tab."
         }
     },
-    "about": "About"
+    "about": "About",
+    "help": "Help"
 }

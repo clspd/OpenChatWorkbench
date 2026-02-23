@@ -91,6 +91,10 @@ const props = defineProps({
         type: String,
         default: 'chat'
     },
+    filter: {
+        type: String,
+        default: ''
+    },
 })
 const emit = defineEmits(['initialized'])
 
@@ -113,7 +117,10 @@ const flattenedConversations = computed<FlattenedConversationIndexItem[]>(() => 
 
 const flattenedWorkspaces: any = ref([]); // TODO
 
-const displayContent = computed(() => props.type === 'workspace' ? flattenedWorkspaces.value : flattenedConversations.value)
+const displayContent = computed(() => {
+    const realData = props.type === 'workspace' ? flattenedWorkspaces.value : flattenedConversations.value;
+    return props.filter ? realData.filter((i: FlattenedConversationIndexItem) => i.type === 'conversation' && i.content.title.includes(props.filter)) : realData;
+})
 
 const msgList = ref<HTMLDivElement>();
 

@@ -37,6 +37,11 @@
             "title": "Switch branch",
             "content": "Please input new branch index",
             "invalidChoices": "Invalid choices index."
+        },
+        "files": {
+            "previewDlg": {
+                "title": "Preview file"
+            }
         }
     },
     "chatView": {

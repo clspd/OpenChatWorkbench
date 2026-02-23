@@ -37,6 +37,11 @@
             "title": "切换分支",
             "content": "请输入新分支索引",
             "invalidChoices": "分支索引无效。"
+        },
+        "files": {
+            "previewDlg": {
+                "title": "预览文件"
+            }
         }
     },
     "chatView": {

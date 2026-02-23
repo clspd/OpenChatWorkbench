@@ -14,7 +14,9 @@ export default defineConfig({
       template: {
         compilerOptions: {
           comments: true,
-        }
+          // isCustomElement: (tag) => tag.includes('-') && (!(/^(a|router|dialog)-/.test(tag))), // exclude Ant Design Vue components
+          isCustomElement: (tag) => ['common-file-preview'].includes(tag),
+        },
       }
     }),
     // vueDevTools(),

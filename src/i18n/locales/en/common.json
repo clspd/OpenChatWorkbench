@@ -44,7 +44,8 @@
             "progress": {
                 "title": "Operation In Progress",
                 "content": "Please wait while the operation is being performed."
-            }
+            },
+            "searchPlaceholder": "Search conversations"
         },
         "mainInput": {
             "placeholder": "Type a message...",
@@ -58,6 +59,7 @@
             "editing": {
                 "title": "Editing message {{ id }}"
             },
+            "uploading": "Uploading...",
             "confirmUploadNonTextFile": {
                 "title": "Confirm Upload Non-Text File",
                 "content": "The file \"{{ fileName }}\" you chosen doesn't seem to be a text file and its size is {{ fileSize }} in MiB. If you add a non-text file and generate response, you may encounter unintended payment. Are you sure you want to add it?"

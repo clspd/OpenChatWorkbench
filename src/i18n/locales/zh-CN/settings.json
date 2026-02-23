@@ -58,6 +58,11 @@
                     "assistant": "助手",
                     "system": "系统"
                 }
+            },
+            "feedback": {
+                "success": "头像已成功更新。",
+                "success_reset": "头像已成功重置。",
+                "error": "更新头像失败。请重试。错误：{{e}}"
             }
         }
     },
@@ -278,5 +283,6 @@
             "pleaseCloseTab": "请关闭标签页。"
         }
     },
-    "about": "关于"
+    "about": "关于",
+    "help": "帮助"
 }

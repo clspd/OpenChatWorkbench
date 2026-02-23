@@ -148,7 +148,7 @@ async function InitChatMsgUI() {
     if (buffer) {
         messageEditorState.content = buffer.content
         messageEditorState.features = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
-        messageEditorState.files = buffer?.files ?? []
+        messageEditorState.files = buffer.files
         if (buffer?.isEditing) {
             messageEditorState.editMessage = {
                 isEditing: buffer.isEditing,

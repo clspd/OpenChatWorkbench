@@ -50,8 +50,15 @@
                     <a-tab-pane key="workspace" :tab="t('common:ui.sidebar.mode.workspace')"></a-tab-pane>
                 </a-tabs>
             </div>
+            <div class="conv-filter">
+                <a-input :placeholder="t('common:ui.sidebar.searchPlaceholder')" v-model:value="convFilter" allow-clear>
+                    <template #prefix>
+                        <SearchOutlined />
+                    </template>
+                </a-input>
+            </div>
             <div class="message-list-container" @scroll.passive="handleConvListScroll" ref="convListContainer">
-                <ConversationList :type="appStatePersist.sidebarActiveTab" @initialized="restoreScrollPos" />
+                <ConversationList :type="appStatePersist.sidebarActiveTab" :filter="convFilter" @initialized="restoreScrollPos" />
             </div>
             <div class="user-and-settings">
                 <div class="row"><a-button type="text" @click="go('/settings/')">
@@ -82,6 +89,7 @@ const appStateSession = useAppStateSessionStore()
 const appStatePersist = useAppStatePersistStore()
 
 const convListContainer = ref<HTMLDivElement>()
+const convFilter = ref('')
 
 onMounted(() => {
     if (!windowState.isLargeScreen && !appStatePersist.sidebarCollapsed) appStatePersist.sidebarCollapsed = true
@@ -148,6 +156,9 @@ const restoreScrollPos = () => {
 }
 .app-conv-type-choose :deep(.ant-tabs-nav-wrap > .ant-tabs-nav-list) {
     margin: 0 auto;
+}
+.conv-filter {
+    margin: 1em .5em 0 .5em;
 }
 .message-list-container {
     flex: 1;
