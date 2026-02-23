@@ -18,6 +18,10 @@
             "cannotRegenerate": "无法重新生成此消息。",
             "cannotEdit": "无法编辑此消息。"
         },
+        "thinking": {
+            "wip": "正在思考",
+            "done": "已思考 {{ duration }} 秒"
+        },
         "editDialog": {
             "title": "编辑消息 {{ id }}",
             "fragment": {

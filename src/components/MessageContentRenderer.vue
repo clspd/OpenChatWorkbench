@@ -1,7 +1,7 @@
 <template>
     <div class="message-content">
         <div v-if="hasThinkingFrag" class="thinking-tip-text" tabindex="0" @click="toggleThoughtContent" @keydown.enter="toggleThoughtContent" role="button">
-            <span>{{ props.message.status === MessageStatus.WIP ? 'Thinking...' : `Thought for ${(totalThought) / 1000} seconds` }}</span>
+            <span>{{ props.message.status === MessageStatus.WIP ? t('chat:messageChain.thinking.wip') : t('chat:messageChain.thinking.done', { duration: (totalThought) / 1000 }) }}</span>
             <DownOutlined class="icon" :data-state="collapseThoughtContent" />
         </div>
         <template v-for="(frag, index) in props.message.fragments" :key="index">

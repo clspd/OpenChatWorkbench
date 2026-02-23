@@ -26,7 +26,7 @@
                         allow-clear
                     >
                         <template #prefix>
-                            <span>🔍</span>
+                            <SearchOutlined />
                         </template>
                     </a-input>
                 </div>
@@ -47,8 +47,7 @@
                         :ref="el => { if (el) virtualizer.measureElement(el as Element) }"
                         class="vItem" :data-index="item.index"
                     >
-                        <div v-if="groupedModels[item.index]?.type === 'provider'" 
-                             class="provider-header">
+                        <div v-if="groupedModels[item.index]?.type === 'provider'" class="provider-header">
                             <span class="provider-name">{{ (groupedModels[item.index] as any).data.name }}</span>
                             <a-tag :color="(groupedModels[item.index] as any).data.enabled ? 'green' : 'red'" size="small">
                                 {{ (groupedModels[item.index] as any).data.enabled ? t('common:ui.state.enabled') : t('common:ui.state.disabled') }}
@@ -147,7 +146,7 @@ const selectedModel = computed(() => {
 const groupedModels = computed(() => {
     if (!modalVisible.value) return []; // performance optimization
     return configStore.providers.filter(provider => provider.enabled).map(provider => {
-        let models = configStore.models.filter(m => m.provider_id === provider.id)
+        let models = configStore.models.filter(m => m.provider_id === provider.id && m.enabled)
         if (showFavoritesOnly.value) {
             models = models.filter(model =>
                 configStore.isFavoriteModel(provider.id, model.id)

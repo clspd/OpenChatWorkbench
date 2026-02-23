@@ -18,6 +18,10 @@
             "cannotRegenerate": "The message couldn't be regenerated.",
             "cannotEdit": "The message couldn't be edited."
         },
+        "thinking": {
+            "wip": "Thinking...",
+            "done": "Thought for {{ duration }} seconds"
+        },
         "editDialog": {
             "title": "Edit Message {{ id }}",
             "fragment": {

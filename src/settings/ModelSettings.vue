@@ -9,7 +9,7 @@
                 allow-clear
             >
                 <template #prefix>
-                    <span>🔍</span>
+                    <SearchOutlined />
                 </template>
             </a-input>
         </div>

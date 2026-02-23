@@ -49,7 +49,7 @@
             <div v-if="clearDataState.deleting" style="color: red; font-weight: bold;">{{ t('settings:data_management.clearData.deleting') }}</div>
             <div v-else style="color: red; font-weight: bold;">{{ t('settings:data_management.clearData.cannotBeUndone') }}</div>
             <hr style="width: 100%;">
-            <div>{{ t('settings:data_management.clearData.continueAnyway') }} <b style="color: red; user-select: all;">{{ clearDataState.expect }}</b> {{ t('settings:data_management.clearData.inInputBoxBelow') }}:</div>
+            <div>{{ t('settings:data_management.clearData.continueAnyway') }} <b style="color: red; user-select: all;">{{ clearDataState.expect }}</b> {{ t('settings:data_management.clearData.inInputBoxBelow') }}</div>
 
             <a-input style="margin: 0.5em 0;" v-model:value="clearDataState.input" :placeholder="t('settings:data_management.clearData.typeToConfirm', { expect: clearDataState.expect })" :disabled="clearDataState.deleting" />
 

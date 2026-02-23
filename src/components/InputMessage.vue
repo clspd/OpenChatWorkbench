@@ -72,7 +72,7 @@
             </div>
             <div class="flexible-space"></div>
             <div class="send-button">
-                <a-button :disabled="props.disabled || (!props.isGenerating && isEmptyMessage)" type="primary" shape="circle" @click="send" aria-label="Send message">
+                <a-button :disabled="props.disabled || (!props.isGenerating && isEmptyMessage && 0 === files.length)" type="primary" shape="circle" @click="send" aria-label="Send message">
                     <LoadingOutlined v-if="props.disabled" class="loading-indicator" />
                     <span v-else-if="props.isGenerating">■</span>
                     <ArrowUpOutlined v-else />

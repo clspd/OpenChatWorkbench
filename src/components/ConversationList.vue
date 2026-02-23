@@ -159,21 +159,21 @@ const showProgressDialog = ref(false);
 const handleConvMenuClick = (key: string, index: number) => {
     switch (key) {
         case 'delete':
-            if (flattenedConversations.value[index]?.type === 'conversation') {
-                handleRequestDeleteConversation(flattenedConversations.value[index].content.id, true, router);
+            if (displayContent.value[index]?.type === 'conversation') {
+                handleRequestDeleteConversation(displayContent.value[index].content.id, true, router);
             }
             break;
         case 'rename':
-            if (flattenedConversations.value[index]?.type === 'conversation') {
-                (import("@/utils/prompt")).then(({ prompt }) => prompt("Enter new name for the conversation:", "Rename Conversation", (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.title).then(v => {
+            if (displayContent.value[index]?.type === 'conversation') {
+                (import("@/utils/prompt")).then(({ prompt }) => prompt("Enter new name for the conversation:", "Rename Conversation", (displayContent.value[index] as FlattenedConversationIndexItemConversation).content.title).then(v => {
                     if (!v) return;
-                    handleRequestRenameConversation((flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id, v);
+                    handleRequestRenameConversation((displayContent.value[index] as FlattenedConversationIndexItemConversation).content.id, v);
                 }));
             }
             break;
         case 'pin':
-            if (flattenedConversations.value[index]?.type === 'conversation') {
-                const id = (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id;
+            if (displayContent.value[index]?.type === 'conversation') {
+                const id = (displayContent.value[index] as FlattenedConversationIndexItemConversation).content.id;
                 LoadConversationPreference(id).then(pref => {
                     return UpdateConversationInfo(id, undefined, !pref.pinned);
                 }).catch(e => {
@@ -182,11 +182,11 @@ const handleConvMenuClick = (key: string, index: number) => {
             }
             break;
         case 'export':
-            if (flattenedConversations.value[index]?.type !== 'conversation') 
+            if (displayContent.value[index]?.type !== 'conversation') 
                 return message.error("Only conversations can be exported.");
             showProgressDialog.value = true;
             import('fflate').then(async ({ zip }) => {
-                const id = (flattenedConversations.value[index] as FlattenedConversationIndexItemConversation).content.id;
+                const id = (displayContent.value[index] as FlattenedConversationIndexItemConversation).content.id;
                 const msgFile = await fs.readFile(getConvPath(id));
                 const prefFile = await fs.readFile(getConvPrefPath(id));
                 const zipFile = await new Promise<Uint8Array<ArrayBuffer>>((r, j) => zip({

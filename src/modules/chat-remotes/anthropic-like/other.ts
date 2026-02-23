@@ -42,7 +42,6 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                     break;
                 case "message_delta":
                 case "message_stop":
-                case "content_block_stop":
                 case "ping":
                     // We're not interested in this chunk
                     break;
@@ -60,6 +59,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                         ),
                         content: "",
                         contentType: MessageContentType.Text,
+                        elapsed: 0,
                     });
                     break;
                 case "content_block_delta":
@@ -80,6 +80,19 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                         model: model.id,
                     });
                     useConversationStore().updateConvInStore(conv.id, conv);
+                    break;
+                case "content_block_stop":
+                    // update elapsed time
+                    if (Number.isNaN(chunk.index))
+                        throw new TypeError("Cannot parse content block index");
+                    const frag = respMsg.fragments.find(f => f.id === base_offset + chunk.index);
+                    if (frag) {
+                        frag.elapsed = Date.now() - frag.ts;
+                        useConversationStore().updateConvInStore(conv.id, conv);
+                    }
+                    else {
+                        console.warn("[adapters/anthropic-like]", "Cannot find fragment for content block stop event: ", chunk);
+                    }
                     break;
                 case 'error':
                     throw new APIError("Remote API returned an error: " + JSON.stringify(chunk));
