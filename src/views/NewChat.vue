@@ -132,7 +132,7 @@ const handleSendMessage = async () => {
 
         // Send request
         await new Promise<void>((resolve, reject) => GenerateResponse(cid, reqId, modelId.value, providerId.value, cloneDeep(toRaw(userMessageFeatures.value)), cloneDeep(toRaw(userMessageFiles.value)), () => InitConversationPreference(cid).then(pref => (useConversationStore().updatePref(cid, Object.assign(pref, {
-            msgChainChoices: [0, 0],
+            choices: [0, 0],
         })))).then(() => resolve())).catch(e => {
             reject(e);
             console.error('[NewChat]', "Error generating response:", e);

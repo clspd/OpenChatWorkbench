@@ -128,7 +128,7 @@ async function LoadChat() {
         // if (await FixInterruptedConversationData(conv)) conversationStore.updateConvInStore(chatId.value, conv);
         conversation.value = conv;
         preference.value = pref;
-        choices.value = pref.msgChainChoices;
+        choices.value = pref.choices;
         notFound.value = false;
         appState.currentConversationId_ = chatId.value;
 
@@ -396,7 +396,7 @@ const updateChoices = async (newVal: number[]) => {
         message.error(t('chat:chatView.errors.getConversationPref'))
         return
     }
-    preference.value.msgChainChoices = newVal;
+    preference.value.choices = newVal;
     await conversationStore.updatePref(chatId.value, preference.value);
 }
 

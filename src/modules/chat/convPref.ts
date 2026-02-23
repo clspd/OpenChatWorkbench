@@ -11,7 +11,7 @@ export async function InitConversationPreference(id: string) {
         schemaVersion: SchemaVersion.V1,
         id,
         pinned: false,
-        msgChainChoices: [],
+        choices: [],
     };
     await fs.writeFile(getConvPrefPath(id), dumpConversationPref(pref));
     // add preference to memory cache

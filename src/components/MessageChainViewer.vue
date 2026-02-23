@@ -69,11 +69,14 @@ import { MessageContentType, MessageFeedback, MessageFragmentType, MessageRole, 
 import type { ConversationTreeNode } from '@/types/chat-tree';
 import { DialogView } from 'vue-dialog-view';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     chatId: string;
     choices: number[];
     disabled?: boolean;
-}>();
+}>(), {
+    choices: () => [] as number[],
+    disabled: false,
+});
 
 const emit = defineEmits<{
     (e: 'update:choices', choices: number[]): void;

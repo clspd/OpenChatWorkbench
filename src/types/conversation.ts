@@ -19,7 +19,7 @@ export interface ConversationUserPref {
     schemaVersion: number; // 1
     id: string; // same as Conversation id
     pinned: boolean;
-    msgChainChoices: number[]; // stores the path to active node
+    choices: number[]; // stores the path to active node
 }
 
 export interface ConversationIndex {
