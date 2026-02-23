@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Offline</title>
+</head>
+<body>
+    <h1>Unable to access this page</h1>
+    <h2>You are offline</h2>
+    <p>Internet is not connected and the page <script>document.currentScript.after(document.createTextNode(window.location.href))</script> is not cached in your device. You're currently unable to access this page unless you reconnect to the Internet.</p>
+    <p>We will try to automatically reconnect when Internet connection resumes. You can also <a href="javascript:void(0)" id="tryAgain">try again manually</a>.</p>
+    <script>tryAgain.onclick = function () { location.reload(); return false }</script>
+    <script>window.addEventListener('online', function () { location.reload() })</script>
+</body>
+</html>

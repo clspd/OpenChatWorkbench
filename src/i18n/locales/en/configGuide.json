@@ -1,0 +1,79 @@
+{
+    "title": "Configuration",
+    "steps": {
+        "welcome": {
+            "title": "Welcome",
+            "description": "Welcome to the configuration guide"
+        },
+        "provider": {
+            "title": "Provider",
+            "description": "Add a new provider"
+        },
+        "model": {
+            "title": "Model",
+            "description": "Fetch or add model list"
+        },
+        "done": {
+            "title": "Done",
+            "description": "You're all done"
+        }
+    },
+    "welcome": {
+        "title": "Welcome to the configuration guide",
+        "description": "This guide will help you configure OpenChatWorkbench application.",
+        "startButton": "Let's Start"
+    },
+    "provider": {
+        "title": "Provider",
+        "previous": "<-- Previous",
+        "next": "Next -->",
+        "description": "First of all, you need to add a new provider. A provider is a service that provides API to connect to LLM.",
+        "advancedSettings": "To edit or remove a provider, please turn to Advanced Settings.",
+        "question": "Who provides you with the service?",
+        "hint": "We've loaded a common provider list. If you don't see the provider you want, please add it manually.",
+        "choose": "Choose:",
+        "pleaseSelect": "-- Please select --",
+        "form": {
+            "name": "Provider name:",
+            "namePlaceholder": "Please input",
+            "apiKey": "API Key:",
+            "apiKeyPlaceholder": "Please input",
+            "baseURL": "Base URL:",
+            "baseURLPlaceholder": "Please input",
+            "requestPath": "Request path:",
+            "requestPathPlaceholder": "Please input",
+            "compatibilityMode": "Compatibility mode:",
+            "compatibilityModeUntested": "Untested (The provider you selected is not tested by us)",
+            "compatibilityModeOpenAI": "OpenAI or OpenAI-compatible",
+            "compatibilityModeClaude": "Anthropic",
+            "compatibilityModeGemini": "Gemini",
+            "save": "Save"
+        }
+    },
+    "model": {
+        "title": "Model",
+        "previous": "<-- Previous",
+        "next": "Next -->",
+        "description": "Now you can fetch models or add a model manually.",
+        "provider": "Provider:",
+        "pleaseSelect": "-- Please select --",
+        "fetchButton": "Fetch models (automatically)",
+        "addModelButton": "Add model by ID (manually)",
+        "fetching": "Fetching in progress, please wait......",
+        "providerNotFound": "Provider does not exist",
+        "httpError": "HTTP error! status: {{status}}\n{{text}}",
+        "invalidResponse": "Failed: Invalid response: {{data}}",
+        "successAdded": "Successfully added {{count}} models ({{errors}} errors)",
+        "successAddedModel": "Successfully added {{modelId}}",
+        "failed": "Failed: {{error}}"
+    },
+    "done": {
+        "title": "You're All Set",
+        "description": "Enjoy the application :D",
+        "previous": "<-- Previous",
+        "doneButton": "Done"
+    },
+    "errors": {
+        "unableToLoadProviders": "Unable to load provider list, please add it manually; error: {{error}}"
+    }
+}

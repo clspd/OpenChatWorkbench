@@ -1,0 +1,29 @@
+.renderer.markdown-renderer.renderer-main {
+    pre {
+        padding: 10px;
+        border-radius: 5px;
+        overflow: auto;
+    }
+    p:first-child, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child {
+        margin-top: 0;
+    }
+    p:last-child, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child {
+        margin-bottom: 0;
+    }
+    a {
+        color: #409eff;
+    }
+    a:hover {
+        color: #66b1ff;
+    }
+    a:focus-visible {
+        outline: 2px solid rgba(64, 158, 255, 0.5);
+    }
+    :not(pre) > code {
+        padding: 2px 4px;
+        margin-bottom: 4px;
+        display: inline-block;
+        border-radius: 4px;
+        background-color: var(--code-bg, #f6f8fa);
+    }
+}

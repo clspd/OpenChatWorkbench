@@ -1,0 +1,292 @@
+{
+    "title": "Settings",
+    "general": {
+        "title": "General Settings",
+        "language": {
+            "title": "Language",
+            "options": {
+                "en": "English",
+                "zh-CN": "简体中文"
+            }
+        },
+        "chat": {
+            "title": "Chat",
+            "sendMsgWith": {
+                "legend": "Send Message with...",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            },
+            "attachOptions": {
+                "legend": "Attachment Options",
+                "throttleSingleFileSize": {
+                    "title": "Throttle Single File Size",
+                    "description": "The throttle size of a single file attachment in MB. If the file size exceeds this value, we will ask you."
+                }
+            }
+        },
+        "accessibility": {
+            "title": "Accessibility",
+            "alert": "Some settings may require a refresh to take effect completely.",
+            "refreshNow": "Refresh Now",
+            "fontSize": {
+                "legend": "Font Size",
+                "reset": "Reset"
+            }
+        }
+    },
+    "chat": {
+        "title": "Chat Settings"
+    },
+    "personalization": {
+        "title": "Personalization",
+        "showAvatar": {
+            "title": "Show Avatar",
+            "description": "Show the avatar of user, assistant and system in the chat interface.",
+            "state": {
+                "default": "Show Default Avatar",
+                "custom": "Show Custom Avatar",
+                "off": "Hide Avatar"
+            },
+            "custom": {
+                "title": "Custom Avatar",
+                "description": "Upload a custom avatar for the user, assistant and system.",
+                "upload": "Upload Avatar",
+                "roles": {
+                    "user": "User",
+                    "assistant": "Assistant",
+                    "system": "System"
+                }
+            },
+            "feedback": {
+                "success": "Avatar changed successfully.",
+                "success_reset": "Avatar reset successfully.",
+                "error": "Failed to change avatar. Please try again. Error: {{e}}"
+            }
+        },
+        "defaultSystemPrompt": {
+            "title": "Default System Prompt",
+            "description": "The default system prompt to use when no custom prompt is provided."
+        }
+    },
+    "provider": {
+        "title": "Provider Settings",
+        "addProvider": "Add Provider",
+        "configGuide": "Configuration Guide",
+        "configGuideAlert": "It is recommended to use the",
+        "configGuideSuffix": "to set up the providers easily.",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Are you sure you want to delete this provider?",
+        "addProviderModal": "Add Provider",
+        "editProviderModal": "Edit Provider",
+        "name": "Name",
+        "namePlaceholder": "Provider Name",
+        "apiKey": "API Key",
+        "apiKeyPlaceholder": "API Key",
+        "baseURL": "Base URL",
+        "baseURLPlaceholder": "https://api.example.com",
+        "requestPath": "Request Path",
+        "requestPathPlaceholder": "/chat/completions",
+        "compatibilityMode": "Compatibility Mode",
+        "compatibilityModeOpenAI": "OpenAI or OpenAI-compatible",
+        "compatibilityModeClaude": "Anthropic",
+        "compatibilityModeGemini": "Gemini",
+        "compatibilityModeUntested": "Untested (The provider you selected is not tested by us)",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "status": "Status",
+        "actions": "Actions",
+        "customProvider": "Custom Provider",
+        "customProviderDescription": "Add a custom provider",
+        "addNow": "Add now",
+        "getAPIKey": "Get API Key",
+        "providerAddedSuccessfully": "Provider added successfully",
+        "providerUpdatedSuccessfully": "Provider updated successfully",
+        "providerDeletedSuccessfully": "Provider deleted successfully",
+        "nameRequired": "Please input provider name!",
+        "apiKeyRequired": "Please input API key!",
+        "baseURLRequired": "Please input base URL!",
+        "invalidURL": "Please enter a valid URL (e.g., https://api.example.com)",
+        "unableToLoadProviders": "Unable to load providers"
+    },
+    "model": {
+        "title": "Model Settings",
+        "placeholder": "Filter by model ID...",
+        "fetch": "Fetch Models",
+        "add": "Add Model manually",
+        "cleanup": "Cleanup",
+        "zombie": {
+            "title": "Zombie Models",
+            "description": "Zombie models are models that are not associated with any provider. They may be left over from previous configurations. Accumulating them may cause performance issues, leading to slower response times. It is recommended to clean up zombie models periodically.",
+            "cleanupNow": "Cleanup Now"
+        },
+        "edit": "Edit",
+        "delete": "Delete",
+        "enableAll": "Enable All",
+        "disableAll": "Disable All",
+        "modelID": "Model ID",
+        "enabled": "Enabled",
+        "actions": "Actions",
+        "existingProvider": "Existing Provider",
+        "newProvider": "New Provider",
+        "selectProvider": "Please select a provider!",
+        "inputModelID": "Please input model ID!",
+        "modelDeletedSuccessfully": "Model deleted successfully",
+        "modelsToggledSuccessfully": "{{newState}} {{scope}} models for {{providerName}}",
+        "modelEditorDamaged": "The state of the model editor has been damaged, please reload the page to try again",
+        "modelUpdatedSuccessfully": "Model updated successfully",
+        "modelAddedSuccessfully": "Model added successfully",
+        "operationFailed": "Operation failed: ",
+        "successfullyUpdatedModels": "Successfully updated {{count}} models",
+        "skippedDuplicateModels": "Skipped {{count}} duplicate models",
+        "pleaseSelectProvider": "Please select a provider",
+        "providerNotFound": "Provider not found",
+        "noModelsFoundInResponse": "No models found in response",
+        "invalidResponseFormatFromAPI": "Invalid response format from API",
+        "cleanupZombieModelsWarning": "This operation will remove \"zombie\" models, which are models that are not associated with any provider. This may be caused after you deleted a provider directly. Continuing will not cause any data loss. Proceed?",
+        "successfullyRemovedZombieModels": "Successfully removed {{count}} zombie models"
+    },
+    "cache": {
+        "title": "Cache Settings",
+        "description": "The application can cache some frontend resources to improve performance and allow offline access. This page provides settings to manage cache.",
+        "availability": {
+            "title": "Cache Availability",
+            "serviceWorkerStatus": "Service Worker status:",
+            "active": "Active",
+            "notActive": "Not Active",
+            "explanation": "Explaination:",
+            "activeExplanation": "The Service Worker is active. It can cache frontend resources.",
+            "inactiveExplanation": "The resources will not be cached because Service Worker is not active. Service Worker is a background script that runs in browser. It can cache frontend resources and serve them when application is offline. If it is not active, request will go into network directly, preventing application from working offline.",
+            "toFix": "To fix this:",
+            "fix1": "If this is first time for you to use application, sit down and relax. The service worker is supposed to be installing in background. Try to wait for a while and check again.",
+            "fix1Check": "check again",
+            "fix2": "If you are browsing in Private mode (or Incognito mode), Service Worker may not be supported or may be cleared when you close window. Try using normal browsing mode instead.",
+            "fix3": "Try refreshing page. Sometimes Service Worker needs a page reload to complete installation process.",
+            "fix4": "Check if your browser supports Service Workers. Most modern browsers (Chrome, Firefox, Safari, Edge) support Service Workers, but make sure you're using an updated version.",
+            "fix5": "If you're using a corporate network or behind a firewall, check if Service Workers are being blocked. Some security settings may prevent Service Worker registration.",
+            "fix6": "Disable any browser extensions that might interfere with Service Workers, such as ad blockers or privacy extensions, then reload page."
+        },
+        "resources": {
+            "title": "Cached Resources",
+            "brief": "Brief:",
+            "cachedObjects": "Currently {{count}} object{{plural}} have been cached."
+        },
+        "management": {
+            "title": "Cache Management",
+            "actions": "Actions:",
+            "checkStatus": "Check Cache Status",
+            "cacheAll": "Cache All Resources",
+            "clear": "Clear Cache"
+        },
+        "progress": {
+            "title": "Download in progress",
+            "downloading": "Downloading {{current}} of {{total}} objects",
+            "current": "Current:",
+            "cancel": "Cancel"
+        },
+        "messages": {
+            "pageUnavailable": "The page is unavailable because you have rejected usage of functional cookies. You can re-enable it by changing your cookie consent.",
+            "changeCookieConsent": "changing your cookie consent",
+            "yes": "Yes",
+            "no": "No",
+            "checkedSwStatus": "We've checked Service Worker status again.",
+            "failedToCheckCache": "Failed to check cache status: {{error}}",
+            "failedToFetchManifest": "Failed to fetch manifest file: HTTP {{status}} {{statusText}}",
+            "fetchingManifest": "Fetching manifest file...",
+            "confirmCacheAll": "Are you sure cache all resources?",
+            "confirmCacheAllContent": "This action will download {{count}} resources, which may take a while. Do you want to continue?",
+            "failedToCacheResource": "Failed to cache resource {{url}}: {{error}}",
+            "cacheDownloadCanceled": "Cache download canceled.",
+            "allResourcesCached": "All resources have been cached.",
+            "failedToCacheAll": "Failed to cache all resources: {{error}}",
+            "confirmClearCache": "Are you sure clear all cached resources?",
+            "confirmClearCacheContent": "This action will clear all cached resources. The next time you visit application, all resources will be downloaded again, causing slower loading speed.",
+            "noCacheFound": "No cache found.",
+            "allCacheCleared": "All cached resources have been cleared.",
+            "failedToClearCache": "Failed to clear cache. It might been already cleared.",
+            "failedToClearCacheError": "Failed to clear cache: {{error}}",
+            "notAvailableInDev": "This is not available in development environment.",
+            "failedToFetchResource": "Failed to fetch resource {{url}}: HTTP {{status}} {{statusText}}"
+        }
+    },
+    "data_management": {
+        "title": "Data Management Settings",
+        "cookiesConsent": "Cookies Consent",
+        "privacyPolicy": "Privacy Policy",
+        "importExportData": "Import & Export Data",
+        "deleteAllConversations": "Delete All Conversations",
+        "storageUsage": {
+            "failedToGetUsage": "Failed to get storage usage: {{error}}",
+            "brief": "Currently {{used}}MiB ({{usedByte}}B) of {{total}}MiB ({{totalByte}}B) storage quota ({{percent}}%) is used."
+        },
+        "persistStorage": {
+            "desc": "Persist storage",
+            "notSupported": "Your browser does not support persist storage.",
+            "optOut": "Please go to browser settings to opt out of persist storage.",
+            "failedToPersist": "Failed to persist storage. Please try to quit the incognito mode (if you're using it), interact more with the site, add the page to bookmarks using Ctrl+D, install as Progressive Web Application (PWA), or manually increases the engagement level in chrome://site-engagement/ ."
+        },
+        "clearAllData": "Clear All Data",
+        "clearData": {
+            "title": "Are you sure?",
+            "content": "This operation will delete",
+            "allData": "ALL DATA",
+            "resetApp": "of the application and reset the application to its initial state",
+            "deleting": "Deleting all data...",
+            "cannotBeUndone": "THIS OPERATION CANNOT BE UNDONE!",
+            "continueAnyway": "If you want to continue anyway, please type",
+            "inInputBoxBelow": "in the input box below:",
+            "typeToConfirm": "Type '{{expect}}' to confirm",
+            "confirm": "Confirm",
+            "cancel": "Cancel"
+        },
+        "dataDeleted": {
+            "title": "Data Deleted",
+            "content": "All data has been deleted permanently.",
+            "closeApp": "Close Application",
+            "reloadApp": "Reload Application"
+        },
+        "usageReport": {
+            "optOut": "Opt out of usage report",
+            "explanation": "Explaination:",
+            "description": "The application collects anonymous usage data to help improve application. However, you can opt out of usage report if you want.",
+            "optOutDescription": "If you opt out of usage report, application will not collect any usage data.",
+            "toLearnMore": "To learn more, refer to",
+            "privacyPolicy": "Privacy Policy",
+            "failedToGetOptOut": "Failed to get opt out of usage report"
+        },
+        "cspReport": {
+            "optOut": "Opt out of CSP report",
+            "explanation": "Explaination:",
+            "description": "The application collects Content Security Policy (CSP) violation report data to ensure security of application.",
+            "optOutDescription": "If you opt out of CSP report, application will not send CSP report data anymore.",
+            "whyNotRecommend": "Why not recommend to opt out?",
+            "whyNotRecommendDescription": "CSP report data is used to identity potential hacking attempts and improve security of application. It doesn't contain any personal or sensitive information. However, if you are very privacy-conscious, you can still opt out of CSP report.",
+            "toLearnMore": "To learn more, refer to",
+            "privacyPolicy": "Privacy Policy"
+        },
+        "messages": {
+            "clearAllData": {
+                "title": "Clear All Data",
+                "content": "Are you sure you want to clear all data?\nThis action cannot be undone!",
+                "okText": "Next Step",
+                "cancelText": "Cancel"
+            },
+            "deleteAllConversations": {
+                "title": "Delete All Conversations",
+                "content": "Are you sure you want to delete all conversations?\nThis action cannot be undone!\nIf you click confirm to delete, all historical conversations of current account will be cleared and cannot be recovered.",
+                "confirm": "Confirm ({{countdown}})",
+                "deleting": "Deleting conversations, please wait...",
+                "failed": "Failed to delete conversations: {{error}}"
+            },
+            "operationCompleted": "The operation has completed successfully.",
+            "failed": "Failed: {{error}}",
+            "processing": "Processing, please wait...",
+            "inputDoesNotMatch": "Input does not match",
+            "pleaseCloseTab": "Please close tab."
+        }
+    },
+    "about": "About",
+    "help": "Help"
+}

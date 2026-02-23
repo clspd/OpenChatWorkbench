@@ -1,0 +1,122 @@
+{
+    "appName": "Open Chat Workbench",
+    "ui": {
+        "dialog": {
+            "ok": "确定",
+            "cancel": "取消",
+            "yes": "是",
+            "no": "否",
+            "abort": "中止",
+            "retry": "重试",
+            "ignore": "忽略",
+            "save": "保存",
+            "clear": "清除"
+        },
+        "state": {
+            "enabled": "已启用",
+            "disabled": "已禁用"
+        },
+        "header": {
+            "moreOptions": {
+                "newConv": "新对话",
+                "delConv": "删除",
+                "settings": "设置"
+            }
+        },
+        "sidebar": {
+            "newChatBtn": "新对话",
+            "newWorkspaceBtn": "新建工作区",
+            "mode": {
+                "chat": "对话",
+                "workspace": "工作区"
+            },
+            "settingsBtn": "设置",
+            "conversation": {
+                "state": {
+                    "pinned": "已置顶"
+                },
+                "operations": {
+                    "rename": "重命名",
+                    "pin": "置顶",
+                    "unpin": "取消置顶",
+                    "export": "导出",
+                    "delete": "删除"
+                }
+            },
+            "progress": {
+                "title": "操作进行中",
+                "content": "请稍候，操作正在进行中。"
+            },
+            "searchPlaceholder": "搜索对话"
+        },
+        "mainInput": {
+            "placeholder": "输入消息...",
+            "options": {
+                "attachFile": "添加文件",
+                "attachImage": "添加图片",
+                "deepThink": "深度思考",
+                "plainInput": "纯文本输入",
+                "systemPrompt": "系统提示",
+                "systemPromptDesc": "添加一个系统提示，以指导模型的行为。",
+                "systemPromptNotAvailableReason": "只有在创建新对话时才能编辑系统提示",
+                "showMoreOptions": "显示更多"
+            },
+            "editing": {
+                "title": "正在编辑消息 {{ id }}"
+            },
+            "uploading": "上传中…",
+            "confirmUploadNonTextFile": {
+                "title": "确认上传非文本文件",
+                "content": "文件“{{ fileName }}”看起来不是文本文件，大小为 {{ fileSize }} MiB。如果添加非文本文件并生成响应，可能会导致意外的费用。是否确认添加此文件？"
+            },
+            "confirmUploadLargeFile": {
+                "title": "确认上传大文件",
+                "content": "文件“{{ fileName }}”大小为 {{ fileSize }} MiB。如果添加大文件并生成响应，可能会导致更多费用。是否确认添加此文件？"
+            },
+            "errors": {
+                "uplAtta": "无法上传附件: ",
+                "delAtta": "无法删除附件: "
+            }
+        },
+        "modelChooser": {
+            "title": "选择模型",
+            "showFavOnly": "仅显示收藏的模型",
+            "filterTooltip": "按模型 ID 筛选",
+            "emptyState": "暂无模型可用。请先配置提供商和模型。",
+            "openConfigGuide": "打开配置向导",
+            "notSelected": "未选择",
+            "tooltip": "点击或使用 Ctrl+/ 打开"
+        },
+        "fileChooser": {
+            "dnd": {
+                "dropFiles": "将文件拖放到此处以添加",
+                "error": {
+                    "emptyTransfer": "空的 dataTransfer",
+                    "wrongType": "包含 {{ count }} 个错误类型的文件"
+                }
+            }
+        },
+        "newChat": {
+            "greeting": {
+                "_1": "今天有什么可以帮到你？"
+            },
+            "systemPrompt": {
+                "title": "系统提示",
+                "placeholder": "添加一个系统提示，以指导模型的行为。"
+            }
+        }
+    },
+    "conversation": {
+        "defaultTitle": "新对话",
+        "rename": {
+            "title": "重命名对话",
+            "content": "请输入新名称:",
+            "emptyNameErr": "对话名称不能为空",
+            "nameTooLongErr": "对话名称不能超过 {{n}} 个字符"
+        }
+    },
+    "page_not_found": {
+        "title": "页面不存在",
+        "newChat": "新对话"
+    }
+}

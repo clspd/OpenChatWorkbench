@@ -1,0 +1,115 @@
+{
+    "management": {
+        "requests": {
+            "delete": {
+                "title": "删除对话",
+                "content": "您确定要删除 ",
+                "okText": "是",
+                "cancelText": "否",
+                "success": "对话已删除",
+                "error": "删除对话失败：{{error}}"
+            }
+        }
+    },
+    "messageChain": {
+        "emptyState": "无消息",
+        "error": {
+            "dataCorrupted": "数据损坏",
+            "cannotRegenerate": "无法重新生成此消息。",
+            "cannotEdit": "无法编辑此消息。",
+            "cannotCreateNewBranch": "无法创建新分支：{{error}}"
+        },
+        "thinking": {
+            "wip": "正在思考",
+            "done": "已思考 {{ duration }} 秒"
+        },
+        "editDialog": {
+            "title": "编辑消息 {{ id }}",
+            "fragment": {
+                "title": "片段 {{ id }}",
+                "delete": "删除片段",
+                "cannotEdit": "无法编辑此片段。"
+            },
+            "createNewBranch": "创建新分支",
+            "buttons": {
+                "save": "保存",
+                "cancel": "取消"
+            }
+        },
+        "warnings": {
+            "invalidChoices": "分支无效，已重置为默认选择。"
+        },
+        "switchBranch": {
+            "title": "切换分支",
+            "content": "请输入新分支索引",
+            "invalidChoices": "分支索引无效。"
+        },
+        "files": {
+            "previewDlg": {
+                "title": "预览文件"
+            },
+            "errors": {
+                "preview": "无法预览文件: ",
+                "download": "无法下载文件: "
+            }
+        }
+    },
+    "chatView": {
+        "emptyState": {
+            "title": "未找到对话",
+            "goToHome": "返回首页"
+        },
+        "errors": {
+            "enterMessage": "请输入消息",
+            "waitPrevious": "请等待上一条消息发送完成",
+            "getMessageNodeId": "获取当前消息节点 ID 失败",
+            "selectValidModel": "请选择有效的模型",
+            "stateError": "状态错误",
+            "notGenerating": "消息未生成。",
+            "notInterruptable": "消息不可中断。",
+            "getConversationPref": "获取对话偏好设置失败",
+            "getMessageData": "获取消息数据失败",
+            "getInputRef": "获取输入消息引用失败"
+        },
+        "modal": {
+            "cancel": "取消",
+            "titles": {
+                "generateFailed": "生成响应失败",
+                "sendFailed": "发送消息失败",
+                "regenerateFailed": "重新生成消息失败"
+            }
+        }
+    },
+    "newChat": {
+        "errors": {
+            "enterMessage": "请输入消息",
+            "waitPrevious": "请等待上一条消息发送完成",
+            "selectValidModel": "请选择有效的模型",
+            "createConversation": "创建对话失败",
+            "sendMessage": "发送消息失败"
+        },
+        "modal": {
+            "cancel": "取消",
+            "titles": {
+                "generateFailed": "生成响应失败"
+            }
+        }
+    },
+    "messageOperations": {
+        "copy": "复制",
+        "regenerate": "重新生成",
+        "edit": "编辑",
+        "showRaw": "显示/隐藏原始消息",
+        "like": "喜欢",
+        "dislike": "不喜欢",
+        "more": "更多操作",
+        "editAvatar": {
+            "title": "编辑头像",
+            "content": "是否前往编辑头像？"
+        },
+        "errors": {
+            "copy": "无法复制消息: ",
+            "fstop": "无法强行停止消息: "
+        }
+    }
+}

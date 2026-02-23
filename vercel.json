@@ -1,0 +1,122 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Cross-Origin-Embedder-Policy",
+                    "value": "require-corp"
+                },
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "same-origin"
+                },
+                {
+                    "key": "Cross-Origin-Resource-Policy",
+                    "value": "cross-origin"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "SAMEORIGIN"
+                },
+                {
+                    "key": "Vary",
+                    "value": "Cookie"
+                },
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.cookies.enabled=true; Path=/; Max-Age=31536000; Secure"
+                },
+                {
+                    "key": "X-App-Name",
+                    "value": "Open Chat Workbench"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "missing": [
+                {
+                    "type": "cookie",
+                    "key": "user.privacy.optOutCSPReport",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "frame-ancestors 'self'; base-uri 'self'; manifest-src 'self'; script-src-attr 'none'; report-uri https://csp-report-collector.openchatworkbench.com/csp-report"
+                },
+                {
+                    "key": "Reporting-Endpoints",
+                    "value": "csp-report-collector-v1=\"https://csp-report-collector.openchatworkbench.com/csp-report\""
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "user.privacy.optOutCSPReport",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "frame-ancestors 'self'; base-uri 'self'; manifest-src 'self'; script-src-attr 'none'"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "sys.operation.clearCache",
+                    "value": "yes"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.operation.clearCache=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, must-revalidate"
+                },
+                {
+                    "key": "Clear-Site-Data",
+                    "value": "\"cache\""
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "sys.operation.clearAllData",
+                    "value": "yes"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.operation.clearAllData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, must-revalidate"
+                },
+                {
+                    "key": "Clear-Site-Data",
+                    "value": "\"cache\", \"cookies\", \"storage\""
+                }
+            ]
+        }
+    ]
+}

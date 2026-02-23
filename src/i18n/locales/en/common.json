@@ -1,0 +1,122 @@
+{
+    "appName": "Open Chat Workbench",
+    "ui": {
+        "dialog": {
+            "ok": "OK",
+            "cancel": "Cancel",
+            "yes": "Yes",
+            "no": "No",
+            "abort": "Abort",
+            "retry": "Retry",
+            "ignore": "Ignore",
+            "save": "Save",
+            "clear": "Clear"
+        },
+        "state": {
+            "enabled": "Enabled",
+            "disabled": "Disabled"
+        },
+        "header": {
+            "moreOptions": {
+                "newConv": "New Conversation",
+                "delConv": "Delete",
+                "settings": "Settings"
+            }
+        },
+        "sidebar": {
+            "newChatBtn": "New Chat",
+            "newWorkspaceBtn": "New Workspace",
+            "mode": {
+                "chat": "Chat",
+                "workspace": "Workspace"
+            },
+            "settingsBtn": "Settings",
+            "conversation": {
+                "state": {
+                    "pinned": "Pinned"
+                },
+                "operations": {
+                    "rename": "Rename",
+                    "pin": "Pin",
+                    "unpin": "Unpin",
+                    "export": "Export",
+                    "delete": "Delete"
+                }
+            },
+            "progress": {
+                "title": "Operation In Progress",
+                "content": "Please wait while the operation is being performed."
+            },
+            "searchPlaceholder": "Search conversations"
+        },
+        "mainInput": {
+            "placeholder": "Type a message...",
+            "options": {
+                "attachFile": "Attach File",
+                "attachImage": "Attach Image",
+                "deepThink": "Deep Think",
+                "plainInput": "Plain Input",
+                "systemPrompt": "System Prompt",
+                "systemPromptDesc": "Add a system prompt to guide the model's behavior.",
+                "systemPromptNotAvailableReason": "Only when creating a new conversation can you edit the system prompt",
+                "showMoreOptions": "Show More Options"
+            },
+            "editing": {
+                "title": "Editing message {{ id }}"
+            },
+            "uploading": "Uploading...",
+            "confirmUploadNonTextFile": {
+                "title": "Confirm Upload Non-Text File",
+                "content": "The file \"{{ fileName }}\" you chosen doesn't seem to be a text file and its size is {{ fileSize }} in MiB. If you add a non-text file and generate response, you may encounter unintended payment. Are you sure you want to add it?"
+            },
+            "confirmUploadLargeFile": {
+                "title": "Confirm Upload Large File",
+                "content": "The file \"{{ fileName }}\" you chosen is {{ fileSize }} in MiB. If you add a large file and generate response, you may encounter more payment. Are you sure you want to add it?"
+            },
+            "errors": {
+                "uplAtta": "Unable to upload attachment: ",
+                "delAtta": "Unable to delete attachment: "
+            }
+        },
+        "modelChooser": {
+            "title": "Select Model",
+            "showFavOnly": "Show favorites only",
+            "filterTooltip": "Filter by model ID",
+            "emptyState": "No models available. Please add providers and models first.",
+            "openConfigGuide": "Open the configuration guide",
+            "notSelected": "Not selected",
+            "tooltip": "Click or use Ctrl+/ to open"
+        },
+        "fileChooser": {
+            "dnd": {
+                "dropFiles": "Drop files to add",
+                "error": {
+                    "emptyTransfer": "Empty drag event transfer",
+                    "wrongType": "Contains {{ count }} files with wrong type"
+                }
+            }
+        },
+        "newChat": {
+            "greeting": {
+                "_1": "How can I assist with you today?"
+            },
+            "systemPrompt": {
+                "title": "System Prompt",
+                "placeholder": "Add a system prompt to guide the model's behavior."
+            }
+        }
+    },
+    "conversation": {
+        "defaultTitle": "New Conversation",
+        "rename": {
+            "title": "Rename Conversation",
+            "content": "Enter new name for the conversation:",
+            "emptyNameErr": "Conversation name cannot be empty",
+            "nameTooLongErr": "Conversation name cannot be longer than {{n}} characters"
+        }
+    },
+    "page_not_found": {
+        "title": "Page Not Found",
+        "newChat": "New Chat"
+    }
+}
