@@ -26,16 +26,13 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
         }),
         buildRequest: async (conv, reqMsg, respMsg, provider, model) => ({
             model: model.id,
-            messages: [{
-                role: "user",
-                content: await BuildOpenAICompatibleRequestMessages(conv, respMsg.id, {
-                    stringOnly: true,
-                    includeSystem: false,
-                    includeAssistant: true,
-                    includeUser: true,
-                    includeThinking: useAppStatePersistStore().defaultBuilderConfig.includeThinking,
-                }),
-            }],
+            messages: await BuildOpenAICompatibleRequestMessages(conv, reqMsg.id, {
+                stringOnly: true,
+                includeSystem: false,
+                includeAssistant: true,
+                includeUser: true,
+                includeThinking: useAppStatePersistStore().defaultBuilderConfig.includeThinking,
+            }),
             system: (await BuildOpenAICompatibleRequestMessages(conv, respMsg.id, {
                 stringOnly: true,
                 includeThinking: false,
@@ -43,6 +40,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                 includeAssistant: false,
                 includeUser: false,
             }))[0] ?? undefined,
+            stream: true,
         }),
         onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, model) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
