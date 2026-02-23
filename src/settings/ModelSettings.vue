@@ -28,44 +28,50 @@
             <a-button @click="handleCleanup">{{ t("settings:model.zombie.cleanupNow") }}</a-button>
         </div>
 
-        <div v-for="group in groupedModels" :key="group.provider.id" class="provider-group">
-            <div class="provider-header">
-                <h3 class="provider-name">{{ group.provider.name }}</h3>
-                <a-button 
-                    type="link" 
-                    size="small"
-                    @click="handleToggleAllModels(group)"
+        <div class="virtual-list-container" ref="virtualListRef">
+            <div class="virtual-list-content">
+                <div :style="{ height: `${totalSize}px` }"></div>
+                <div v-for="vi in virtualItems" :key="vi.index"
+                    class="virtual-item"
+                    :data-index="vi.index"
+                    :style="{ top: `${vi.start}px` }"
+                    :ref="el => el && measureElement(el as HTMLElement)"
                 >
-                    {{ allModelsEnabled(group) ? t("settings:model.disableAll") : t("settings:model.enableAll") }}
-                </a-button>
+                    <template v-if="flattenedData[vi.index]!.type === 'header'">
+                        <div class="provider-header">
+                            <h3 class="provider-name">{{ flattenedData[vi.index]!.provider?.name }}</h3>
+                            <a-button 
+                                type="link" 
+                                size="small"
+                                @click="handleToggleAllModels(flattenedData[vi.index]!.group!)"
+                            >
+                                {{ allModelsEnabled(flattenedData[vi.index]!.group!) ? t("settings:model.disableAll") : t("settings:model.enableAll") }}
+                            </a-button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="model-row">
+                            <div class="model-cell model-id">{{ flattenedData[vi.index]!.model!.id }}</div>
+                            <div class="model-cell model-enabled">
+                                <a-switch 
+                                    v-model:checked="flattenedData[vi.index]!.model!.enabled" 
+                                    @change="handleToggleEnabled(flattenedData[vi.index]!.model!)"
+                                />
+                            </div>
+                            <div class="model-cell model-actions">
+                                <a-space>
+                                    <a-button type="link" size="small" @click="handleEdit(flattenedData[vi.index]!.model!)">
+                                        {{ t("settings:model.edit") }}
+                                    </a-button>
+                                    <a-button type="link" size="small" danger @click="handleDelete(flattenedData[vi.index]!.model!.provider_id!, flattenedData[vi.index]!.model!.id!)">
+                                        {{ t("settings:model.delete") }}
+                                    </a-button>
+                                </a-space>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
-            
-            <a-table 
-                :columns="columns" 
-                :data-source="group.models" 
-                row-key="id"
-                sticky
-                :pagination="false"
-            >
-                <template #bodyCell="{ column, record }">
-                    <template v-if="column.key === 'enabled'">
-                        <a-switch 
-                            v-model:checked="record.enabled" 
-                            @change="handleToggleEnabled(record as any)"
-                        />
-                    </template>
-                    <template v-else-if="column.key === 'actions'">
-                        <a-space>
-                            <a-button type="link" size="small" @click="handleEdit(record as any)">
-                                {{ t("settings:model.edit") }}
-                            </a-button>
-                            <a-button type="link" size="small" danger @click="handleDelete(record.provider_id, record.id)">
-                                {{ t("settings:model.delete") }}
-                            </a-button>
-                        </a-space>
-                    </template>
-                </template>
-            </a-table>
         </div>
 
         <a-modal 
@@ -118,76 +124,24 @@
                 </a-form-item>
             </a-form>
         </a-modal>
-
-        <a-modal 
-            v-model:open="conflictModalVisible" 
-            title="Model Conflicts Found" 
-            :footer="null"
-        >
-            <a-alert 
-                :message="`${conflictModels.length} duplicate models found. How would you like to proceed?`" 
-                type="warning" 
-                show-icon 
-                style="margin-bottom: 1em;"
-            />
-            
-            <a-space direction="vertical" style="width: 100%;">
-                <a-button type="primary" block @click="handleOverwriteConflicts">
-                    Overwrite All
-                </a-button>
-                <a-button block @click="handleSkipConflicts">
-                    Skip Duplicates
-                </a-button>
-                <a-button block @click="showConflictDetails">
-                    Show Conflict Details
-                </a-button>
-            </a-space>
-        </a-modal>
-
-        <a-modal 
-            v-model:open="conflictDetailsVisible" 
-            title="Conflict Details" 
-            width="800"
-            @ok="conflictDetailsVisible = false"
-        >
-            <a-table 
-                :columns="conflictColumns" 
-                :data-source="conflictModels" 
-                row-key="id"
-                :pagination="false"
-                size="small"
-            >
-                <template #bodyCell="{ column, record }">
-                    <template v-if="column.key === 'existing_provider'">
-                        {{ getProviderName(record.existing.provider_id) }}
-                    </template>
-                    <template v-else-if="column.key === 'new_provider'">
-                        {{ selectedProvider?.name }}
-                    </template>
-                    <template v-else-if="column.key === 'existing_max_tokens'">
-                        {{ record.existing.max_tokens }}
-                    </template>
-                    <template v-else-if="column.key === 'new_max_tokens'">
-                        {{ 1024 * 1024 * 1024 }}
-                    </template>
-                </template>
-            </a-table>
-        </a-modal>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, h } from 'vue'
-import { useConfigStore } from '@/stores/configStore'
-import type { ModelConfig, ProviderConfig } from '@/types/config'
-import { message, Modal, Table as ATable } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
-import { useAppStateStore } from '@/stores/appState'
-import { InfoCircleOutlined } from '@ant-design/icons-vue'
-import { TraceErrorAndGetString } from '@/utils/errorTrace'
 import { t } from 'i18next'
+import { InfoCircleOutlined } from '@ant-design/icons-vue'
+import { useAppStateStore } from '@/stores/appState'
+import { useConfigStore } from '@/stores/configStore'
+import { useWindowStateStore } from '@/stores/windowState'
+import type { ModelConfig, ProviderConfig } from '@/types/config'
+import { TraceErrorAndGetString } from '@/utils/errorTrace'
+import { useVirtualizer } from '@tanstack/vue-virtual'
 
 const configStore = useConfigStore()
+const windowState = useWindowStateStore()
 
 const modalVisible = ref(false)
 const isEditing = ref(false)
@@ -195,10 +149,6 @@ const formRef = ref<FormInstance>()
 const fetchModalVisible = ref(false)
 const selectedProviderId = ref('')
 const isFetching = ref(false)
-const conflictModalVisible = ref(false)
-const conflictModels = ref<Array<{ id: string, existing: ModelConfig, new: any }>>([])
-const selectedProvider = ref<ProviderConfig | null>(null)
-const conflictDetailsVisible = ref(false)
 const searchKeyword = ref('')
 
 const formData = reactive<ModelConfig>({
@@ -206,6 +156,65 @@ const formData = reactive<ModelConfig>({
     provider_id: '',
     enabled: true
 }), formDataClone = ref<ModelConfig>();
+
+const virtualListRef = ref<HTMLDivElement>()
+
+const enabledProviders = computed(() => {
+    return configStore.providers.filter(p => !!p.enabled)
+})
+
+const groupedModels = computed(() => {
+    const groups = enabledProviders.value.map(provider => ({
+        provider,
+        models: configStore.models
+            .filter(m => m.provider_id === provider.id)
+            .filter(m => !searchKeyword.value || m.id.toLowerCase().includes(searchKeyword.value.toLowerCase()))
+    }))
+    return groups.filter(group => group.models.length > 0)
+})
+
+const flattenedData = computed(() => {
+    const result: Array<{
+        type: 'header' | 'model',
+        provider?: ProviderConfig,
+        group?: { provider: ProviderConfig, models: ModelConfig[] },
+        model?: ModelConfig
+    }> = []
+    
+    for (const group of groupedModels.value) {
+        result.push({
+            type: 'header',
+            provider: group.provider,
+            group: group
+        })
+        
+        for (const model of group.models) {
+            result.push({
+                type: 'model',
+                model: model
+            })
+        }
+    }
+    
+    return result
+})
+
+const vOptions = computed(() => ({
+    count: flattenedData.value.length,
+    getScrollElement: () => virtualListRef.value || null,
+    estimateSize: (index: number) => {
+        return flattenedData.value[index]?.type === 'header' ? 60 : 50
+    },
+    overscan: 5,
+}))
+
+const virtualizer = useVirtualizer(vOptions)
+const virtualItems = computed(() => virtualizer.value.getVirtualItems())
+const totalSize = computed(() => virtualizer.value.getTotalSize())
+
+const measureElement = (el: HTMLElement) => {
+    virtualizer.value.measureElement(el)
+}
 
 const columns = [
     {
@@ -254,26 +263,11 @@ onMounted(() => {
     useAppStateStore().setTitle('Model Settings')
 })
 
-const enabledProviders = computed(() => {
-    return configStore.providers.filter(p => p.enabled)
-})
-
-const groupedModels = computed(() => {
-    const groups = enabledProviders.value.map(provider => ({
-        provider,
-        models: configStore.models
-            .filter(m => m.provider_id === provider.id)
-            .filter(m => !searchKeyword.value || m.id.toLowerCase().includes(searchKeyword.value.toLowerCase()))
-    }))
-    return groups.filter(group => group.models.length > 0)
-})
-
 const handleAdd = () => {
     isEditing.value = false
     Object.assign(formData, {
         id: '',
         provider_id: '',
-        max_tokens: 4096,
         enabled: true
     })
     modalVisible.value = true
@@ -351,40 +345,6 @@ const handleCancel = () => {
     modalVisible.value = false
 }
 
-const getProviderName = (providerId: string) => {
-    const provider = configStore.getProviderById(providerId)
-    return provider ? provider.name : 'Unknown'
-}
-
-const handleOverwriteConflicts = () => {
-    if (!selectedProvider.value) return
-
-    for (const conflict of conflictModels.value) {
-        configStore.updateModel(conflict.existing.provider_id, conflict.id, {
-            ...conflict.existing,
-            provider_id: selectedProvider.value.id
-        })
-    }
-
-    message.success(t("settings:model.successfullyUpdatedModels", {
-        count: conflictModels.value.length
-    }))
-    conflictModalVisible.value = false
-    fetchModalVisible.value = false
-}
-
-const handleSkipConflicts = () => {
-    message.info(t("settings:model.skippedDuplicateModels", {
-        count: conflictModels.value.length
-    }))
-    conflictModalVisible.value = false
-    fetchModalVisible.value = false
-}
-
-const showConflictDetails = () => {
-    conflictDetailsVisible.value = true
-}
-
 const openFetchModal = () => {
     selectedProviderId.value = ''
     fetchModalVisible.value = true
@@ -421,8 +381,8 @@ const handleFetchOk = async () => {
         const data = await response.json()
         
         if (data.data && Array.isArray(data.data)) {
-            const newModels: Array<{ id: string, provider_id: string, enabled: boolean }> = []
-            const conflicts: Array<{ id: string, existing: ModelConfig, new: any }> = []
+            let addedCount = 0
+            let updatedCount = 0
 
             for (const modelData of data.data) {
                 const modelId = modelData.id || modelData.model
@@ -430,34 +390,21 @@ const handleFetchOk = async () => {
 
                 const existingModel = configStore.models.find(m => m.id === modelId)
                 if (existingModel) {
-                    conflicts.push({
-                        id: modelId,
-                        existing: existingModel,
-                        new: modelData
+                    configStore.updateModel(existingModel.provider_id, modelId, {
+                        ...existingModel,
+                        provider_id: provider.id
                     })
+                    updatedCount++
                 } else {
-                    newModels.push({
-                        id: modelId,
-                        provider_id: provider.id,
-                        enabled: true
-                    })
+                    configStore.addModel(provider.id, modelId, true)
+                    addedCount++
                 }
             }
 
-            if (conflicts.length > 0) {
-                conflictModels.value = conflicts
-                selectedProvider.value = provider
-                conflictModalVisible.value = true
-                isFetching.value = false
-                return
-            }
-
-            if (newModels.length > 0) {
-                for (const model of newModels) {
-                    configStore.addModel(model.provider_id, model.id, model.enabled)
-                }
+            const totalModels = addedCount + updatedCount
+            if (totalModels > 0) {
                 message.success(t("settings:model.successfullyAddedModels", {
-                    count: newModels.length
+                    count: totalModels
                 }))
                 fetchModalVisible.value = false
             } else {
@@ -481,6 +428,7 @@ const handleCleanup = async () => {
         content: t("settings:model.cleanupZombieModelsWarning"),
         okText: t("settings:model.cleanup"),
         okType: "primary",
+        cancelText: t("common:ui.dialog.cancel"),
         onOk: () => r(true),
         onCancel: () => r(false),
     }))) return;
@@ -520,7 +468,8 @@ const handleCleanup = async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    padding: 0.5em 0;
 }
 
 .provider-name {
@@ -528,5 +477,47 @@ const handleCleanup = async () => {
     font-size: 1.1em;
     font-weight: 600;
     color: var(--text-color);
+}
+
+.virtual-list-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 300px;
+}
+
+.virtual-list-content {
+    position: relative;
+}
+
+.virtual-item {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.model-row {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.model-cell {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.model-id {
+    flex: 1;
+}
+
+.model-enabled {
+    width: 100px;
+}
+
+.model-actions {
+    width: 150px;
 }
 </style>
