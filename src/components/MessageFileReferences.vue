@@ -33,6 +33,7 @@ import { DialogView } from 'vue-dialog-view';
 import { nextTick } from 'vue';
 import { message } from 'ant-design-vue';
 import "common-file-preview";
+import { t } from 'i18next';
 import { HTMLCommonFilePreviewElement } from 'common-file-preview';
 import { GetAttachmentById } from '@/modules/chat/attachment';
 
@@ -92,7 +93,7 @@ watch(() => showPreview.value, (newValue) => {
         }
         catch (e) {
             showPreview.value = false;
-            message.error("Unable to preview file: " + e);
+            message.error(t("chat:messageChain.files.errors.preview") + e);
         }
     })
 })
@@ -117,7 +118,7 @@ const downloadCurrentFile = async () => {
     }
     catch (e) {
         showPreview.value = false;
-        message.error("Unable to download file: " + e);
+        message.error(t("chat:messageChain.files.errors.download") + e);
     }
 }
 

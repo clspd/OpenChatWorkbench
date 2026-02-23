@@ -67,6 +67,10 @@
             "confirmUploadLargeFile": {
                 "title": "Confirm Upload Large File",
                 "content": "The file \"{{ fileName }}\" you chosen is {{ fileSize }} in MiB. If you add a large file and generate response, you may encounter more payment. Are you sure you want to add it?"
+            },
+            "errors": {
+                "uplAtta": "Unable to upload attachment: ",
+                "delAtta": "Unable to delete attachment: "
             }
         },
         "modelChooser": {

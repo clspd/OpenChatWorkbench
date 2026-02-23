@@ -41,6 +41,10 @@
         "files": {
             "previewDlg": {
                 "title": "Preview file"
+            },
+            "errors": {
+                "preview": "Unable to preview file: ",
+                "download": "Unable to download file: "
             }
         }
     },
@@ -96,6 +100,10 @@
         "editAvatar": {
             "title": "Edit avatar",
             "content": "Do you want to edit the avatar?"
+        },
+        "errors": {
+            "copy": "Unable to copy message: ",
+            "fstop": "Unable to force stop message: "
         }
     }
 }

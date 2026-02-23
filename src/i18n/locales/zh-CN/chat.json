@@ -41,6 +41,10 @@
         "files": {
             "previewDlg": {
                 "title": "预览文件"
+            },
+            "errors": {
+                "preview": "无法预览文件: ",
+                "download": "无法下载文件: "
             }
         }
     },
@@ -96,6 +100,10 @@
         "editAvatar": {
             "title": "编辑头像",
             "content": "是否前往编辑头像？"
+        },
+        "errors": {
+            "copy": "无法复制消息: ",
+            "fstop": "无法强行停止消息: "
         }
     }
 }

@@ -165,7 +165,7 @@ const copyMessage = async () => {
             copiedTimer.value = undefined;
         }, 1000);
     } catch (e) {
-        message.error("Unable to copy message: " + e);
+        message.error(t("chat:messageOperations.errors.copy") + e);
     }
 }
 
@@ -214,7 +214,7 @@ const doForceStop = async () => {
         msg.has_pending_fragment = false;
         conversationStore.updateConvInStore(props.convId, conv);
     } catch (e) {
-        message.error("Unable to force stop message: " + e);
+        message.error(t("chat:messageOperations.errors.fstop") + e);
     }
 }
 

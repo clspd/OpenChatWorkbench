@@ -67,6 +67,10 @@
             "confirmUploadLargeFile": {
                 "title": "确认上传大文件",
                 "content": "文件“{{ fileName }}”大小为 {{ fileSize }} MiB。如果添加大文件并生成响应，可能会导致更多费用。是否确认添加此文件？"
+            },
+            "errors": {
+                "uplAtta": "无法上传附件: ",
+                "delAtta": "无法删除附件: "
             }
         },
         "modelChooser": {

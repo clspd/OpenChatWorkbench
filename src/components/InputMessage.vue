@@ -274,7 +274,7 @@ const eatFile = async (files: File[]) => {
         nextTick(() => fileReferencesRef.value?.scrollToEnd())
     } catch (error) {
         console.error('[InputMessage]', 'Unable to upload attachment: ' + error);
-        message.error('Unable to upload attachment: ' + error);
+        message.error(t('common:ui.mainInput.errors.uplAtta') + error);
     } finally {
         hasUploading.value = false;
     }
@@ -285,7 +285,7 @@ const removeFile = async (id: string) => {
         await DeleteAttachment(id);
     } catch (error) {
         console.error('[InputMessage]', 'Unable to delete attachment: ' + error);
-        message.error('Unable to delete attachment: ' + error);
+        message.error(t('common:ui.mainInput.errors.delAtta') + error);
         return;
     }
     emit('update:files', props.files.filter((item) => item.id !== id));
