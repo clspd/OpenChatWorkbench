@@ -6,8 +6,8 @@ Open Chat Workbench is a powerful, open-source chat application designed to prov
 
 ## Key Features
 
-- **Multi-Provider Support**: Integrates with multiple AI providers including OpenAI, Anthropic, Gemini, DeepSeek, and Alibaba Cloud
 - **Conversation Management**: Create, organize, and manage conversations with advanced threading capabilities
+- **Multi-Branching Conversation**: Freely fork and modify your conversation
 - **Workspace Organization** (Coming soon): Group related conversations into workspaces for better organization
 - **Rich Text Editor**: Enhanced message input with formatting options using Tiptap
 - **Markdown Support**: Render Markdown content in messages for better readability
@@ -15,6 +15,12 @@ Open Chat Workbench is a powerful, open-source chat application designed to prov
 - **Internationalization**: Built-in support for English and Chinese languages
 - **Data Import/Export**: Easily transfer your conversations between instances
 - **Customizable Settings**: Fine-tune model parameters, provider configurations, and UI preferences
+
+## Upcoming Features
+
+- [ ] Client-side Shell access using `Pyodide` and `WebContainers` technology, allowing Agents to execute shell commands in a controlled environment without installing any software.
+- [ ] Integration with the MCP (Model Context Protocol) to enable seamless interaction with different AI models.
+- [ ] Creation of a local bridge layer to allow Agents to execute code in the local Shell environment.
 
 ## Quick Start
 
@@ -30,6 +36,8 @@ This project is [available online](https://chat.openchatworkbench.com)! What you
 - pnpm package manager
 
 #### Installation
+
+*Important*: If you wants to deploy the project to your own site, it is currently required to [modify src/config.ts](src/config.ts) to change these hardcoded domain to your own. This will be improved later, e.g. using a `.env` file.
 
 1. Clone the repository
    ```bash
@@ -47,7 +55,9 @@ This project is [available online](https://chat.openchatworkbench.com)! What you
    pnpm dev
    ```
 
-4. Build for production
+4. edit the `src/config.ts` file
+
+5. Build for production
    ```bash
    pnpm build
    ```

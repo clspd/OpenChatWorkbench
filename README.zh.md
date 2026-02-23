@@ -2,19 +2,25 @@
 
 [English](README.md) | 中文
 
-Open Chat Workbench 是一款功能强大的开源聊天应用程序，旨在为与不同提供商的各种 AI 模型交互提供一个统一的界面。它提供无缝的用户体验，并具备管理对话、工作空间和自定义 AI 交互的高级功能。
+Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在为与来自不同提供商的各种 AI 模型交互提供一个统一的界面。它提供了无缝的用户体验，并具备管理对话、工作空间和自定义 AI 交互的高级功能。
 
 ## 主要特性
 
-- **多提供商支持**：集成多个 AI 提供商，包括 OpenAI、Anthropic、Gemini、DeepSeek 和阿里云
 - **对话管理**：创建、组织和管理对话，具备高级线程功能
-- **工作空间组织**（即将推出）：将相关对话分组到工作空间中，以便更好地组织
-- **富文本编辑器**：使用 Tiptap 增强消息输入，提供格式化选项
+- **多分支对话**：自由分叉和修改您的对话
+- **工作空间组织**（即将推出）：将相关对话分组到工作空间，以便更好地组织
+- **富文本编辑器**：使用 Tiptap 增强的消息输入，支持格式化选项
 - **Markdown 支持**：在消息中渲染 Markdown 内容，提高可读性
 - **文件附件**：支持在对话中上传和共享文件
 - **国际化**：内置支持英语和中文
-- **数据导入/导出**：轻松在不同实例之间传输对话
-- **可自定义设置**：微调模型参数、提供商配置和 UI 偏好设置
+- **数据导入/导出**：轻松在不同实例之间传输您的对话
+- **可自定义设置**：微调模型参数、提供商配置和 UI 偏好
+
+## 即将推出的特性
+
+- [ ] 使用 `Pyodide` 和 `WebContainers` 技术实现客户端 Shell 访问，允许 Agent 在受控环境中执行 shell 命令而无需安装任何软件。
+- [ ] 接入 MCP (Model Context Protocol) 协议，实现与不同 AI 模型的无缝交互。
+- [ ] 创建本地桥接层，允许 Agent 在本地 Shell 环境中执行代码。
 
 ## 快速开始
 
@@ -30,6 +36,8 @@ Open Chat Workbench 是一款功能强大的开源聊天应用程序，旨在为
 - pnpm 包管理器
 
 #### 安装
+
+*重要提示*：如果您想将项目部署到自己的站点，目前需要[修改 src/config.ts](src/config.ts) 以将这些硬编码的域名更改为您自己的。这将在后续改进，例如使用 `.env` 文件。
 
 1. 克隆仓库
    ```bash
@@ -47,7 +55,9 @@ Open Chat Workbench 是一款功能强大的开源聊天应用程序，旨在为
    pnpm dev
    ```
 
-4. 构建生产版本
+4. 编辑 `src/config.ts` 文件
+
+5. 构建生产版本
    ```bash
    pnpm build
    ```
@@ -56,9 +66,9 @@ Open Chat Workbench 是一款功能强大的开源聊天应用程序，旨在为
 
 Open Chat Workbench 支持使用以下协议的 API：
 
-- **OpenAI**：目前完全支持 `Chat.Completion` API；稍后将添加对 `Responses` API 的支持
-- **Anthropic**：部分支持 Anthropic API
-- **Gemini**：部分支持 Gemini API
+- **OpenAI**：目前完全支持 `Chat.Completion` API；对 `Responses` API 的支持将在后续添加
+- **Anthropic**：Anthropic API 已获得部分支持
+- **Gemini**：Gemini API 已获得部分支持
 
 ## 贡献
 
@@ -73,12 +83,12 @@ Open Chat Workbench 支持使用以下协议的 API：
 
 ## 许可证
 
-本项目采用 [GPL-3.0 许可证](LICENSE)。
+本项目根据 [GPL-3.0 许可证](LICENSE) 授权。
 
 ## 致谢
 
-Open Chat Workbench 是在许多开源库和技术的支持下构建的。我们感谢所有这些项目所有贡献者的辛勤工作。
+Open Chat Workbench 是在许多开源库和技术的支持下构建的。我们感谢所有为这些项目做出贡献的辛勤工作。
 
 ---
 
-感谢您使用 Open Chat Workbench！我们希望它能增强您的 AI 交互体验。
+感谢您使用 Open Chat Workbench！我们希望它能提升您的 AI 交互体验。
