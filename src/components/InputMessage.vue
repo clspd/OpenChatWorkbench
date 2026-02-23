@@ -58,14 +58,10 @@
                             </a-menu-item>
                         </a-menu>
                     </template>
-                    <a-tooltip>
-                        <template #title>
-                            {{ t('common:ui.mainInput.options.showMoreOptions') }}
-                        </template>
-                        <a-button shape="circle" type="text" :disabled="props.disabled" aria-label="Show more options">
-                            <PlusOutlined />
-                        </a-button>
-                    </a-tooltip>
+                    
+                    <a-button shape="circle" type="text" :disabled="props.disabled" :aria-label="t('common:ui.mainInput.options.showMoreOptions')">
+                        <PlusOutlined />
+                    </a-button>
                 </a-dropdown>
             </div>
             <div class="model-chooser">

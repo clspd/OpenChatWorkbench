@@ -311,10 +311,6 @@ const handleSendMessage = async function () {
         }
 
         const msg = tiptap2markdown(messageEditorState.content)
-        if (!msg.trim()) {
-            message.error(t('chat:chatView.errors.enterMessage'))
-            return
-        }
 
         // add user request to conversation
         const reqId = await GetConvNextMessageId(chatId.value);

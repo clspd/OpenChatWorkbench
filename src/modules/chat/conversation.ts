@@ -13,6 +13,24 @@ import { DeleteAttachment } from "./attachment";
 export const CONVERSATION_MAX_MESSAGE_COUNT = 10000;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
 
+export class ConvCircularReferenceError extends TypeError {
+    constructor(message = "The conversation contains a Circular Reference", options?: any) {
+        super(message, options);
+    }
+}
+
+export class ConvInvalidReferenceError extends TypeError {
+    constructor(message = "The conversation contains an invalid reference", options?: any) {
+        super(message, options);
+    }
+}
+
+export class ConvMaxMessageCountError extends TypeError {
+    constructor(message = "Conversation message count exceeds maximum limit", options?: any) {
+        super(message, options);
+    }
+}
+
 export async function CreateConversation(title?: string): Promise<string> {
     const id = crypto.randomUUID(), ts = Date.now();
     if (!title) title = i18next.t("common:conversation.defaultTitle");
@@ -158,7 +176,7 @@ export async function GetConvNextMessageId(cid: string) {
     const conv = await LoadConversation(cid);
     let expect = conv.messages.length + 1;
     while (conv.messages.find(m => m.id === expect) && expect < CONVERSATION_MAX_MESSAGE_COUNT + 2) expect++;
-    if (expect > CONVERSATION_MAX_MESSAGE_COUNT + 1) throw new Error("Conversation message count exceeds maximum limit.");
+    if (expect > CONVERSATION_MAX_MESSAGE_COUNT + 1) throw new ConvMaxMessageCountError();
     return expect;
 }
 

@@ -4,18 +4,7 @@ import type { Conversation } from "@/types/conversation";
 import { MessageContentType, MessageFragmentType, MessageRole, type Message } from "@/types/message";
 import type { ChatCompletionMessageParam, ChatCompletionContentPart, ChatCompletionContentPartText } from "openai/resources";
 import { GetAttachmentById, MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE, MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE } from "../chat/attachment";
-
-export class ConvCircularReferenceError extends TypeError {
-    constructor(message = "The conversation contains a Circular Reference", options?: any) {
-        super(message, options);
-    }
-}
-
-export class ConvInvalidReferenceError extends TypeError {
-    constructor(message = "The conversation contains an invalid reference", options?: any) {
-        super(message, options);
-    }
-}
+import { ConvCircularReferenceError, CONVERSATION_MAX_MESSAGE_COUNT, ConvInvalidReferenceError, ConvMaxMessageCountError } from "../chat/conversation";
 
 // Convert Open Chat Workbench data structure to OpenAI-API Compatible
 export const Ocw2OaiMap = {
@@ -50,6 +39,8 @@ export async function BuildOpenAICompatibleRequestMessages(conv: Conversation, t
     }
     const result: ChatCompletionMessageParam[] = [];
     const messageId2IndexMap = new Map<number, number>();
+
+    if (conv.messages.length > CONVERSATION_MAX_MESSAGE_COUNT + 1) throw new ConvMaxMessageCountError();
 
     // convert message id to array index
     {

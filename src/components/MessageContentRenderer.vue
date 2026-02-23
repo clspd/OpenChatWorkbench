@@ -7,7 +7,7 @@
         <template v-for="(frag, index) in props.message.fragments" :key="index">
             <div
                 v-if="frag.contentType === MessageContentType.Text"
-                v-show="(frag.type === MessageFragmentType.Think || frag.type === MessageFragmentType.Tool) ? (!collapseThoughtContent) : true"
+                v-show="!!frag.content && ((frag.type === MessageFragmentType.Think || frag.type === MessageFragmentType.Tool) ? (!collapseThoughtContent) : true)"
                 class="fragment-text-viewer"
                 :data-type="fragTypeIdentifyMap[frag.type]"
             >

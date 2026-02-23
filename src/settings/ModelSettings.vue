@@ -44,18 +44,19 @@
                 :columns="columns" 
                 :data-source="group.models" 
                 row-key="id"
+                sticky
                 :pagination="false"
             >
                 <template #bodyCell="{ column, record }">
                     <template v-if="column.key === 'enabled'">
                         <a-switch 
                             v-model:checked="record.enabled" 
-                            @change="handleToggleEnabled(record)"
+                            @change="handleToggleEnabled(record as any)"
                         />
                     </template>
                     <template v-else-if="column.key === 'actions'">
                         <a-space>
-                            <a-button type="link" size="small" @click="handleEdit(record)">
+                            <a-button type="link" size="small" @click="handleEdit(record as any)">
                                 {{ t("settings:model.edit") }}
                             </a-button>
                             <a-button type="link" size="small" danger @click="handleDelete(record.provider_id, record.id)">
@@ -179,7 +180,7 @@
 import { ref, computed, reactive, onMounted, h } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 import type { ModelConfig, ProviderConfig } from '@/types/config'
-import { message, Modal } from 'ant-design-vue'
+import { message, Modal, Table as ATable } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
 import { useAppStateStore } from '@/stores/appState'
 import { InfoCircleOutlined } from '@ant-design/icons-vue'
@@ -500,7 +501,7 @@ const handleCleanup = async () => {
 
 .filter-bar {
     position: sticky;
-    top: 0;
+    top: 3em;
     z-index: 10;
     background: var(--bg-color);
     padding: 0.5em 0;

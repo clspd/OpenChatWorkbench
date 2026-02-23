@@ -58,7 +58,7 @@
                 "plainInput": "Plain Input",
                 "systemPrompt": "System Prompt",
                 "systemPromptDesc": "Add a system prompt to guide the model's behavior.",
-                "systemPromptNotAvailableReason": "Only when creating a new conversation can you edit the system prompt",
+                "systemPromptNotAvailableReason": "Only when creating a new conversation can you initialize the system prompt",
                 "showMoreOptions": "Show More Options"
             },
             "editing": {

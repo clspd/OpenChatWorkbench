@@ -58,7 +58,7 @@
                 "plainInput": "纯文本输入",
                 "systemPrompt": "系统提示",
                 "systemPromptDesc": "添加一个系统提示，以指导模型的行为。",
-                "systemPromptNotAvailableReason": "只有在创建新对话时才能编辑系统提示",
+                "systemPromptNotAvailableReason": "只有在创建新对话时才能创建系统提示",
                 "showMoreOptions": "显示更多"
             },
             "editing": {
