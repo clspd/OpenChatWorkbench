@@ -54,6 +54,8 @@
             "options": {
                 "attachFile": "Attach File",
                 "attachImage": "Attach Image",
+                "attachDirectory": "Attach Directory",
+                "attachDirectoryDesc": "Currently you can only attach the content. More features like editing the attached directory will be supported soon!",
                 "deepThink": "Deep Think",
                 "plainInput": "Plain Input",
                 "systemPrompt": "System Prompt",
@@ -73,9 +75,13 @@
                 "title": "Confirm Upload Large File",
                 "content": "The file \"{{ fileName }}\" you chosen is {{ fileSize }} in MiB. If you add a large file and generate response, you may encounter more payment. Are you sure you want to add it?"
             },
+            "removeAllAttaLabel": "Remove All",
+            "removeAllAtta": "Removing all attachments, please don't close the window.",
+            "removedAllAtta": "All attachments have been removed.",
             "errors": {
                 "uplAtta": "Unable to upload attachment: ",
-                "delAtta": "Unable to delete attachment: "
+                "delAtta": "Unable to delete attachment: ",
+                "delAttaSome": "Failed to delete {{ count }} attachments."
             }
         },
         "modelChooser": {

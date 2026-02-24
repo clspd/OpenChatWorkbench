@@ -13,6 +13,7 @@
             :has-uploading="hasUploading"
             :disabled="props.disabled"
             @remove-file="removeFile"
+            @remove-all="removeAllFiles"
         />
         <editor-content v-show="!appStatePersist.usePlainInput" class="edit-message"
             :editor="editor"
@@ -29,32 +30,40 @@
                             <a-menu-item key="attachFile">
                                 <LinkOutlined />
                                 {{ t('common:ui.mainInput.options.attachFile') }}
-                                <span class="keybd-shortcut-tip">Ctrl+E; Ctrl+1</span>
+                                <span class="keybd-shortcut-tip">Ctrl+E or Ctrl+1</span>
                             </a-menu-item>
                             <a-menu-item key="attachImage">
                                 <FileImageOutlined />
                                 {{ t('common:ui.mainInput.options.attachImage') }}
                                 <span class="keybd-shortcut-tip">Ctrl+2</span>
                             </a-menu-item>
+                            <a-menu-item key="attachDirectory">
+                                <a-tooltip placement="right">
+                                    <template #title>{{ t('common:ui.mainInput.options.attachDirectoryDesc') }}</template>
+                                    <FolderOutlined />
+                                    {{ t('common:ui.mainInput.options.attachDirectory') }}
+                                    <span class="keybd-shortcut-tip">Ctrl+3</span>
+                                </a-tooltip>
+                            </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="deepThink" :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 {{ t('common:ui.mainInput.options.deepThink') }}
-                                <span class="keybd-shortcut-tip">Ctrl+\; Ctrl+3</span>
+                                <span class="keybd-shortcut-tip">Ctrl+\ or Ctrl+4</span>
                             </a-menu-item>
                             <a-menu-item key="systemPrompt" :disabled="!props.isCreatingConversation">
                                 <a-tooltip placement="right">
                                     <template #title>{{ props.isCreatingConversation ? t('common:ui.mainInput.options.systemPromptDesc') : t('common:ui.mainInput.options.systemPromptNotAvailableReason') }}</template>
                                     <SettingOutlined />
                                     {{ t('common:ui.mainInput.options.systemPrompt') }}
-                                    <span class="keybd-shortcut-tip">Ctrl+'; Ctrl+4</span>
+                                    <span class="keybd-shortcut-tip">Ctrl+' or Ctrl+5</span>
                                 </a-tooltip>
                             </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="plainInput" :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 {{ t('common:ui.mainInput.options.plainInput') }}
-                                <span class="keybd-shortcut-tip">Ctrl+5</span>
+                                <span class="keybd-shortcut-tip">Ctrl+6</span>
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -85,8 +94,10 @@
             </div>
         </div>
         <FileChooser ref="fileChooser"
-            :type="fileChooserType" :multiple="true" :accept="fileChooserAccept"
+            :id="app_name_id + '_InputMessage_inputbox_filechooser__' + props.instanceId"
+            :type="fileChooserType" :multiple="true" :accept="fileChooserAccept" :fsa-accept="fileChooserFSAccept"
             :dndTarget="dndTarget" :dndOverlayTarget="dndOverlayTarget"
+            :recursiveReadDirectory="true"
             @file="eatFile"
         />
     </div>
@@ -112,6 +123,7 @@ import ModelChooser from './ModelChooser.vue'
 import FileChooser from './FileChooser.vue'
 import MessageFileReferences from './MessageFileReferences.vue'
 import { COMMON_TEXT_FILE_EXTENSION } from '@/modules/ui-utils/commonExt'
+import { app_name_id } from '@/config'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -123,6 +135,7 @@ const props = withDefaults(defineProps<{
     editMessageId?: number,
     features: MessageFeatureItem[],
     files: FileAttachmentInfo[],
+    instanceId?: string,
     isCreatingConversation?: boolean,
     globalDnD?: boolean,
 }>(), {
@@ -135,6 +148,7 @@ const props = withDefaults(defineProps<{
     editMessageId: 0,
     features: () => [],
     files: () => [],
+    instanceId: 'default',
     isCreatingConversation: false,
     globalDnD: false,
 });
@@ -247,6 +261,7 @@ const isEmptyMessage = computed(() => {
 const fileChooser = ref<InstanceType<typeof FileChooser>>()
 const fileChooserType = ref<'file' | 'filehandle' | 'directory'>('file')
 const fileChooserAccept = ref<string>('')
+const fileChooserFSAccept = ref<FilePickerAcceptType[]>([]);
 const hasUploading = ref<boolean>(false)
 const fileReferencesRef = ref<InstanceType<typeof MessageFileReferences>>()
 
@@ -300,6 +315,23 @@ const removeFile = async (id: string) => {
     emit('update:files', props.files.filter((item) => item.id !== id));
 }
 
+const removeAllFiles = async () => {
+    if (props.disabled) return;
+    message.info(t('common:ui.mainInput.removeAllAtta'))
+    let errCnt = 0;
+    const ids = cloneDeep(props.files.map((item) => item.id));
+    emit('update:files', []);
+    for (const id of ids) try {
+        await DeleteAttachment(id);
+    } catch { errCnt++ }
+    if (errCnt > 0) {
+        message.error(t('common:ui.mainInput.errors.delAttaSome', { count: errCnt }));
+    }
+    else {
+        message.success(t('common:ui.mainInput.removedAllAtta'))
+    }
+}
+
 // --------
 
 const isDeepThinkEnabled = computed<boolean>({
@@ -344,7 +376,25 @@ const handleAttachMenuClick = (key: string) => {
     if (key === 'attachFile' || key === 'attachImage') {
         fileChooserType.value = 'file';
         fileChooserAccept.value = key === 'attachFile' ? '*' : 'image/*';
+        fileChooserFSAccept.value = [{
+            accept: {
+                [key === 'attachFile' ? 'text/*' : 'image/*']: [],
+            },
+        }];
         nextTick(() => fileChooser.value?.requestFile())
+    }
+    if (key === 'attachDirectory') {
+        fileChooserAccept.value = '';
+        fileChooserFSAccept.value = [];
+        const isSupported = fileChooser.value?.fsSupported();
+        if (isSupported) {
+            fileChooserType.value = 'file';
+            nextTick(() => fileChooser.value?.requestFSRecursiveReadDirectory(true, true));
+        }
+        else {
+            fileChooserType.value = 'directory';
+            nextTick(() => fileChooser.value?.requestFile());
+        }
     }
 }
 
@@ -359,14 +409,17 @@ const handleMoreOptButtonShortcut = (e: KeyboardEvent) => {
             handleAttachMenuClick('attachImage');
             break;
         case '3':
+            handleAttachMenuClick('attachDirectory');
+            break;
+        case '4':
         case '\\':
             handleAttachMenuClick('deepThink');
             break;
-        case '4':
+        case '5':
         case "'":
             handleAttachMenuClick('systemPrompt');
             break;
-        case '5':
+        case '6':
             handleAttachMenuClick('plainInput');
             break;
         default: return;

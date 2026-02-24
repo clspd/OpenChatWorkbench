@@ -41,7 +41,7 @@
     <teleport :to="content" v-if="content">
         <div class="sidebar-content">
             <div class="row" style="padding: 0 0.5em;">
-                <a-button v-if="appStatePersist.sidebarActiveTab === 'chat'" type="dashed" @click="go('/')">{{ t('common:ui.sidebar.newChatBtn') }}</a-button>
+                <a-button v-if="appStatePersist.sidebarActiveTab === 'chat'" type="dashed" @click="go('/')">{{ t('common:ui.sidebar.newChatBtn') }}<span hidden class="keybd-shortcut-tip">Ctrl+J</span></a-button>
                 <a-button v-if="appStatePersist.sidebarActiveTab === 'workspace'" type="dashed" @click="go('/workspace/new')">{{ t('common:ui.sidebar.newWorkspaceBtn') }}</a-button>
             </div>
             <div class="row">
@@ -192,5 +192,8 @@ const restoreScrollPos = () => {
 .row+.row {
     margin-top: 0.5em;
 }
-
+.keybd-shortcut-tip {
+    color: var(--color-disabled-text);
+    margin-left: 0.5em;
+}
 </style>

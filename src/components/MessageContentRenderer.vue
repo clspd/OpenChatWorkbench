@@ -1,5 +1,5 @@
 <template>
-    <div class="message-content">
+    <div class="message-content" :data-role="msgRoleMap[props.message.role]">
         <div v-if="hasThinkingFrag" class="thinking-tip-text" tabindex="0" @click="toggleThoughtContent" @keydown.enter="toggleThoughtContent" role="button">
             <span>{{ props.message.status === MessageStatus.WIP ? t('chat:messageChain.thinking.wip') : t('chat:messageChain.thinking.done', { duration: (totalThought) / 1000 }) }}</span>
             <DownOutlined class="icon" :data-state="collapseThoughtContent" />
@@ -32,13 +32,19 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
-import { MessageContentType, MessageFragmentType, MessageStatus, type Message } from '@/types/message';
+import { MessageContentType, MessageFragmentType, MessageRole, MessageStatus, type Message } from '@/types/message';
 import { LoadingOutlined } from '@ant-design/icons-vue';
 
 const props = defineProps<{
     message: Message;
     showRaw?: boolean;
 }>();
+
+const msgRoleMap = {
+    [MessageRole.Assistant]: 'assistant',
+    [MessageRole.System]: 'system',
+    [MessageRole.User]: 'user',
+}
 
 const fragTypeIdentifyMap = {
     [MessageFragmentType.Request]: 'request',
@@ -112,5 +118,8 @@ watch(() => props.message, () => collapseThoughtContent.value = false);
     animation: spin 1s linear infinite;
 }
 
-
+.message-content[data-role="user"] :deep(p),
+.message-content[data-role="system"] :deep(p) {
+    margin: 0; /* For user-sent messages, do not add margin so that they looked like plain text */
+}
 </style>
