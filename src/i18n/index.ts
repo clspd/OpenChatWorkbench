@@ -42,11 +42,7 @@ export async function SetupI18n() {
 
     await i18next
         .use(resourcesToBackend((lng: string, ns: string) =>
-            importModuleEx(`/assets/locales/${lng}/${ns}.json`, {
-                with: {
-                    type: "json"
-                }
-            })
+            import(`./locales/${lng}/${ns}.json`)
         ))
         .init({
             lng: lng,

@@ -5,7 +5,7 @@ globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.fr
     IMMUTABLE_CACHE_FILE_MATCH: [
         /^\/assets\/.+\.s\.[\w$]+?$/,
         /^\/vendor\/npm\/([\w-]+?)@(\d+?\.\d+?\.\d+?)\//,
-        /^\/resource\/([^\/]+?)@(\d+?\.\d+?\.\d+?)\.([\w$]+?)$/,
+        /^\/(assets|resource)\/([^\/]+?)@(\d+?\.\d+?\.\d+?)\.([\w$]+?)$/,
     ],
     NEVER_CACHE_FILE_MATCH: [],
     CACHE_BY_TS_QUERY_FILE_MATCH: [
