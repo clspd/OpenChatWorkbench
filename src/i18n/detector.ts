@@ -54,6 +54,7 @@ export async function DetectAndPromptLanguage() {
                         dlg.append('Loading...');
                         dlg.showModal();
                         // reload to apply language change
+                        await new Promise(r => setTimeout(r, 1500));
                         window.location.reload();
                     },
                 }, detector_ui_i18n[lang].confirmButtonText),
