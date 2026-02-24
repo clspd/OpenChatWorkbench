@@ -18,7 +18,7 @@ await new Promise<void>((resolve, reject) => {
     throw e;
 });
 
-await importModule("/internal/init_config.js?ts=202602161150+0800");
+await importModule("/internal/init_config.js?ts=202602250424+0800");
 
 import i18next from 'i18next'
 import I18NextVue from 'i18next-vue'

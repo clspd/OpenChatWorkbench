@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import type { FileAttachmentInfo } from '@/types/message';
 import { DialogView } from 'vue-dialog-view';
 import { nextTick } from 'vue';
@@ -102,6 +102,15 @@ const previewFile = (id: string) => {
     showPreview.value = true;
 }
 
+const tempObjUrl = ref("");
+
+onBeforeUnmount(() => {
+    if (tempObjUrl.value) {
+        URL.revokeObjectURL(tempObjUrl.value);
+        tempObjUrl.value = "";
+    }
+});
+
 watch(() => showPreview.value, (newValue) => {
     if (newValue) nextTick(async () => {
         try {
@@ -109,8 +118,15 @@ watch(() => showPreview.value, (newValue) => {
             const info = props.references.find((item) => item.id === previewId.value);
             if (!info) throw "File info not found";
             const file = await GetAttachmentById(previewId.value);
-            const tempUrl = URL.createObjectURL(file);
-            await previewElement.value.init(async () => tempUrl, info.type, info.name);
+            if (tempObjUrl.value) {
+                URL.revokeObjectURL(tempObjUrl.value);
+                tempObjUrl.value = "";
+            }
+            tempObjUrl.value = URL.createObjectURL(file);
+            await previewElement.value.init(
+                async () => tempObjUrl.value,
+                info.type.startsWith('image/') ? info.type : 'text/plain',
+                info.name);
             const sr = previewElement.value.shadowRoot;
             if (sr) {
                 const app = sr.querySelector("#app") as HTMLElement;
