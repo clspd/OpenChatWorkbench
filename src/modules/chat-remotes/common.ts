@@ -161,7 +161,11 @@ export async function _base_stream(
                     if (options.onChunk) {
                         options.onChunk(req, json, conv, reqMsg, respMsg, providerInfo, modelInfo);
                     } else {
-                        if (json.object !== "chat.completion.chunk") throw new TypeError("Unexpected object type in streaming response: " + json.object);
+                        if (json.object !== "chat.completion.chunk")
+                            //throw new TypeError("Unexpected object type in streaming response: " + json.object);
+                            // Some provider just give non-standard response
+                            // For most compatibility, we just ignore unknown object type
+                            return;
 
                         // distinct reasoning content from content
                         const type = GetResponseChunkFragmentType(json, 0);

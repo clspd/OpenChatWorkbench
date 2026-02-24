@@ -39,7 +39,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                 includeSystem: true,
                 includeAssistant: false,
                 includeUser: false,
-            }))[0] ?? undefined,
+            }))[0]?.content ?? undefined,
             stream: true,
         }),
         onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, model) => {
