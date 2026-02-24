@@ -596,6 +596,7 @@ const handleDownloadFile = async (record: any) => {
 .file-browser-toolbar {
     display: flex;
     align-items: center;
+    overflow: auto;
 }
 
 .file-browser-path {

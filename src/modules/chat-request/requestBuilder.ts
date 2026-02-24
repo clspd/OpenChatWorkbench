@@ -4,18 +4,7 @@ import type { Conversation } from "@/types/conversation";
 import { MessageContentType, MessageFragmentType, MessageRole, type Message } from "@/types/message";
 import type { ChatCompletionMessageParam, ChatCompletionContentPart, ChatCompletionContentPartText } from "openai/resources";
 import { GetAttachmentById, MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE, MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE } from "../chat/attachment";
-
-export class ConvCircularReferenceError extends TypeError {
-    constructor(message = "The conversation contains a Circular Reference", options?: any) {
-        super(message, options);
-    }
-}
-
-export class ConvInvalidReferenceError extends TypeError {
-    constructor(message = "The conversation contains an invalid reference", options?: any) {
-        super(message, options);
-    }
-}
+import { ConvCircularReferenceError, CONVERSATION_MAX_MESSAGE_COUNT, ConvInvalidReferenceError, ConvMaxMessageCountError } from "../chat/conversation";
 
 // Convert Open Chat Workbench data structure to OpenAI-API Compatible
 export const Ocw2OaiMap = {
@@ -50,6 +39,8 @@ export async function BuildOpenAICompatibleRequestMessages(conv: Conversation, t
     }
     const result: ChatCompletionMessageParam[] = [];
     const messageId2IndexMap = new Map<number, number>();
+
+    if (conv.messages.length > CONVERSATION_MAX_MESSAGE_COUNT + 1) throw new ConvMaxMessageCountError();
 
     // convert message id to array index
     {
@@ -132,14 +123,24 @@ export async function IntegrateMessageFilesToContext(msg: Message, config: Reque
         else if (fileContent.size < MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE) {
             result.push({
                 type: "text",
-                text: `<file>\n<name>${f.name}</name>\n<content>\n${await fileContent.text()}\n</content>\n</file>`,
+                text: `[file name]: "${f.name}"\n[file content begin]\n${await fileContent.text()}\n[file content end]`,
             });
         }
         else throw new Error(`File ${f.name} is too large (${fileContent.size} bytes), max allowed size is ${MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE} bytes`);
     } catch (e) {
         result.push({
             type: "text",
-            text: `<file>\n<name>${f.name}</name>\n<error>${e}</error>\n</file>`,
+            text: `[file name]: "${f.name}"\n[file error]: \n${e}\n`,
+        });
+    }
+    if (result.length > 0) { 
+        result.unshift({
+            type: "text",
+            text: `[file begin]`,
+        });
+        result.push({
+            type: "text",
+            text: `[file end]`,
         });
     }
     return result;

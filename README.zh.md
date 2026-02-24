@@ -2,7 +2,9 @@
 
 [English](README.md) | 中文
 
-Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在为与来自不同提供商的各种 AI 模型交互提供一个统一的界面。它提供了无缝的用户体验，并具备管理对话、工作空间和自定义 AI 交互的高级功能。
+Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在为与来自不同提供商的各种 AI 模型交互提供一个统一的界面。它提供了无缝的用户体验，并具备管理对话、工作空间和自定义 AI 交互的高级功能。我们的目标是使 AI 聊天更加简单，提供一个最大化用户体验的 AI 聊天平台。
+
+[开始使用](https://chat.openchatworkbench.com)
 
 ## 主要特性
 
@@ -18,15 +20,23 @@ Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在
 
 ## 即将推出的特性
 
+- [ ] 可视化的对话分支查看器，允许用户直观地在对话分支中跳转和导航。
 - [ ] 使用 `Pyodide` 和 `WebContainers` 技术实现客户端 Shell 访问，允许 Agent 在受控环境中执行 shell 命令而无需安装任何软件。
+- [ ] 通过 File system Access API 实现客户端 Shell 操作中与本地文件系统的双向同步，
+  允许 Agent 在用户授权后直接读写本地文件系统中的文件。
 - [ ] 接入 MCP (Model Context Protocol) 协议，实现与不同 AI 模型的无缝交互。
 - [ ] 创建本地桥接层，允许 Agent 在本地 Shell 环境中执行代码。
+- [ ] 允许将聊天记录和配置文件通过 S3 Compatible 存储在用户的对象存储中，实现跨设备同步和备份。
+- [ ] 从其他 AI 服务导出的数据中导入对话。
+- [ ] 建立对话内容索引，允许用户对对话进行快速的全局搜索。
 
 ## 快速开始
 
 ### 在线部署
 
-本项目[可在线访问](https://chat.openchatworkbench.com)！您只需访问该网站并配置您的提供商即可。
+本项目[可在线访问](https://chat.openchatworkbench.com)！您只需访问该网站并配置您的提供商即可开始使用。
+
+注意，我们还为某些网络条件（如中国大陆部分地区）提供了备份站点（使用 Cloudflare ，避免了 Vercel 偶发性无法访问的情况），地址为 [chat2.openchatworkbench.com](https://chat2.openchatworkbench.com)。如果您无法访问主站点，您可以尝试备份站点。
 
 ### 开发
 
@@ -41,7 +51,7 @@ Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在
 
 1. 克隆仓库
    ```bash
-   git clone https://github.com/shc0743/OpenChatWorkbench.git
+   git clone https://github.com/clspd/OpenChatWorkbench.git
    cd OpenChatWorkbench
    ```
 
@@ -50,14 +60,19 @@ Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在
    pnpm install
    ```
 
-3. 启动开发服务器
+3. 运行 `pnpm generate-dyndata` 以生成项目运行所需的动态数据 （虽然只是个占位符而已😂但代码中对这些动态数据有依赖）
+   ```bash
+   pnpm generate-dyndata
+   ```
+
+4. 启动开发服务器
    ```bash
    pnpm dev
    ```
 
-4. 编辑 `src/config.ts` 文件
+5. 编辑 `src/config.ts` 文件
 
-5. 构建生产版本
+6. 构建生产版本
    ```bash
    pnpm build
    ```

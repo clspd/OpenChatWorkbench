@@ -58,7 +58,7 @@
 import { computed, reactive, ref, toRaw, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { cloneDeep } from 'lodash-es';
-import { useVirtualizer } from '@tanstack/vue-virtual';
+import { useVirtualizer, Virtualizer, type VirtualItem } from '@tanstack/vue-virtual';
 import { t } from 'i18next';
 import { DialogView } from 'vue-dialog-view';
 import { useConversationStore } from '@/stores/conversationStore';
@@ -139,6 +139,9 @@ const vOptions = computed(() => ({
     estimateSize: () => 3000,
     overscan: 5,
     useScrollendEvent: !isSafari,
+    shouldAdjustScrollPositionOnItemSizeChange: ((item: VirtualItem, delta: number, instance: Virtualizer<any, any>): boolean => {
+        return (item.index === instance.getVirtualIndexes().length - 1) ? (false): true;
+    }),
 }))
 
 const virtualizer = useVirtualizer(vOptions)

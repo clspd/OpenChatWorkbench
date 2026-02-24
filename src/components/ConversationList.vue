@@ -249,6 +249,7 @@ const handleConvMenuClick = (key: string, index: number) => {
     position: absolute;
     width: calc(100% - 1em);
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .conversation-vlist-wrapper {
@@ -270,6 +271,7 @@ const handleConvMenuClick = (key: string, index: number) => {
     text-decoration: none !important;
     transition: background-color 0.2s;
     border: 1px solid transparent;
+    overflow: hidden;
     display: flex;
     background-color: var(--app-message-list-conversation-item-bg);
     color: var(--app-message-list-conversation-item-text-color);
@@ -293,8 +295,9 @@ const handleConvMenuClick = (key: string, index: number) => {
     color: var(--app-message-list-conversation-selected-text-color);
 }
 
-.conversation-item > .conversation-info {
+.conversation-info {
     flex: 1;
+    overflow: hidden;
 }
 
 .conversation-info > .conversation-title {

@@ -20,6 +20,7 @@ import { GetTitleI18nKeyByText } from "./i18n/titles";
 import i18next from "i18next";
 import { SetupI18n } from "./i18n";
 import { InitAttachmentIndex } from "./modules/chat/attachment";
+import { setupHotKey } from "./modules/hotkey/hotkey_manager";
 
 export default async function init(app: ReturnType<typeof import('vue').createApp>) {
     // register service worker
@@ -96,6 +97,11 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
         // Caution that this is a temporary hack and should be removed in the future
         document.head.appendChild(document.createElement('style')).textContent = `dialog._b4102a3b79656a37 { height: calc(100vh - 2em); }`
     }
+
+    // setup shortcut
+    await setupHotKey();
     
+    // preload some frequently used modules
+    import('@/utils/prompt').catch(() => {});
 
 };

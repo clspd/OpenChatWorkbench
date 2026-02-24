@@ -24,7 +24,7 @@
                     :disabled="props.disabled"
                 />
 
-                <div class="message-body">
+                <div class="message-body" v-show="!isFileOnly">
                     <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
                 </div>
             </div>
@@ -36,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import { MessageRole, type Message } from '@/types/message';
+import { MessageContentType, MessageRole, type Message } from '@/types/message';
 import { msgRoleIdentifyMap } from "@/modules/chat/msgRoleMap";
 import MessageContentRenderer from './MessageContentRenderer.vue';
 import { GetCustomAvatarUrl } from '@/utils/userCustomAvatar';
@@ -62,6 +62,8 @@ const msgRole2StorageRole: Record<string, string> = {
     [MessageRole.Assistant]: 'assistant',
     [MessageRole.System]: 'system',
 }
+
+const isFileOnly = computed(() => props.message.files.length > 0 && props.message.fragments.length === 1 && props.message.fragments[0]!.contentType === MessageContentType.Text && props.message.fragments[0]!.content === '');
 
 onMounted(() => {
     if (appStatePersist.showAvatar === 'custom') {

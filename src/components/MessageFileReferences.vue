@@ -1,5 +1,10 @@
 <template>
    <div class="file-reference-container" ref="container" @wheel.prevent="transformWheel">
+        <div v-if="props.canRemove && props.references.length > 5" class="file-reference-item" @click.stop="!props.disabled && emit('remove-all')">
+            <a-button type="text" danger @click.stop="!props.disabled && emit('remove-all')" :disabled="props.disabled">
+                {{ t("common:ui.mainInput.removeAllAttaLabel") }}
+            </a-button>
+        </div>
         <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)" :data-disabled="props.disabled">
             <div class="file-icon">
                 <FileOutlined />
@@ -16,6 +21,9 @@
         </div>
         <div v-if="hasUploading" class="file-reference-item">
             {{ t("common:ui.mainInput.uploading") }}
+        </div>
+        <div v-else-if="props.references.length > 5" class="file-reference-item" @click="scrollToStart" @keydown.enter.prevent="scrollToStart">
+            <ArrowLeftOutlined />
         </div>
 
         <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog" close-on-click-mask>
@@ -50,6 +58,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
     (e: 'remove-file', fileId: string): void;
+    (e: 'remove-all'): void;
 }>();
 
 defineExpose({
@@ -74,6 +83,15 @@ const transformWheel = (e: WheelEvent) => {
         left: container.value.scrollLeft + e.deltaY,
         behavior: 'instant',
     })
+}
+
+const scrollToStart = () => {
+    if (container.value) {
+        container.value.scrollTo({
+            left: 0,
+            behavior: 'smooth',
+        })
+    }
 }
 
 const previewElement = ref<HTMLCommonFilePreviewElement>();

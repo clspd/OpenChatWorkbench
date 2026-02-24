@@ -102,7 +102,7 @@ export async function DeleteAttachment(id: string) {
             }
         }
         if (!useConversationStore().attachmentsIndex.delete(idx.hash)) {
-            console.error("[DeleteAttachment]", `Failed to delete attachment index entry for ${id}`);
+            // console.error("[DeleteAttachment]", `Failed to delete attachment index entry for ${id}`);
         }
         await SaveAttachmentIndex();
     }

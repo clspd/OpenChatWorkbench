@@ -258,7 +258,6 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
         const currentOffset = virtualizer.scrollOffset
         if (currentOffset != null) { 
             const idx = virtualizer.getVirtualItemForOffset(currentOffset);
-            // console.debug('[ChatView]', 'requestScrollTo', 'currentOffset=', currentOffset, 'idx=', idx?.index, pos);
             if (idx?.index != null) {
                 virtualizer.scrollToIndex(idx.index + (pos === 'next' ? 1 : -1), {
                     align: 'start',
@@ -311,10 +310,6 @@ const handleSendMessage = async function () {
         }
 
         const msg = tiptap2markdown(messageEditorState.content)
-        if (!msg.trim()) {
-            message.error(t('chat:chatView.errors.enterMessage'))
-            return
-        }
 
         // add user request to conversation
         const reqId = await GetConvNextMessageId(chatId.value);
