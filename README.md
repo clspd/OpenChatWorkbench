@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Open Chat Workbench is a powerful, open-source chat application designed to provide a unified interface for interacting with various AI models from different providers. It offers a seamless user experience with advanced features for managing conversations, workspaces, and customizing AI interactions.
+Open Chat Workbench is a powerful, open-source chat application designed to provide a unified interface for interacting with various AI models from different providers. It offers a seamless user experience with advanced features for managing conversations, workspaces, and customizing AI interactions. Our goal is to make AI chat easier and build the most user-friendly platform for AI chat.
 
 ## Key Features
 
@@ -18,9 +18,15 @@ Open Chat Workbench is a powerful, open-source chat application designed to prov
 
 ## Upcoming Features
 
+- [ ] Visualization of conversation branches, allowing users to jump and navigate between different conversation threads intuitively.
 - [ ] Client-side Shell access using `Pyodide` and `WebContainers` technology, allowing Agents to execute shell commands in a controlled environment without installing any software.
+- [ ] Bidirectional synchronization between the client-side Shell environment and the local file system using the File system Access API, allowing Agents to read and write files on the user's local machine.
 - [ ] Integration with the MCP (Model Context Protocol) to enable seamless interaction with different AI models.
 - [ ] Creation of a local bridge layer to allow Agents to execute code in the local Shell environment.
+- [ ] Allow users to store chat records and configuration files in their object storage using S3 Compatible API,
+  enabling cross-device synchronization and backup.
+- [ ] Import conversations from other AI services' exported data.
+- [ ] Build conversation content index, allowing users to quickly search for conversations globally.
 
 ## Quick Start
 
