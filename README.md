@@ -4,6 +4,8 @@ English | [中文](README.zh.md)
 
 Open Chat Workbench is a powerful, open-source chat application designed to provide a unified interface for interacting with various AI models from different providers. It offers a seamless user experience with advanced features for managing conversations, workspaces, and customizing AI interactions. Our goal is to make AI chat easier and build the most user-friendly platform for AI chat.
 
+[Try now](https://chat.openchatworkbench.com)
+
 ## Key Features
 
 - **Conversation Management**: Create, organize, and manage conversations with advanced threading capabilities
@@ -34,6 +36,8 @@ Open Chat Workbench is a powerful, open-source chat application designed to prov
 
 This project is [available online](https://chat.openchatworkbench.com)! What you needed to do is just access the site and configure your provider.
 
+Note that we also have a backup site for some network conditions(using cloudflare), which is on [chat2.openchatworkbench.com](https://chat2.openchatworkbench.com). If you cannot access the main site, you can try the backup site.
+
 ### Development
 
 #### Prerequisites
@@ -47,7 +51,7 @@ This project is [available online](https://chat.openchatworkbench.com)! What you
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/shc0743/OpenChatWorkbench.git
+   git clone https://github.com/clspd/OpenChatWorkbench.git
    cd OpenChatWorkbench
    ```
 
@@ -56,14 +60,20 @@ This project is [available online](https://chat.openchatworkbench.com)! What you
    pnpm install
    ```
 
-3. Start the development server
+3. Generate dynamic data by running the following command:
+   ```bash
+   pnpm generate-dyndata
+   ```
+   (Note: This step is required to generate the dynamic data required for the project to run(although just a placeholder data😂))
+
+4. Start the development server
    ```bash
    pnpm dev
    ```
 
-4. edit the `src/config.ts` file
+5. edit the `src/config.ts` file
 
-5. Build for production
+6. Build for production
    ```bash
    pnpm build
    ```
