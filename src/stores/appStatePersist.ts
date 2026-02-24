@@ -6,7 +6,7 @@ import type { MessageFeatureItem } from '@/types/message'
 import type { Config as DomPurifyConfig } from 'dompurify'
 import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 import { RequestBuilderDefaultConfig } from '@/modules/chat-request/requestBuilder'
-// import { debounce } from '@tanstack/vue-virtual'
+import { debounce } from 'lodash-es'
 
 // const notifyBrothers = debounce(window, () => window.localStorage.setItem(app_name_id + "@statePersistUpdated", "" + Math.random()), 100);
 
@@ -38,7 +38,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
     },
     actions: {
         initAutoSave() {
-            this.$subscribe(async (mutation, state) => {
+            this.$subscribe(debounce(async (mutation, state) => {
                 if (!await isFunctionalCookieConsented()) return;
                 try {
                     const json = JSON.stringify(state)
@@ -51,7 +51,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
                 } catch (error) {
                     console.error('[AppStatePersist]', "Error saving appStatePersist: " + error);
                 }
-            });
+            }, 1000));
             // window.addEventListener('storage', ((e: StorageEvent) => {
             //     if (e.key === app_name_id + "@statePersistUpdated") {
             //         this.load().catch(e => {

@@ -7,6 +7,7 @@ import type { ChatEditBuffer } from '@/types/conversation'
 import { db } from '@/userdata'
 import { IsFirstInstance } from '@/utils/appInstanceDetector'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
+import { debounce } from 'lodash-es'
 
 export const useAppStateSessionStore = defineStore('AppStateSession', {
     state: () => ({
@@ -15,7 +16,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
     }),
     actions: {
         initAutoSave() {
-            this.$subscribe(async (mutation, state) => {
+            this.$subscribe(debounce(async (mutation, state) => {
                 if (!await isFunctionalCookieConsented()) return;
                 try {
                     const json = JSON.stringify(state)
@@ -26,7 +27,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                 } catch (error) {
                     console.error('[AppStateSession]', "Error saving appStateSession: " + error);
                 }
-            })
+            }, 500));
         },
         createWindowId() {
             const windowId = window.crypto.randomUUID()
