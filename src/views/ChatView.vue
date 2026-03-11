@@ -80,7 +80,7 @@ import { LoadConversationPreference } from '@/modules/chat/convPref';
 import { GetConvNextMessageId, InsertMessageToConversation, LoadConversation } from '@/modules/chat/conversation';
 import { TraceErrorAndGetString } from '@/utils/errorTrace';
 import { tiptap2markdown } from '@/utils/parseTiptap';
-import { CreateUserMessage, ExtractMessageHTML } from '@/modules/chat/message';
+import { CreateUserMessage, ExtractMessageText } from '@/modules/chat/message';
 import { GenerateResponse } from '@/modules/chat-request/respond';
 import { useConversationStore } from '@/stores/conversationStore';
 
@@ -324,7 +324,7 @@ const handleSendMessage = async function () {
 
         // Send request
         messageEditorState.isGenerating = true;
-        requestScrollToBottom();
+        //requestScrollToBottom();
         await new Promise<void>((resolve, reject) => GenerateResponse(chatId.value, reqId, model.id, provider.id, cloneDeep(toRaw(messageEditorState.features)), cloneDeep(toRaw(messageEditorState.files)), () => (
             inputMessageRef.value?.focus(),
             updateChoices(messageEditorState.editMessage?.isEditing ?
@@ -413,7 +413,7 @@ const handleRequestRegenerateMessage = async function (id: number, parent_id: nu
         }
         // Send request
         messageEditorState.isGenerating = true;
-        requestScrollToBottom();
+        //requestScrollToBottom();
         await new Promise<void>((resolve, reject) => GenerateResponse(
             chatId.value,
             parent_id,
@@ -465,7 +465,7 @@ const handleRequestEditMessage = async function (id: number, parent_id: number |
         newChoices: newChoices,
         oldEditorState: (JSON.parse(JSON.stringify(messageEditorState))),
     };
-    inputMessageRef.value.setHTML(ExtractMessageHTML(node));
+    inputMessageRef.value.setText(ExtractMessageText(node));
     if (node.features) messageEditorState.features = node.features;
     if (node.files) messageEditorState.files = node.files;
     updateEditBuffer();

@@ -21,8 +21,8 @@
             "attachOptions": {
                 "legend": "Attachment Options",
                 "throttleSingleFileSize": {
-                    "title": "Throttle Single File Size",
-                    "description": "The throttle size of a single file attachment in MB. If the file size exceeds this value, we will ask you."
+                    "title": "Prompt Single File Size",
+                    "description": "The size of a single file attachment in MiB. If the file size exceeds this value, we will ask you whether to continue."
                 }
             }
         },
@@ -33,6 +33,10 @@
             "fontSize": {
                 "legend": "Font Size",
                 "reset": "Reset"
+            },
+            "modelChooser": {
+                "legend": "Model Chooser",
+                "autoFocusInputModelChooser": "Auto focus on the input box when I open Model Chooser"
             }
         }
     },

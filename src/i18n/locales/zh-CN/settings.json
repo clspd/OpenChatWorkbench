@@ -21,8 +21,8 @@
             "attachOptions": {
                 "legend": "附件选项",
                 "throttleSingleFileSize": {
-                    "title": "Throttle 单文件大小",
-                    "description": "单个文件附件的 Throttle 大小（MB）。如果文件大小超过此值，我们将询问您是否继续。"
+                    "title": "单文件大小提示阈值",
+                    "description": "单个文件附件的大小（MiB）。如果文件大小超过此值，我们将询问您是否继续。"
                 }
             }
         },
@@ -33,6 +33,10 @@
             "fontSize": {
                 "legend": "字体大小",
                 "reset": "重置"
+            },
+            "modelChooser": {
+                "legend": "模型选择器",
+                "autoFocusInputModelChooser": "打开模型选择器时自动聚焦输入框"
             }
         }
     },

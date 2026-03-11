@@ -28,6 +28,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         fileUploadThrottleSize: 2, // MiB
         defaultBuilderConfig: RequestBuilderDefaultConfig,
         defaultSystemPrompt: '',
+        autoFocusInputModelChooser: !window.matchMedia("(pointer: coarse)").matches,
     }),
     getters: {
         theme: (state): ThemeConfig => ({
@@ -51,7 +52,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
                 } catch (error) {
                     console.error('[AppStatePersist]', "Error saving appStatePersist: " + error);
                 }
-            }, 1000));
+            }, 100));
             // window.addEventListener('storage', ((e: StorageEvent) => {
             //     if (e.key === app_name_id + "@statePersistUpdated") {
             //         this.load().catch(e => {

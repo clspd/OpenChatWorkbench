@@ -119,6 +119,10 @@
             "content": "Enter new name for the conversation:",
             "emptyNameErr": "Conversation name cannot be empty",
             "nameTooLongErr": "Conversation name cannot be longer than {{n}} characters"
+        },
+        "export": {
+            "success": "Conversation exported successfully",
+            "fail": "Failed to export conversation because {{error}}"
         }
     },
     "page_not_found": {

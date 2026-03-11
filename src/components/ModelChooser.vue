@@ -24,7 +24,7 @@
                         v-model:value="appStatePersist.modelChooserSearchKeyword" 
                         :placeholder="t('common:ui.modelChooser.filterTooltip')" 
                         allow-clear
-                        autofocus
+                        :autofocus="appStatePersist.autoFocusInputModelChooser"
                     >
                         <!-- TODO: add keyboard functionality for the input box, e.g. use arrow key and enter to choose model -->
                         <template #prefix>
@@ -298,6 +298,7 @@ const handleScroll = () => {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 8px;
+    overflow-wrap: anywhere;
 }
 
 .model-item:hover {

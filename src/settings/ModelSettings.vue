@@ -28,7 +28,7 @@
             <a-button @click="handleCleanup">{{ t("settings:model.zombie.cleanupNow") }}</a-button>
         </div>
 
-        <div class="virtual-list-container" ref="virtualListRef">
+        <div class="virtual-list-container">
             <div class="virtual-list-content">
                 <div :style="{ height: `${totalSize}px` }"></div>
                 <div v-for="vi in virtualItems" :key="vi.index"
@@ -157,21 +157,24 @@ const formData = reactive<ModelConfig>({
     enabled: true
 }), formDataClone = ref<ModelConfig>();
 
-const virtualListRef = ref<HTMLDivElement>()
-
 const enabledProviders = computed(() => {
     return configStore.providers.filter(p => !!p.enabled)
 })
 
 const groupedModels = computed(() => {
-    const groups = enabledProviders.value.map(provider => ({
-        provider,
-        models: configStore.models
-            .filter(m => m.provider_id === provider.id)
-            .filter(m => !searchKeyword.value || m.id.toLowerCase().includes(searchKeyword.value.toLowerCase()))
-    }))
-    return groups.filter(group => group.models.length > 0)
-})
+    const keyword = searchKeyword.value?.toLowerCase().trim() || ''
+
+    const matchedModels = configStore.models.filter(model => {
+        return !keyword || model.id.toLowerCase().includes(keyword)
+    })
+
+    return enabledProviders.value
+        .map(provider => ({
+            provider,
+            models: matchedModels.filter(m => m.provider_id === provider.id)
+        }))
+        .filter(group => group.models.length > 0)
+});
 
 const flattenedData = computed(() => {
     const result: Array<{
@@ -201,7 +204,7 @@ const flattenedData = computed(() => {
 
 const vOptions = computed(() => ({
     count: flattenedData.value.length,
-    getScrollElement: () => virtualListRef.value || null,
+    getScrollElement: () => (useAppStateStore().mainContentViewEl as any)?.$el || null,
     estimateSize: (index: number) => {
         return flattenedData.value[index]?.type === 'header' ? 60 : 50
     },
