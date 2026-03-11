@@ -157,6 +157,7 @@ await configure({
             idbFactory: fakeIDBFactory,
         }),
     },
+    onlySyncOnClose: true, // FIXME: this is a temporary solution to #7
 });
 
 export * as fs from '@zenfs/core/promises';

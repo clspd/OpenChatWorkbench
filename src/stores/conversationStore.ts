@@ -7,6 +7,7 @@ import { groupConversationsByTime } from '@/utils/conversationGroup';
 import { LoadConversationPreference, UpdateConversationPreferenceInternal } from '@/modules/chat/convPref';
 import type { FileAttachmentInfo } from '@/types/message';
 import { SaveAttachmentIndex } from '@/modules/chat/attachment';
+import { writeFileQueued } from '@/utils/writeFileQueued';
 
 /**
  * Temporarily caches the conversation and message data.
@@ -38,12 +39,12 @@ export const useConversationStore = defineStore('conversation', {
                 } else {
                     this.conversations.set(convId, conv);
                 }
-                await fs.writeFile(getConvPath(convId), dumpConversationData(conv));
+                await writeFileQueued(getConvPath(convId), dumpConversationData(conv));
             }
             else {
                 const idData = this.conversations.get(convId);
                 if (!idData) throw new Error('Conversation specified by ID is not in store.');
-                await fs.writeFile(getConvPath(convId), dumpConversationData(idData));
+                await writeFileQueued(getConvPath(convId), dumpConversationData(idData));
             }
         },
         removeConvFromStore(convId: string) {
