@@ -10,7 +10,8 @@ const writeQueue = new Map<string, {
 export function writeFileQueued(path: string, data: any, options?: any) {
     const task = writeQueue.get(path);
     
-    const newPromise = new Promise<void>((resolve, reject) => {
+    let newPromise: Promise<void>;
+    newPromise = new Promise<void>((resolve, reject) => {
         if (task) {
             task.promise.finally(() => {
                 if (writeQueue.get(path)?.promise !== newPromise)
