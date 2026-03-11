@@ -9,10 +9,11 @@
                 <a :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'conversation'"
                     class="conversation-item"
                     :class="{ 'is-selected': isActive((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id) }"
-                    role="link"
+                    role="presentation"
+                    tabindex="-1"
                     :href="getConversationUrl((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)"
                     @click="handleConversationClick((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
-                    <div class="conversation-info">
+                    <div class="conversation-info" tabindex="0" role="link">
                         <div class="conversation-title">{{ (displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
                         <div class="conversation-meta">
                             <span class="conversation-time">{{ formatConversationTime((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
