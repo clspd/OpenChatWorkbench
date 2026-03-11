@@ -17,6 +17,7 @@ export class OcwMarkdownComponent extends LitElement {
         padding: 0.5em;
         font-family: 'Consolas', 'Courier New', monospace;
         overflow: auto;
+        font-size: 0.9em;
     }
 
     .flexible-space {
@@ -44,6 +45,7 @@ export class OcwMarkdownComponent extends LitElement {
 
     .pre-renderer .content {
         padding: 0.5em;
+        white-space: pre;
     }
 
     `;

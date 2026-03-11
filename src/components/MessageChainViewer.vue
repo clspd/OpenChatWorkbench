@@ -242,7 +242,7 @@ const handleSaveEdit = async () => {
     const msg = conversation.value?.messages.find((msg) => msg.id === contentEditDlgState.msgId);
     if (!msg) return message.error(t('chat:messageChain.error.cannotEdit'))
     if (!contentEditDlgState.createNewBranch) {
-        msg.fragments = contentEditDlgState.frag;
+        msg.fragments = cloneDeep(toRaw(contentEditDlgState.frag));
         conversationStore.updateConvInStore(props.chatId, conversation.value);
         contentEditDlgState.show = false;
         return;
@@ -252,7 +252,7 @@ const handleSaveEdit = async () => {
         const newMsg = cloneDeep(msg);
         newMsg.id = await GetConvNextMessageId(props.chatId);
         newMsg.parent_id = msg.parent_id;
-        newMsg.fragments = contentEditDlgState.frag;
+        newMsg.fragments = cloneDeep(toRaw(contentEditDlgState.frag));
         newMsg.ts = Date.now();
         newMsg.feedback = MessageFeedback.NotProvided;
         newMsg.status = MessageStatus.Finished;
