@@ -4,6 +4,7 @@
     props.message.role === MessageRole.System ||
     props.message.role === MessageRole.User || 
     props.message.role === MessageRole.Assistant">
+            <div class="message-fill" v-if="props.message.role === MessageRole.User || props.message.role === MessageRole.System">&NoBreak;</div>
             <div class="message-item" :data-role="msgRoleIdentifyMap[props.message.role]">
                 <div class="message-avatar" v-if="appStatePersist.showAvatar !== 'off'">
                     <div class="message-avatar-icon" v-if="appStatePersist.showAvatar === 'default' || avatarUrl === 'N/A'">
@@ -22,6 +23,7 @@
                     :references="props.message.files"
                     :can-remove="false"
                     :disabled="props.disabled"
+                    :align="(props.message.role === MessageRole.User || props.message.role === MessageRole.System) ? 'right' : 'left'"
                 />
 
                 <div class="message-body" v-show="!isFileOnly">
@@ -89,11 +91,14 @@ const confirmEditAvatar = () => {
 <style scoped>
 .message-item-container {
     overflow: hidden;
+    display: flex;
 }
 
 .message-item {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .message-item .message-avatar {
@@ -105,7 +110,10 @@ const confirmEditAvatar = () => {
 
 .message-item[data-role="system"],
 .message-item[data-role="user"] {
-    align-items: flex-end;
+    flex: unset;
+}
+.message-fill {
+    flex: 1;
 }
 .message-item[data-role="system"] .message-avatar,
 .message-item[data-role="user"] .message-avatar {

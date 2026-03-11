@@ -302,10 +302,6 @@ const handleSaveEdit = async () => {
     display: flex;
     flex-direction: column;
 }
-.vItem[data-role="user"],
-.vItem[data-role="system"] {
-    align-items: flex-end;
-}
 .vItem + .vItem {
     margin-top: 1em;
 }
