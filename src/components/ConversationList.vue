@@ -9,10 +9,11 @@
                 <a :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'conversation'"
                     class="conversation-item"
                     :class="{ 'is-selected': isActive((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id) }"
-                    role="link"
+                    role="presentation"
+                    tabindex="-1"
                     :href="getConversationUrl((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)"
                     @click="handleConversationClick((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
-                    <div class="conversation-info">
+                    <div class="conversation-info" tabindex="0" role="link" @keydown.enter="handleConversationClick((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.id)">
                         <div class="conversation-title">{{ (displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.title }}</div>
                         <div class="conversation-meta">
                             <span class="conversation-time">{{ formatConversationTime((displayContent[vi.index] as FlattenedConversationIndexItemConversation).content.updated_at) }}</span>
@@ -128,7 +129,7 @@ const msgList = ref<HTMLDivElement>();
 const vOptions = computed(() => ({
     count: displayContent.value.length,
     getScrollElement: () => msgList.value?.parentElement || null,
-    estimateSize: () => 52.625,
+    estimateSize: () => 60,
     overscan: 5,
 }))
 
@@ -209,9 +210,9 @@ const handleConvMenuClick = (key: string, index: number) => {
                     a.remove();
                     URL.revokeObjectURL(url);
                 }, 1000);
-                message.success("Conversation exported successfully");
+                message.success(t("common:conversation.export.success"));
             }).catch(e => {
-                message.error("Failed to export conversation: " + e);
+                message.error(t("common:conversation.export.fail", { error: String(e) }));
             }).finally(() => {
                 showProgressDialog.value = false;
             });
@@ -286,10 +287,6 @@ const handleConvMenuClick = (key: string, index: number) => {
     color: var(--app-message-list-conversation-active-text-color);
 }
 
-.conversation-item:focus-visible {
-    outline: 2px solid var(--app-message-list-conversation-focus-outline);
-}
-
 .conversation-item.is-selected {
     background-color: var(--app-message-list-conversation-selected-bg);
     color: var(--app-message-list-conversation-selected-text-color);
@@ -298,6 +295,10 @@ const handleConvMenuClick = (key: string, index: number) => {
 .conversation-info {
     flex: 1;
     overflow: hidden;
+}
+
+.conversation-info:focus-visible {
+    outline: 2px solid var(--app-message-list-conversation-focus-outline);
 }
 
 .conversation-info > .conversation-title {

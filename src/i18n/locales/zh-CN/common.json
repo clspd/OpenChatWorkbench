@@ -119,6 +119,10 @@
             "content": "请输入新名称:",
             "emptyNameErr": "对话名称不能为空",
             "nameTooLongErr": "对话名称不能超过 {{n}} 个字符"
+        },
+        "export": {
+            "success": "对话已导出",
+            "fail": "无法导出对话: {{error}}"
         }
     },
     "page_not_found": {

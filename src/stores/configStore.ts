@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import type { ModelConfig, ProviderConfig } from '@/types/config'
 import { db } from '@/userdata'
 import { isNecessaryCookieConsented } from '@/utils/cookieConsent'
-import { debounce } from 'lodash-es'
 
 export const useConfigStore = defineStore('config', {
     state: () => ({
@@ -16,7 +15,7 @@ export const useConfigStore = defineStore('config', {
     }),
     actions: {
         initAutoSave() {
-            this.$subscribe(debounce(async (mutation, state) => {
+            this.$subscribe(async (mutation, state) => {
                 if (!await isNecessaryCookieConsented()) return;
                 try {
                     const data = JSON.parse(JSON.stringify(state))
@@ -26,7 +25,7 @@ export const useConfigStore = defineStore('config', {
                 } catch (error) {
                     console.error('[configStore]', 'Unable to save config:' + error)
                 }
-            }, 500));
+            });
         },
         async loadConfig() {
             if (!await isNecessaryCookieConsented()) return;

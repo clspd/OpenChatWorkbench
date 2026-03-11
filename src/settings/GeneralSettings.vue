@@ -46,6 +46,11 @@
                     <a-button @click="appStatePersist.fontSizeGlobal = 14">{{ t('settings:general.accessibility.fontSize.reset') }}</a-button>
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>{{ t('settings:general.accessibility.modelChooser.legend') }}</legend>
+                <a-checkbox v-model:checked="appStatePersist.autoFocusInputModelChooser">{{ t('settings:general.accessibility.modelChooser.autoFocusInputModelChooser') }}</a-checkbox>
+            </fieldset>
         </a-card>
     </div>
 </template>

@@ -1,5 +1,7 @@
 import { t } from 'i18next';
 import { h, ref } from 'vue'
+import { Input, Modal } from 'ant-design-vue';
+import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 
 export async function prompt(
     prompt: string,
@@ -9,8 +11,6 @@ export async function prompt(
     okText = t("common:ui.dialog.ok"),
     cancelText = t("common:ui.dialog.cancel")
 ) {
-    const { Input, Modal } = await import('ant-design-vue');
-    const { QuestionCircleOutlined } = await import('@ant-design/icons-vue');
     const value = ref(defaultValue ?? "");
     const content = h({
         render: () => h('div', null, [

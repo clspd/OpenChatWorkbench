@@ -30,40 +30,40 @@
                             <a-menu-item key="attachFile">
                                 <LinkOutlined />
                                 {{ t('common:ui.mainInput.options.attachFile') }}
-                                <span class="keybd-shortcut-tip">Ctrl+E or Ctrl+1</span>
+                                <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+E or Ctrl+1</span>
                             </a-menu-item>
                             <a-menu-item key="attachImage">
                                 <FileImageOutlined />
                                 {{ t('common:ui.mainInput.options.attachImage') }}
-                                <span class="keybd-shortcut-tip">Ctrl+2</span>
+                                <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+2</span>
                             </a-menu-item>
                             <a-menu-item key="attachDirectory">
                                 <a-tooltip placement="right">
                                     <template #title>{{ t('common:ui.mainInput.options.attachDirectoryDesc') }}</template>
                                     <FolderOutlined />
                                     {{ t('common:ui.mainInput.options.attachDirectory') }}
-                                    <span class="keybd-shortcut-tip">Ctrl+3</span>
+                                    <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+3</span>
                                 </a-tooltip>
                             </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="deepThink" :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: isDeepThinkEnabled ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 {{ t('common:ui.mainInput.options.deepThink') }}
-                                <span class="keybd-shortcut-tip">Ctrl+\ or Ctrl+4</span>
+                                <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+\ or Ctrl+4</span>
                             </a-menu-item>
                             <a-menu-item key="systemPrompt" :disabled="!props.isCreatingConversation">
                                 <a-tooltip placement="right">
                                     <template #title>{{ props.isCreatingConversation ? t('common:ui.mainInput.options.systemPromptDesc') : t('common:ui.mainInput.options.systemPromptNotAvailableReason') }}</template>
                                     <SettingOutlined />
                                     {{ t('common:ui.mainInput.options.systemPrompt') }}
-                                    <span class="keybd-shortcut-tip">Ctrl+' or Ctrl+5</span>
+                                    <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+' or Ctrl+5</span>
                                 </a-tooltip>
                             </a-menu-item>
                             <a-menu-divider />
                             <a-menu-item key="plainInput" :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : '' }">
                                 <CheckOutlined :style="{ color: appStatePersist.usePlainInput ? 'var(--text-primary-color)' : 'transparent' }" />   
                                 {{ t('common:ui.mainInput.options.plainInput') }}
-                                <span class="keybd-shortcut-tip">Ctrl+6</span>
+                                <span class="keybd-shortcut-tip" aria-hidden="true">Ctrl+6</span>
                             </a-menu-item>
                         </a-menu>
                     </template>
@@ -124,6 +124,7 @@ import FileChooser from './FileChooser.vue'
 import MessageFileReferences from './MessageFileReferences.vue'
 import { COMMON_TEXT_FILE_EXTENSION } from '@/modules/ui-utils/commonExt'
 import { app_name_id } from '@/config'
+import { getSafeHTML } from '@/utils/htmlpurify'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -163,6 +164,18 @@ defineExpose({
     setHTML(html: string) {
         return editor.value?.commands.setContent(html);
     },
+    setText(text: string) { 
+        return editor.value?.commands.setContent({
+            type: 'doc',
+            content: [{
+                type: 'paragraph',
+                content: [{
+                    type: 'text',
+                    text,
+                }]
+            }]
+        });
+    },
     focus() {
         editor.value?.commands.focus()
     },
@@ -192,7 +205,7 @@ onMounted(() => {
                 autolink: false,
             }),
         ],
-        content: safeParseJSON(props.modelValue, EMPTY_MESSAGE),
+        content: safeParseJSON(props.modelValue, structuredClone(EMPTY_MESSAGE)),
         editable: !props.disabled,
         onUpdate: () => {
             // const html = editor.value?.getHTML()
@@ -203,10 +216,10 @@ onMounted(() => {
         editorProps: {
             handleKeyDown: (view, event) => {
                 if (event.key === 'Enter') {
-                    if (appStatePersist.sendMessageWithCtrlEnter && (!event.ctrlKey || event.altKey || event.shiftKey)) {
-                        return false;
-                    }
-                    if (event.shiftKey) {
+                    if (
+                        (appStatePersist.sendMessageWithCtrlEnter && (!event.ctrlKey || event.altKey || event.shiftKey))
+                        || event.shiftKey
+                    ) {
                         editor.value?.commands.insertContent('<br>')
                         return true
                     }
@@ -227,6 +240,20 @@ onMounted(() => {
                 }
                 return false
             },
+            handlePaste: (view, event) => {
+                const clipboardData = event.clipboardData;
+                if (!clipboardData || !editor.value) return false;
+                const pastedText = clipboardData.getData('text/plain');
+                const pastedHTML = clipboardData.getData('text/html');
+                event.preventDefault();
+                if (pastedHTML) editor.value.commands.insertContent(getSafeHTML(pastedHTML, undefined, false));
+                else if (pastedText) editor.value.commands.insertContent({
+                    type: 'text',
+                    text: pastedText
+                });
+
+                return true;
+            },
         },
     })
 })
@@ -246,7 +273,7 @@ watch(() => props.modelValue, (newValue, oldValue) => {
         return
     }
 
-    const json = (!newValue) ? EMPTY_MESSAGE : safeParseJSON(newValue, null)
+    const json = (!newValue) ? structuredClone(EMPTY_MESSAGE) : safeParseJSON(newValue, null)
     if (json) editor.value?.commands.setContent(json)
 })
 

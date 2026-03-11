@@ -1,5 +1,6 @@
 <template>
    <div class="file-reference-container" ref="container" @wheel.prevent="transformWheel">
+        <div v-if="props.align === 'right'" style="flex: 1;" aria-hidden="true"></div>
         <div v-if="props.canRemove && props.references.length > 5" class="file-reference-item" @click.stop="!props.disabled && emit('remove-all')">
             <a-button type="text" danger @click.stop="!props.disabled && emit('remove-all')" :disabled="props.disabled">
                 {{ t("common:ui.mainInput.removeAllAttaLabel") }}
@@ -50,10 +51,12 @@ const props = withDefaults(defineProps<{
     hasUploading?: boolean,
     canRemove?: boolean,
     disabled?: boolean,
+    align?: 'left' | 'right',
 }>(), {
     hasUploading: false,
     canRemove: true,
     disabled: false,
+    align: 'left',
 });
 
 const emit = defineEmits<{

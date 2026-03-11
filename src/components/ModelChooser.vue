@@ -24,7 +24,9 @@
                         v-model:value="appStatePersist.modelChooserSearchKeyword" 
                         :placeholder="t('common:ui.modelChooser.filterTooltip')" 
                         allow-clear
+                        :autofocus="appStatePersist.autoFocusInputModelChooser"
                     >
+                        <!-- TODO: add keyboard functionality for the input box, e.g. use arrow key and enter to choose model -->
                         <template #prefix>
                             <SearchOutlined />
                         </template>
@@ -56,11 +58,10 @@
                         <div v-else-if="groupedModels[item.index]?.type === 'model'"
                              class="model-item"
                              :class="{ 'selected': (props.modelId === (groupedModels[item.index] as any).data.id && props.providerId === (groupedModels[item.index] as any).data.provider_id) }"
-                             tabindex="0" role="button"
                              @click="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
-                             @keydown.enter="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
+                             @keydown.enter.stop="selectModel((groupedModels[item.index] as any).data.provider_id, (groupedModels[item.index] as any).data)"
                         >
-                            <div class="model-info">
+                            <div class="model-info" tabindex="0" role="button">
                                 <div class="model-id">{{ (groupedModels[item.index] as any).data.id }}</div>
                             </div>
                             <div class="model-actions">
@@ -297,6 +298,7 @@ const handleScroll = () => {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 8px;
+    overflow-wrap: anywhere;
 }
 
 .model-item:hover {

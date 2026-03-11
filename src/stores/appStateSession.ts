@@ -27,7 +27,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                 } catch (error) {
                     console.error('[AppStateSession]', "Error saving appStateSession: " + error);
                 }
-            }, 500));
+            }, 200));
         },
         createWindowId() {
             const windowId = window.crypto.randomUUID()

@@ -16,7 +16,7 @@
                 <div><b>{{ t('configGuide:provider.question') }}</b><br><span>{{ t('configGuide:provider.hint') }}</span></div>
                 <p style="overflow: auto; white-space: nowrap; border-bottom: 1px solid gray; padding-bottom: 1em;">{{ t('configGuide:provider.choose') }} <select v-model="selectedPresetProviderIdx" @change="handleUserSelectProvider" placeholder="Select a provider">
                     <option value="" disabled>{{ t('configGuide:provider.pleaseSelect') }}</option>
-                    <option v-for="(it, idx) in providers" :key="idx" :value="String(idx)" :disabled="it.disabled">{{ it.name }} ({{ it.description }})</option>
+                    <option v-for="(it, idx) in providers" :key="idx" :value="String(idx)" :disabled="it.disabled">{{ it.icon }} {{ it.name }} ({{ it.description }})</option>
                 </select></p>
                 <form class="provider-cfg-form" method="dialog" @submit.prevent>
                     <label>

@@ -125,7 +125,7 @@ import { DialogView } from 'vue-dialog-view';
 import { useAppStateStore } from '@/stores/appState';
 import type { CookieConsent } from '@/types/cookieConsent';
 import { createBaseCookieConsent, getCookieConsent, setCookieConsent } from '@/utils/cookieConsent';
-import { analytics_base_url, cookie_consent_updated_at, privacy_policy_href } from '@/config';
+import { cookie_consent_updated_at, privacy_policy_href, trace_info_url } from '@/config';
 import { NON_EU_MAJOR } from '@/modules/statistics/NonEuMajor';
 
 const appState = useAppStateStore();
@@ -143,9 +143,9 @@ watch(() => appState.showCookieConsent, async (newValue: boolean) => {
         if (stat) status.value = stat;
         else {
             const base = createBaseCookieConsent();
-            const resp = await fetch(new URL("./country", analytics_base_url));
+            const resp = await fetch(new URL(trace_info_url));
             if (!resp.ok) throw new Error(`Failed to get country: ${resp.status}`);
-            const country = (await resp.text()).toUpperCase();
+            const country = /^loc=(.+)$/m.exec(await resp.text())?.[1]?.toUpperCase() ?? 'unknown';
             if (NON_EU_MAJOR.has(country)) {
                 // for non-europe users, enable all cookies by default (user can still edit the preferences)
                 base.performance = base.functional = base.targeting = true;

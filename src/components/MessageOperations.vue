@@ -1,5 +1,6 @@
 <template>
     <div class="message-operations" :data-role="msgRoleIdentifyMap[props.message.role]">
+        <div v-if="props.message.role === MessageRole.User || props.message.role === MessageRole.System" style="flex: 1;"></div>
         <div class="message-info">
             <div class="message-meta">
                 <div class="message-sent">{{ sentAt }}</div>
