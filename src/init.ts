@@ -6,7 +6,7 @@ import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
-import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable } from "./config";
+import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable, domain_name_backup } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 import { sendUsageReport } from "./utils/sendStatistics";
@@ -94,8 +94,11 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
         addRevHash();
         sendUsageReport('An user is using the canary version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
-    if (window.location.hostname === domain_name_stable) {
+    else if (window.location.hostname === domain_name_stable) {
         sendUsageReport('An user is using the stable version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
+    }
+    else if (domain_name_backup.includes(window.location.hostname)) {
+        sendUsageReport('An user is using one of the backup versions of OpenChatWorkbench. Version is ' + DYNDATA.commithash + ' and host is ' + window.location.hostname).catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
 
     // temporarily fix the dialog display on Safari

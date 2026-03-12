@@ -46,6 +46,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        recovery: resolve(__dirname, 'recovery.html'),
         webcontainers: resolve(__dirname, 'webcontainers.html'),
       },
       output: {
