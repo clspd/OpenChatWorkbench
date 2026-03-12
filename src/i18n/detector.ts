@@ -1,5 +1,6 @@
 import { db } from '@/userdata';
 import { SUPPORTED_LANGUAGES } from './supported';
+import { currentLanguage } from './index';
 import { h } from 'vue';
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
@@ -26,12 +27,14 @@ export async function DetectAndPromptLanguage() {
         if (!isFunctionalCookieConsented()) return false;
         const shownPrompt = await db.get('kv', 'ui.languagePromptShown');
         if (shownPrompt === true) return false;
-        const { notification, Button } = await import('ant-design-vue');
+        const { notification, message, Button } = await import('ant-design-vue');
+        const { QuestionCircleOutlined } = await import('@ant-design/icons-vue');
         const nKey = crypto.randomUUID();
         notification.info({
             message: detector_ui_i18n[lang].title,
             description: detector_ui_i18n[lang].text,
             duration: 0,
+            key: nKey,
             btn: h('div', {
                 style: {
                     display: 'flex',
@@ -47,19 +50,24 @@ export async function DetectAndPromptLanguage() {
                 h(Button, {
                     type: 'primary',
                     onClick: async () => {
-                        useAppStatePersistStore().language = lang;
+                        currentLanguage.value = lang;
                         await db.put('kv', true, 'ui.languagePromptShown');
+                        if (!await isFunctionalCookieConsented()) {
+                            message.warning("You've disabled the functional cookies. The language settings will not be persisted.");
+                            notification.close(nKey);
+                            return;
+                        }
                         // show loading dialog
                         const dlg = document.body.appendChild(document.createElement('dialog'));
                         dlg.append('Loading...');
                         dlg.showModal();
                         // reload to apply language change
-                        await new Promise(r => setTimeout(r, 1500));
+                        await new Promise(r => setTimeout(r, 500));
                         window.location.reload();
                     },
                 }, detector_ui_i18n[lang].confirmButtonText),
             ]),
-            // icon: h('div', { style: { fontSize: '2rem' } }, '?')
+            icon: h(QuestionCircleOutlined, { style: { color: 'var(--color-primary, #1890ff)' } }),
         });
         return true;
     }

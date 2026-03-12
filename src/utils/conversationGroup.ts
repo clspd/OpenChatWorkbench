@@ -3,12 +3,12 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/en'
 import type { ConversationIndexItem, ConversationGroup } from '@/types/conversation'
 import { t } from 'i18next'
-import { currentLanguage } from '@/i18n'
+import { currentLanguageDisplaying } from '@/i18n'
 
 dayjs.extend(relativeTime)
 
 export function groupConversationsByTime(conversations: ConversationIndexItem[]): ConversationGroup[] {
-    void(currentLanguage.value)
+    void(currentLanguageDisplaying.value)
 
     const now = dayjs()
     const groups: ConversationGroup[] = []

@@ -7,6 +7,7 @@ import type { Config as DomPurifyConfig } from 'dompurify'
 import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 import { RequestBuilderDefaultConfig } from '@/modules/chat-request/requestBuilder'
 import { debounce } from 'lodash-es'
+import { writeFileQueued } from '@/utils/writeFileQueued'
 
 // const notifyBrothers = debounce(window, () => window.localStorage.setItem(app_name_id + "@statePersistUpdated", "" + Math.random()), 100);
 
@@ -47,12 +48,12 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
                     if (!await fs.exists('data/config')) {
                         await fs.mkdir('data/config', { recursive: true })
                     }
-                    await fs.writeFile('data/config/appStatePersist.json', json);
+                    await writeFileQueued('data/config/appStatePersist.json', json);
                     // notifyBrothers();
                 } catch (error) {
                     console.error('[AppStatePersist]', "Error saving appStatePersist: " + error);
                 }
-            }, 100));
+            }, 50));
             // window.addEventListener('storage', ((e: StorageEvent) => {
             //     if (e.key === app_name_id + "@statePersistUpdated") {
             //         this.load().catch(e => {

@@ -57,6 +57,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
+import { message } from 'ant-design-vue';
 import { useAppStateStore } from '@/stores/appState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent';
@@ -79,8 +80,12 @@ watch(() => appStatePersist.fontSizeGlobal, (newValue, oldValue) => {
     }
 });
 
-watch(() => appStatePersist.language, (newValue, oldValue) => {
+watch(() => appStatePersist.language, async (newValue, oldValue) => {
     if (newValue !== oldValue) {
+        if (!await isFunctionalCookieConsented()) {
+            message.warning("You've disabled the functional cookies. The language settings will not be persisted.");
+            return;
+        }
         const dlg = window.document.body.appendChild(document.createElement('dialog'));
         dlg.append('Language changed. Reloading...');
         dlg.showModal();
