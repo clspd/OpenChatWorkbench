@@ -5,6 +5,7 @@ import './cookiesTest'
 import App from './App.vue'
 import router from './router'
 import init from './init'
+import { init_config_ts_value } from './config'
 
 import './userdata'
 
@@ -18,7 +19,7 @@ await new Promise<void>((resolve, reject) => {
     throw e;
 });
 
-await importModule("/internal/init_config.js?ts=202602250424+0800");
+await importModule("/internal/init_config.js?ts=" + init_config_ts_value);
 
 import i18next from 'i18next'
 import I18NextVue from 'i18next-vue'
@@ -30,6 +31,7 @@ import './styles/vars.css'
 import { createPinia } from 'pinia'
 import { Modal } from 'ant-design-vue'
 import { TraceErrorAndGetString } from './utils/errorTrace'
+import { CloseCircleFilled } from '@ant-design/icons-vue'
 
 const app = createApp(App)
 app.use(createPinia())
@@ -39,7 +41,7 @@ app.use(I18NextVue, { i18next })
 try { await init(app) }
 catch (e) {
     console.error('[main]', 'Failed to initialize the application:', e);
-    Modal.error({
+    Modal.confirm({
         title: "Fatal Error",
         content: h('div', {}, [
             h('b', { style: { color: 'red' } }, 'Unable to initialize the application'),
@@ -47,8 +49,11 @@ catch (e) {
             h('hr'),
             h('div', { style: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, TraceErrorAndGetString(e)),
         ]),
-        okText: "Reload page",
+        icon: h(CloseCircleFilled, { style: { color: '#ff4d4f' } }),
+        okText: "Try again",
         onOk: () => (location.reload(), new Promise(() => { })),
+        cancelText: "Recovery",
+        onCancel: () => (location.href = '/recovery.html', new Promise(() => { })),
     })
     throw e;
 }

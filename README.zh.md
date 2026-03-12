@@ -6,6 +6,8 @@ Open Chat Workbench 是一个功能强大、开源的聊天应用程序，旨在
 
 [开始使用](https://chat.openchatworkbench.com)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/clspd/OpenChatWorkbench)
+
 ## 主要特性
 
 - **对话管理**：创建、组织和管理对话，具备高级线程功能

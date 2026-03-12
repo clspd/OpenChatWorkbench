@@ -6,6 +6,8 @@ Open Chat Workbench is a powerful, open-source chat application designed to prov
 
 [Try now](https://chat.openchatworkbench.com)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/clspd/OpenChatWorkbench)
+
 ## Key Features
 
 - **Conversation Management**: Create, organize, and manage conversations with advanced threading capabilities
