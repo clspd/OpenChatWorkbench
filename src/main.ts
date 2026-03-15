@@ -38,10 +38,10 @@ app.use(createPinia())
 app.use(router)
 app.use(I18NextVue, { i18next })
 
-try { await init(app) }
+try { await init(app); window.sessionStorage.removeItem('app_init_failure_count') }
 catch (e) {
     console.error('[main]', 'Failed to initialize the application:', e);
-    Modal.confirm({
+    const configBase = ({
         title: "Fatal Error",
         content: h('div', {}, [
             h('b', { style: { color: 'red' } }, 'Unable to initialize the application'),
@@ -51,10 +51,19 @@ catch (e) {
         ]),
         icon: h(CloseCircleFilled, { style: { color: '#ff4d4f' } }),
         okText: "Try again",
-        onOk: () => (location.reload(), new Promise(() => { })),
-        cancelText: "Recovery",
-        onCancel: () => (location.href = '/recovery.html', new Promise(() => { })),
-    })
+        onOk: () => (location.reload(), new Promise(() => {})),
+    });
+    const failureCount = Number(window.sessionStorage.getItem('app_init_failure_count'));
+    if (!isNaN(failureCount) && (failureCount < 0 || failureCount > 2)) {
+        Modal.confirm({
+            ...configBase,
+            cancelText: "Recovery",
+            onCancel: () => (location.href = '/recovery.html', new Promise(() => {})),
+        });
+    } else {
+        window.sessionStorage.setItem('app_init_failure_count', String(failureCount + 1));
+        Modal.error(configBase);
+    }
     throw e;
 }
 
