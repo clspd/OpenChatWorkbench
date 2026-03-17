@@ -18,6 +18,7 @@
 const ALLOWED_ORIGINS = [
     "https://openchatworkbench.com",
     "https://chat.openchatworkbench.com",
+    "https://chat2.openchatworkbench.com",
     "https://canary.openchatworkbench.com",
 ];
 
