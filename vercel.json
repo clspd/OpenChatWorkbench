@@ -31,7 +31,7 @@
             ]
         },
         {
-            "source": "/((webview)\.html$)",
+            "source": "/webview.html",
             "headers": [
                 {
                     "key": "Cross-Origin-Embedder-Policy",
