@@ -1,28 +1,39 @@
+// init.ts: This initializes the application.
+
+// vendor
 import { watch } from "vue";
+// router config
 import router from "./router";
-import '@/utils/appInstanceDetector'
-import { registerServiceWorker } from "./utils/swApi";
+// config and app data
+import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable, domain_name_backup } from "./config";
+import { db } from "./userdata";
+import { DYNDATA } from "./dynamic";
+// modules
+import { createChatBaseStructure } from "./modules/chat/path";
+import { InitConvIndex } from "./modules/chat/convIndex";
+import { InitAttachmentIndex } from "./modules/chat/attachment";
+import { setupHotKey } from "./modules/hotkey/hotkey_manager";
+// stores
 import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
 import { useConfigStore } from "./stores/configStore";
 import { useWindowStateStore } from "./stores/windowState"
-import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable, domain_name_backup } from "./config";
 import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
+// utils
+import { registerServiceWorker } from "./utils/swApi";
 import { sendUsageReport } from "./utils/sendStatistics";
 import { InitCookieConsent, isFunctionalCookieConsented } from "./utils/cookieConsent";
-import { db } from "./userdata";
-import { DYNDATA } from "./dynamic";
 import { setupErrorHandler } from "./utils/errorHandler";
-import { createChatBaseStructure } from "./modules/chat/path";
-import { InitConvIndex } from "./modules/chat/convIndex";
-import { GetTitleI18nKeyByText } from "./i18n/titles";
-import i18next from "i18next";
-import { SetupI18n } from "./i18n";
-import { InitAttachmentIndex } from "./modules/chat/attachment";
-import { setupHotKey } from "./modules/hotkey/hotkey_manager";
+import { IsFirstInstance } from './utils/appInstanceDetector'
 import { initVpWatch } from "./utils/metaViewport";
+// i18n
+import i18next from "i18next";
+import { GetTitleI18nKeyByText } from "./i18n/titles";
+import { SetupI18n } from "./i18n";
 
+
+// init: the main init function, which will be called before the app is mounted.
 export default async function init(app: ReturnType<typeof import('vue').createApp>) {
     // register service worker
     await registerServiceWorker()
@@ -59,10 +70,9 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
 
     app.config.globalProperties.t = await SetupI18n();
 
-    const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave, cleanup: cleanupAppStateSession } = useAppStateSessionStore()
+    const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave } = useAppStateSessionStore()
     await loadAppStateSession();
     initAppStateSessionAutoSave();
-    cleanupAppStateSession();
 
     watch(() => useAppStateStore().title, (title) => {
         if (!useAppStateStore().titleCustomize && !useAppStateStore().titleNoTranslate) title = i18next.t(GetTitleI18nKeyByText(title));
@@ -87,6 +97,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     
     if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 
+    // send usage report
     if (window.location.hostname === domain_name_canary) {
         const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');
         showCanaryWarning();
@@ -100,6 +111,9 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     else if (domain_name_backup.includes(window.location.hostname)) {
         sendUsageReport('An user is using one of the backup versions of OpenChatWorkbench. Version is ' + DYNDATA.commithash + ' and host is ' + window.location.hostname).catch(e => console.log('[statistics] Failed to send usage report:' + e));
     }
+    
+    // execute runonce logic
+    runonce().catch(e => console.error('[runonce]', 'Runonce failed:', e));
 
     // temporarily fix the dialog display on Safari
     if (/safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|brave/i.test(navigator.userAgent))) {
@@ -109,5 +123,19 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     
     // preload some frequently used modules
     import('@/utils/prompt').catch(() => {});
-
+    
+    
 };
+
+
+// runonce: The codes that will only run in the first app instance.
+export async function runonce() {
+    const isFirstInstance = await IsFirstInstance(5000) && await IsFirstInstance(1000)
+    console.log('[runonce]', 'isFirstInstance=', isFirstInstance)
+    if (!isFirstInstance) return;
+    
+    // cleanup temp data
+    useAppStateSessionStore().cleanup();
+
+}
+

@@ -37,7 +37,6 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Resource-Policy': 'cross-origin',
-      'set-cookie': 'sys.cookies.enabled=true; Path=/; Max-Age=31536000; Secure',
     },
   },
   build: {

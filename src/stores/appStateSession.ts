@@ -5,7 +5,6 @@ import { defineStore } from 'pinia'
 import { app_name_id } from '@/config'
 import type { ChatEditBuffer } from '@/types/conversation'
 import { db } from '@/userdata'
-import { IsFirstInstance } from '@/utils/appInstanceDetector'
 import { isFunctionalCookieConsented } from '@/utils/cookieConsent'
 import { debounce } from 'lodash-es'
 
@@ -49,9 +48,6 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
             }
         },
         async cleanup() {
-            const isFirstInstance = await IsFirstInstance(5000) && await IsFirstInstance(1000)
-            console.log('[appStateSession] [cleanup] isFirstInstance=', isFirstInstance)
-            if (!isFirstInstance) return
             const allKeys = await db.getAllKeys('kv')
             const currentWindowId = window.sessionStorage.getItem(app_name_id + '@windowId') ?? this.createWindowId()
             for (const key of allKeys) {
