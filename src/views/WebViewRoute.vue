@@ -2,15 +2,20 @@
     <DialogView class="webview-page" v-model="open">
         <template #title>
             <div class="titlebar">
+                <a-button class="btn" type="text" @click="goBack"><ArrowLeftOutlined /></a-button>
                 <div class="title-text">{{ title }}</div>
-                <a-button type="text" @click="openInBlank"><FullscreenOutlined /></a-button>
+                <a-button class="btn" type="text" @click="openInBlank"><FullscreenOutlined /></a-button>
             </div>
         </template>
         <WebViewCore
+            v-if="!isolated"
             autofocus
             class="webview"
             :content="contentUrl.href"
         />
+        <div class="error-isolated" v-else>
+            TODO: tell user that page is isolated and request a reload
+        </div>
     </DialogView>
 </template>
 
@@ -23,6 +28,7 @@ import { useRouter } from 'vue-router';
 import { domain_name_main_root, webview_trusted_domains } from '@/config';
 import { currentLanguageDisplaying } from '@/i18n';
 import { hostname } from 'os';
+import { previousPage } from '@/router';
 
 const defaultTitle = t('common:ui.webview.title');
 
@@ -57,15 +63,28 @@ const isExternal = computed(() =>
 
 const title = computed(() => isExternal.value ? t('common:ui.webview.external.title') : (props.title || defaultTitle));
 
+const isolated = !!window.crossOriginIsolated;
+
 const router = useRouter();
+
+const goBack = () => { 
+    if ((window as any).navigation?.canGoBack) {
+        history.back();
+    } else {
+        router.replace('/'); // user wants to 'back', don't shock the user
+    }
+}
 
 const open = computed({
     get: () => !0,
     set(v) { 
-        if ((window as any).navigation?.canGoBack) {
-            history.back();
-        } else { 
-            router.push('/');
+        if (!v) { 
+            // close the entire page
+            if (previousPage) {
+                router.push(previousPage);
+            } else {
+                router.push('/');
+            }
         }
     },
 })
@@ -83,11 +102,15 @@ const openInBlank = () => window.open(props.url);
 .titlebar {
     display: flex;
     align-items: center;
+    gap: 0.5em;
 }
 .title-text {
     flex: 1;
 }
 .webview {
     flex: 1;
+}
+.btn {
+    padding: 0 5px;
 }
 </style>

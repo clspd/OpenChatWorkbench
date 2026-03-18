@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteLocationNormalizedLoadedGeneric } from 'vue-router'
 import yn from 'yn';
 
 const router = createRouter({
@@ -67,3 +67,7 @@ const router = createRouter({
 })
 
 export default router
+
+export let previousPage: RouteLocationNormalizedLoadedGeneric;
+
+router.beforeEach((to, from, next) => (previousPage = from, void next()));
