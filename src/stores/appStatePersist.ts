@@ -30,6 +30,9 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         defaultBuilderConfig: RequestBuilderDefaultConfig,
         defaultSystemPrompt: '',
         autoFocusInputModelChooser: !window.matchMedia("(pointer: coarse)").matches,
+        filePreview: {
+            autoWrap: false,
+        },
     }),
     getters: {
         theme: (state): ThemeConfig => ({

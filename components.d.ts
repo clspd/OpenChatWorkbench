@@ -69,6 +69,7 @@ declare module 'vue' {
     DownOutlined: typeof import('@ant-design/icons-vue')['DownOutlined']
     EditOutlined: typeof import('@ant-design/icons-vue')['EditOutlined']
     EllipsisOutlined: typeof import('@ant-design/icons-vue')['EllipsisOutlined']
+    EnterOutlined: typeof import('@ant-design/icons-vue')['EnterOutlined']
     ExclamationCircleTwoTone: typeof import('@ant-design/icons-vue')['ExclamationCircleTwoTone']
     ExportOutlined: typeof import('@ant-design/icons-vue')['ExportOutlined']
     FileAddOutlined: typeof import('@ant-design/icons-vue')['FileAddOutlined']
@@ -76,6 +77,7 @@ declare module 'vue' {
     FileImageOutlined: typeof import('@ant-design/icons-vue')['FileImageOutlined']
     FileOutlined: typeof import('@ant-design/icons-vue')['FileOutlined']
     FolderOutlined: typeof import('@ant-design/icons-vue')['FolderOutlined']
+    FullscreenOutlined: typeof import('@ant-design/icons-vue')['FullscreenOutlined']
     HeaderBar: typeof import('./src/components/HeaderBar.vue')['default']
     HeaderMoreOptions: typeof import('./src/components/HeaderMoreOptions.vue')['default']
     InputMessage: typeof import('./src/components/InputMessage.vue')['default']
@@ -98,7 +100,9 @@ declare module 'vue' {
     SettingOutlined: typeof import('@ant-design/icons-vue')['SettingOutlined']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     StatusText: typeof import('./src/components/StatusText.vue')['default']
+    SwapRightOutlined: typeof import('@ant-design/icons-vue')['SwapRightOutlined']
     UpOutlined: typeof import('@ant-design/icons-vue')['UpOutlined']
     UserOutlined: typeof import('@ant-design/icons-vue')['UserOutlined']
+    WebViewCore: typeof import('./src/components/WebViewCore.vue')['default']
   }
 }

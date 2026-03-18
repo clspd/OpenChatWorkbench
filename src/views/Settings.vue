@@ -84,6 +84,7 @@ const pages = ref([
     {
         id: 'help',
         title: i18next.t('settings:help'),
+        siteTitle: i18next.t('settings:help'),
         anotherSite: "https://" + domain_name_main_root + "/docs/",
     },
 ])
@@ -92,9 +93,9 @@ onMounted(() => {
     if (props.settingId === '') useAppStateStore().setTitle('Settings')
 })
 
-const goSetting = (item: { id: string; anotherPage?: string; anotherSite?: string }) => {
+const goSetting = (item: { id: string; anotherPage?: string; anotherSite?: string; siteTitle?: string; }) => {
     if (item.anotherPage) { router.push(item.anotherPage); return }
-    if (item.anotherSite) { window.open(item.anotherSite, '_blank'); return }
+    if (item.anotherSite) { router.push({ path: '/webview', query: { src: item.anotherSite, title: item.siteTitle } }); return }
     router.push(`/settings/${item.id}`);
 }
 watch(() => props.settingId, (newVal, oldVal) => {

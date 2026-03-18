@@ -5,9 +5,8 @@ import { watch } from "vue";
 // router config
 import router from "./router";
 // config and app data
-import { app_name, cookie_consent_updated_at, domain_name_canary, domain_name_stable, domain_name_backup } from "./config";
+import { app_name, cookie_consent_updated_at } from "./config";
 import { db } from "./userdata";
-import { DYNDATA } from "./dynamic";
 // modules
 import { createChatBaseStructure } from "./modules/chat/path";
 import { InitConvIndex } from "./modules/chat/convIndex";
@@ -22,7 +21,7 @@ import { useAppStateSessionStore } from "./stores/appStateSession";
 import { useConversationStore } from "./stores/conversationStore";
 // utils
 import { registerServiceWorker } from "./utils/swApi";
-import { sendUsageReport } from "./utils/sendStatistics";
+import { AppSendGeneralReport } from "./utils/sendStatistics";
 import { InitCookieConsent, isFunctionalCookieConsented } from "./utils/cookieConsent";
 import { setupErrorHandler } from "./utils/errorHandler";
 import { IsFirstInstance } from './utils/appInstanceDetector'
@@ -98,19 +97,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 
     // send usage report
-    if (window.location.hostname === domain_name_canary) {
-        const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('./utils/canaryEnv');
-        showCanaryWarning();
-        (window as any).removeCanaryWatermark = addCanaryWatermark();
-        addRevHash();
-        sendUsageReport('An user is using the canary version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
-    }
-    else if (window.location.hostname === domain_name_stable) {
-        sendUsageReport('An user is using the stable version of OpenChatWorkbench. Version is ' + DYNDATA.commithash).catch(e => console.log('[statistics] Failed to send usage report:' + e));
-    }
-    else if (domain_name_backup.includes(window.location.hostname)) {
-        sendUsageReport('An user is using one of the backup versions of OpenChatWorkbench. Version is ' + DYNDATA.commithash + ' and host is ' + window.location.hostname).catch(e => console.log('[statistics] Failed to send usage report:' + e));
-    }
+    AppSendGeneralReport().catch(e => console.warn('[report]', 'Unable to send report:', e));
     
     // execute runonce logic
     runonce().catch(e => console.error('[runonce]', 'Runonce failed:', e));
