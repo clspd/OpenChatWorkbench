@@ -5,7 +5,7 @@ import { watch } from "vue";
 // router config
 import router from "./router";
 // config and app data
-import { app_name, cookie_consent_updated_at } from "./config";
+import { app_name, cookie_consent_updated_at, domain_name_canary } from "./config";
 import { db } from "./userdata";
 // modules
 import { createChatBaseStructure } from "./modules/chat/path";
@@ -88,12 +88,13 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
 
     await InitConvIndex();
     await InitAttachmentIndex();
-
+    
     initVpWatch();
 
     // setup shortcut
     await setupHotKey();
     
+    // preload resource
     if (await isFunctionalCookieConsented()) fetch('/resource/offline@1.0.0.html').catch(() => {});
 
     // send usage report
@@ -101,6 +102,13 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     
     // execute runonce logic
     runonce().catch(e => console.error('[runonce]', 'Runonce failed:', e));
+    
+    if (window.location.hostname === domain_name_canary) {
+        const { showCanaryWarning, addCanaryWatermark, addRevHash } = await import('@/utils/canaryEnv');
+        showCanaryWarning();
+        (window as any).removeCanaryWatermark = addCanaryWatermark();
+        addRevHash();
+    }
 
     // temporarily fix the dialog display on Safari
     if (/safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|brave/i.test(navigator.userAgent))) {
