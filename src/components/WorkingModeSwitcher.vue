@@ -35,8 +35,9 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
 import { DialogView } from 'vue-dialog-view';
-import { useConversationStore } from '@/stores/conversationStore';
 import { db } from '@/userdata';
+import { useConversationStore } from '@/stores/conversationStore';
+import { ForceDiscardCache } from '@/utils/cacheUtil';
 
 const props = defineProps<{
     open: boolean;
@@ -82,6 +83,12 @@ function requestSetMode(mode: Mode) {
 async function setMode(mode: Mode, persist = false, reload = true) {
     const b = mode === 'isolated' ? true : false
     document.cookie = `sys.security.isolateOrigin=${b}; Path=/;${persist ? (b ? ' Max-Age=31536000;' : ' Max-Age=0;') : ''} SameSite=Lax; Secure`;
+    // ensure changes to be applied
+    try {
+        await ForceDiscardCache();
+    } catch (e) {
+        console.error('[WorkingModeSwitcher]', 'Unable to flush cache:', e);
+    }
     if (reload) (location.reload(), disableOperation.value = true);
 }
 

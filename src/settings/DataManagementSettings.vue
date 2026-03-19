@@ -96,17 +96,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, defineComponent, h, reactive } from 'vue'
-import { useAppStateStore } from '@/stores/appState'
 import { message, Modal } from 'ant-design-vue'
-import { db, db_name, fs, setShowDbExpiredDialog } from '@/userdata'
 import { DialogView } from 'vue-dialog-view'
 import { useRouter } from 'vue-router'
-import { domain_name_root, privacy_policy_href } from '@/config'
 import { parse } from 'cookie'
-import { isServiceWorkerActive } from '@/utils/swApi'
-import { chatAttachmentBasePath, chatIndexBasePath, getConvPath, getConvPrefPath } from '@/modules/chat/path'
 import { t } from 'i18next'
+import { db, db_name, fs, setShowDbExpiredDialog } from '@/userdata'
+import { domain_name_root, privacy_policy_href } from '@/config'
+import { ForceDiscardCache } from '@/utils/cacheUtil'
+import { chatAttachmentBasePath, chatIndexBasePath, getConvPath, getConvPrefPath } from '@/modules/chat/path'
 import { SaveAttachmentIndex } from '@/modules/chat/attachment'
+import { useAppStateStore } from '@/stores/appState'
 import { useConversationStore } from '@/stores/conversationStore'
 
 const router = useRouter()
@@ -357,23 +357,9 @@ watch(() => optOutCSPReport.value, async (newValue) => {
             // delete the cookie
             document.cookie = `user.privacy.optOutCSPReport=; path=/; domain=${domain_name_root}; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure`;
         }
-        document.cookie = `sys.operation.clearCache=yes; path=/; max-age=3600; secure`;
 
         message.info(t('settings:data_management.messages.processing'));
-        if (await isServiceWorkerActive()) {
-            const c = (window as any).appInitConfig;
-            const cache = await caches.open(c.CACHE_PREFIX + c.CACHE_VERSION);
-            const u = new URL("/", window.location.href);
-            await cache.delete(u, { ignoreSearch: true });
-            const newResp = await fetch(u, { cache: 'no-store' });
-            await cache.put(u, newResp);
-        }
-        else {
-            for (let i = 0; i < 2; i++) {
-                document.cookie = `sys.operation.clearCache=yes; path=/; max-age=3600; secure`;
-                await (await fetch(location.href, { cache: 'no-store' })).arrayBuffer();
-            }
-        }
+        await ForceDiscardCache();
         message.success(t('settings:data_management.messages.operationCompleted'));
         setTimeout(() => {
             window.location.reload();
