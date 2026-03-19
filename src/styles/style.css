@@ -1,3 +1,6 @@
+/* ------ */
+/* Normalize */
+
 *:disabled, *[disabled] {
     cursor: not-allowed;
 }
@@ -26,6 +29,20 @@ a {
     font-size: var(--ocw-font-size, unset);
 }
 
+/* ------ */
+/* Layout */
+
+.ant-layout {
+    background: unset;
+}
+
+/* ------ */
+/* App specific */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -36,11 +53,8 @@ a {
     }
 }
 
-/* ------ */
-
-.ant-layout {
-    background: unset;
-}
-
-/* ------ */
+.large { font-size: large }
+.xl { font-size: x-large }
+.xxl { font-size: xx-large }
+.bold { font-weight: bold }
 

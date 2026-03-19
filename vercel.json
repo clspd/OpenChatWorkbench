@@ -5,14 +5,6 @@
             "source": "/(.*)",
             "headers": [
                 {
-                    "key": "Cross-Origin-Embedder-Policy",
-                    "value": "require-corp"
-                },
-                {
-                    "key": "Cross-Origin-Opener-Policy",
-                    "value": "same-origin"
-                },
-                {
                     "key": "Cross-Origin-Resource-Policy",
                     "value": "cross-origin"
                 },
@@ -25,12 +17,57 @@
                     "value": "Cookie"
                 },
                 {
-                    "key": "Set-Cookie",
-                    "value": "sys.cookies.enabled=true; Path=/; Max-Age=31536000; Secure"
-                },
-                {
                     "key": "X-App-Name",
                     "value": "Open Chat Workbench"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "has": [
+                {
+                    "type": "cookie",
+                    "key": "sys.security.isolateOrigin",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Cross-Origin-Embedder-Policy",
+                    "value": "require-corp"
+                },
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "same-origin"
+                }
+            ]
+        },
+        {
+            "source": "/webview.html",
+            "headers": [
+                {
+                    "key": "Cross-Origin-Embedder-Policy",
+                    "value": "unsafe-none"
+                },
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "unsafe-none"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "missing": [
+                {
+                    "type": "cookie",
+                    "key": "sys.cookies.enabled",
+                    "value": "true"
+                }
+            ],
+            "headers": [
+                {
+                    "key": "Set-Cookie",
+                    "value": "sys.cookies.enabled=true; Path=/; Max-Age=604800; Secure"
                 }
             ]
         },

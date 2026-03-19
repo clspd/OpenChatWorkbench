@@ -11,6 +11,12 @@
             </a-select>
         </a-card>
 
+        <a-card :title="t('settings:general.workMode.title')">
+            <div>{{ t('settings:working_mode.ptitle.c_' + currentWorkingMode) }}</div>
+            <a-button @click="showChangeWorkModeDlg = true">{{ t('settings:general.workMode.change') }}</a-button>
+            <WorkingModeSwitcher v-model:open="showChangeWorkModeDlg" />
+        </a-card>
+
         <a-card :title="t('settings:general.chat.title')">
             <fieldset>
                 <legend>{{ t('settings:general.chat.sendMsgWith.legend') }}</legend>
@@ -56,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { useAppStateStore } from '@/stores/appState';
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
@@ -71,6 +77,10 @@ onMounted(() => {
     useAppStateStore().setTitle('General Settings');
     isFunctionalCookieConsented().then(c => isAvailable.value = c);
 });
+
+const currentWorkingMode = ref(window.crossOriginIsolated ? 'isolated' : 'standard');
+const WorkingModeSwitcher = defineAsyncComponent(() => import('@/components/WorkingModeSwitcher.vue'));
+const showChangeWorkModeDlg = ref(false);
 
 const accessibilityNeedsRefresh = ref(false)
 

@@ -1,4 +1,5 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteLocationNormalizedLoadedGeneric } from 'vue-router'
+import yn from 'yn';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,16 @@ const router = createRouter({
       component: () => import('@/views/About.vue'),
     },
     {
+      path: '/webview',
+      name: 'webview',
+      component: () => import('@/views/WebViewRoute.vue'),
+      props: route => ({
+        url: route.query.src,
+        title: route.query.title,
+        navhide: !!yn(route.query.navhide),
+      }),
+    },
+    {
       path: '/interop/data-import-and-export',
       name: 'data-import-and-export',
       component: () => import('@/views/DataImportAndExport.vue'),
@@ -56,3 +67,7 @@ const router = createRouter({
 })
 
 export default router
+
+export let previousPage: RouteLocationNormalizedLoadedGeneric;
+
+router.beforeEach((to, from, next) => (previousPage = from, void next()));

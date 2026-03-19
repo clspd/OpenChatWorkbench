@@ -29,14 +29,20 @@
 
         <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog" close-on-click-mask>
             <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
-            <common-file-preview class="preview-body" ref="previewElement" />
-            <a-button type="primary" aria-label="Download" shape="circle" @click="downloadCurrentFile" class="floating-file-dl-btn"><DownloadOutlined /></a-button>
+            <common-file-preview class="preview-body" ref="previewElement" :data-auto-wrap="autowrapEnabled" />
+            <div class="preview-floating-buttons">
+                <a-button aria-label="Toggle auto wrap" shape="circle" @click="autowrapEnabled = !autowrapEnabled">
+                    <SwapRightOutlined v-if="autowrapEnabled" />
+                    <EnterOutlined v-else />
+                </a-button>
+                <a-button type="primary" aria-label="Download" shape="circle" @click="downloadCurrentFile"><DownloadOutlined /></a-button>
+            </div>
         </DialogView>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { FileAttachmentInfo } from '@/types/message';
 import { DialogView } from 'vue-dialog-view';
 import { nextTick } from 'vue';
@@ -45,6 +51,9 @@ import "common-file-preview";
 import { t } from 'i18next';
 import { HTMLCommonFilePreviewElement } from 'common-file-preview';
 import { GetAttachmentById } from '@/modules/chat/attachment';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
+
+const appStatePersist = useAppStatePersistStore();
 
 const props = withDefaults(defineProps<{
     references: FileAttachmentInfo[],
@@ -106,6 +115,10 @@ const previewFile = (id: string) => {
 }
 
 const tempObjUrl = ref("");
+const autowrapEnabled = computed({
+    get: () => appStatePersist.filePreview.autoWrap,
+    set: (newVal) => appStatePersist.filePreview.autoWrap = newVal,
+});
 
 onBeforeUnmount(() => {
     if (tempObjUrl.value) {
@@ -130,11 +143,6 @@ watch(() => showPreview.value, (newValue) => {
                 async () => tempObjUrl.value,
                 info.type.startsWith('image/') ? info.type : 'text/plain',
                 info.name);
-            const sr = previewElement.value.shadowRoot;
-            if (sr) {
-                const app = sr.querySelector("#app") as HTMLElement;
-                if (app) app.style.padding = "0";
-            }
         }
         catch (e) {
             showPreview.value = false;
@@ -210,13 +218,19 @@ const downloadCurrentFile = async () => {
 
 .preview-body {
     flex: 1;
+    --padding: 0;
 }
 
-.floating-file-dl-btn {
+.preview-floating-buttons {
     position: absolute;
     bottom: 10px;
     right: 10px;
+    display: flex;
+    gap: 0.5em;
 }
 
-
+.preview-body[data-auto-wrap="true"] {
+    --white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
 </style>

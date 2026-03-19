@@ -37,18 +37,18 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Resource-Policy': 'cross-origin',
-      'set-cookie': 'sys.cookies.enabled=true; Path=/; Max-Age=31536000; Secure',
     },
   },
   build: {
     sourcemap: true,
     manifest: "internal/manifest.json",
     rolldownOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        recovery: resolve(__dirname, 'recovery.html'),
-        webcontainers: resolve(__dirname, 'webcontainers.html'),
-      },
+      input: getInput({
+        main: 'index.html',
+        recovery: 'recovery.html',
+        webview: 'webview.html',
+        webcontainers: 'webcontainers.html',
+      }),
       output: {
         entryFileNames: 'assets/[name]-[hash].s.js',
         chunkFileNames: 'assets/[name]-[hash].s.js',
@@ -57,3 +57,9 @@ export default defineConfig({
     },
   },
 })
+
+function getInput(config: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(config).map(([k, v]) => [k, resolve(__dirname, v)])
+  )
+}
