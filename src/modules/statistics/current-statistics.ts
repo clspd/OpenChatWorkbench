@@ -17,7 +17,7 @@ export default [
         const isMultiTab = !await ((window as any)._isFirstInstance);
         if (!isMultiTab) return;
 
-        await sendStatisticsReport(`An Android user is using Chromium-based browser with multiple tabs. User agent: ${ua}`);
+        await sendStatisticsReport(`An Android user is using Chromium-based browser with multiple tabs. User agent: ${ua}; host: ${location.hostname}`);
     },
 
 ] as Array<() => Promise<void>>;

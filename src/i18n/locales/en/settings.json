@@ -9,6 +9,10 @@
                 "zh-CN": "简体中文"
             }
         },
+        "workMode": {
+            "title": "Working Mode",
+            "change": "Change Working Mode"
+        },
         "chat": {
             "title": "Chat",
             "sendMsgWith": {
@@ -22,7 +26,7 @@
                 "legend": "Attachment Options",
                 "throttleSingleFileSize": {
                     "title": "Prompt Single File Size",
-                    "description": "The size of a single file attachment in MiB. If the file size exceeds this value, we will ask you whether to continue."
+                    "description": "Maximum size for a single file attachment (in MiB). If a file exceeds this limit, you will be prompted to confirm before uploading."
                 }
             }
         },
@@ -154,13 +158,13 @@
     },
     "cache": {
         "title": "Cache Settings",
-        "description": "The application can cache some frontend resources to improve performance and allow offline access. This page provides settings to manage cache.",
+        "description": "The application can cache some frontend resources to improve performance and enable offline access. This page provides settings to manage cache.",
         "availability": {
             "title": "Cache Availability",
             "serviceWorkerStatus": "Service Worker status:",
             "active": "Active",
             "notActive": "Not Active",
-            "explanation": "Explaination:",
+            "explanation": "Explanation:",
             "activeExplanation": "The Service Worker is active. It can cache frontend resources.",
             "inactiveExplanation": "The resources will not be cached because Service Worker is not active. Service Worker is a background script that runs in browser. It can cache frontend resources and serve them when application is offline. If it is not active, request will go into network directly, preventing application from working offline.",
             "toFix": "To fix this:",
@@ -229,7 +233,7 @@
             "desc": "Persist storage",
             "notSupported": "Your browser does not support persist storage.",
             "optOut": "Please go to browser settings to opt out of persist storage.",
-            "failedToPersist": "Failed to persist storage. Please try to quit the incognito mode (if you're using it), interact more with the site, add the page to bookmarks using Ctrl+D, install as Progressive Web Application (PWA), or manually increases the engagement level in chrome://site-engagement/ ."
+            "failedToPersist": "Failed to persist storage. Please try to quit the incognito mode (if you're using it), interact more with the site, add the page to bookmarks using Ctrl+D, install as Progressive Web Application (PWA), or manually increase the engagement level in chrome://site-engagement/ ."
         },
         "clearAllData": "Clear All Data",
         "clearData": {
@@ -253,7 +257,7 @@
         },
         "usageReport": {
             "optOut": "Opt out of usage report",
-            "explanation": "Explaination:",
+            "explanation": "Explanation:",
             "description": "The application collects anonymous usage data to help improve application. However, you can opt out of usage report if you want.",
             "optOutDescription": "If you opt out of usage report, application will not collect any usage data.",
             "toLearnMore": "To learn more, refer to",
@@ -262,7 +266,7 @@
         },
         "cspReport": {
             "optOut": "Opt out of CSP report",
-            "explanation": "Explaination:",
+            "explanation": "Explanation:",
             "description": "The application collects Content Security Policy (CSP) violation report data to ensure security of application.",
             "optOutDescription": "If you opt out of CSP report, application will not send CSP report data anymore.",
             "whyNotRecommend": "Why not recommend to opt out?",
@@ -289,6 +293,34 @@
             "processing": "Processing, please wait...",
             "inputDoesNotMatch": "Input does not match",
             "pleaseCloseTab": "Please close tab."
+        }
+    },
+    "working_mode": {
+        "title": "Change Working Mode",
+        "ptitle": {
+            "c_standard": "Current working mode: Standard",
+            "c_isolated": "Current working mode: Isolated"
+        },
+        "std": {
+            "title": "Standard Mode",
+            "desc": "The standard mode provides full access to the app's core features, which is recommended for daily use."
+        },
+        "iso": {
+            "title": "Isolated Mode",
+            "desc": "The isolated mode offers enhanced security and isolation. To use some advanced functions such as Node execution, it is required to switch to this mode."
+        },
+        "makeDefault": "Set as Default",
+        "i": {
+            "standard": "Standard",
+            "isolated": "Isolated"
+        },
+        "switch": {
+            "already": "Already in this mode",
+            "blockedDueToActiveReq": "Can't change working mode now because you have ongoing network request. If reload now, these requests will be aborted.",
+            "tryLater": "Try later",
+            "to": "Switch to this mode",
+            "confirm": "Change to {{mode}} mode? A reload will be required to apply the change.",
+            "switchNow": "Change & Reload"
         }
     },
     "about": "About",

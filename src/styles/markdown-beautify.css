@@ -4,12 +4,6 @@
         border-radius: 5px;
         overflow: auto;
     }
-    p:first-child, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child {
-        margin-top: 0;
-    }
-    p:last-child, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child {
-        margin-bottom: 0;
-    }
     a {
         color: #409eff;
     }
@@ -26,4 +20,10 @@
         border-radius: 4px;
         background-color: var(--code-bg, #f6f8fa);
     }
+}
+.renderer.markdown-renderer.renderer-main > :is(p, h1, h2, h3, h4, h5, h6):first-child {
+    margin-top: 0;
+}
+.renderer.markdown-renderer.renderer-main > :is(p, h1, h2, h3, h4, h5, h6):last-child {
+    margin-bottom: 0;
 }

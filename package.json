@@ -44,9 +44,8 @@
     "lodash-es": "^4.17.23",
     "markdown-it": "^14.1.1",
     "morphdom": "^2.7.8",
-    "openai": "^6.22.0",
     "pinia": "^3.0.4",
-    "vue": "^3.5.26",
+    "vue": "^3.5.30",
     "vue-dialog-view": "^1.8.1",
     "vue-router": "^4.6.4",
     "yn": "^5.1.0"
@@ -65,6 +64,7 @@
     "eslint": "^9.39.2",
     "npm-run-all2": "^8.0.4",
     "only-allow": "^1.2.2",
+    "openai": "^6.32.0",
     "typescript": "~5.9.3",
     "unplugin-vue-components": "^30.0.0",
     "vite": "npm:rolldown-vite@latest",

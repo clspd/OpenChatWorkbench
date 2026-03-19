@@ -1,10 +1,12 @@
 <template>
-    <DialogView class="webview-page" v-model="open">
+    <DialogView class="webview-page" v-model="open" :closable="false">
         <template #title>
             <div class="titlebar">
                 <a-button class="btn" type="text" @click="goBack"><ArrowLeftOutlined /></a-button>
+                <a-button tabindex="-1" inert class="btn shadow-btn" type="text"><CloseOutlined /></a-button>
                 <div class="title-text">{{ title }}</div>
                 <a-button class="btn" type="text" @click="openInBlank"><FullscreenOutlined /></a-button>
+                <a-button class="btn" type="text" @click="close"><CloseOutlined /></a-button>
             </div>
         </template>
         <WebViewCore
@@ -14,21 +16,30 @@
             :content="contentUrl.href"
         />
         <div class="error-isolated" v-else>
-            TODO: tell user that page is isolated and request a reload
+            <div class="icon center" style="font-size: 3em;">
+                <WarningTwoTone two-tone-color="orange" />
+            </div>
+            <div class="info center bold xl mg05ab">{{ t('common:ui.webview.isolated.title') }}</div>
+            <div class="info center">{{ t('common:ui.webview.isolated.desc') }}</div>
+            <div class="operations">
+                <a-button type="primary" @click="openModeSwitcher = true">{{ t('common:ui.webview.isolated.switchMode') }}</a-button>
+                <a-button @click="openInBlank">{{ t('common:ui.webview.isolated.openBlank') }}</a-button>
+            </div>
         </div>
+        <WorkingModeSwitcher v-model:open="openModeSwitcher" />
     </DialogView>
 </template>
 
 <script setup lang="ts">
 import { t } from 'i18next';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, defineAsyncComponent } from 'vue';
 import { DialogView } from 'vue-dialog-view';
 import WebViewCore from '@/components/WebViewCore.vue';
 import { useRouter } from 'vue-router';
-import { domain_name_main_root, webview_trusted_domains } from '@/config';
 import { currentLanguageDisplaying } from '@/i18n';
-import { hostname } from 'os';
 import { previousPage } from '@/router';
+import { checkUrlIsExternal } from '@/utils/externalUrl';
+const WorkingModeSwitcher = defineAsyncComponent(() => import('@/components/WorkingModeSwitcher.vue'));
 
 const defaultTitle = t('common:ui.webview.title');
 
@@ -40,6 +51,8 @@ const props = withDefaults(defineProps<{
     url: '',
     title: '',
 });
+
+const fromPage = previousPage;
 
 const contentUrl = computed(() => {
     const url = new URL('/webview.html?safe=1', window.location.href);
@@ -53,13 +66,7 @@ const contentUrl = computed(() => {
     return { origin: realOrigin, hostname: hn, href: url.href };
 });
 
-const isExternal = computed(() =>
-    contentUrl.value.origin !== location.origin &&
-    contentUrl.value.hostname !== domain_name_main_root &&
-    (!webview_trusted_domains.some(v =>
-        contentUrl.value.hostname.endsWith(v)
-    ))
-);
+const isExternal = computed(() => checkUrlIsExternal(contentUrl.value));
 
 const title = computed(() => isExternal.value ? t('common:ui.webview.external.title') : (props.title || defaultTitle));
 
@@ -77,19 +84,19 @@ const goBack = () => {
 
 const open = computed({
     get: () => !0,
-    set(v) { 
-        if (!v) { 
-            // close the entire page
-            if (previousPage) {
-                router.push(previousPage);
-            } else {
-                router.push('/');
-            }
-        }
+    set(v) {
+        
     },
 })
 
 const openInBlank = () => window.open(props.url);
+
+const close = () => {
+    if (fromPage) router.push(fromPage);
+    else router.push('/');
+}
+
+const openModeSwitcher = ref(false);
 
 
 </script>
@@ -112,5 +119,34 @@ const openInBlank = () => window.open(props.url);
 }
 .btn {
     padding: 0 5px;
+}
+.shadow-btn {
+    pointer-events: none;
+    opacity: 0;
+}
+.error-isolated {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    max-width: 500px;
+}
+.center {
+    text-align: center;
+}
+.mg05ab {
+    margin: 0.5em 0;
+}
+.mg05t {
+    margin-top: 0.5em;
+}
+.mg05b {
+    margin-bottom: 0.5em;
+}
+.operations {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1em;
 }
 </style>

@@ -14,31 +14,27 @@ import { domain_name_main_root, webview_trusted_domains } from '@/config';
 import { Checkbox, Modal } from 'ant-design-vue';
 import { t } from 'i18next';
 import { db } from '@/userdata';
+import { checkUrlIsExternal } from '@/utils/externalUrl';
 
 const url = ref('');
 const disabled = ref(true);
 const computedUrl = computed(() => new URL(url.value, location.href));
 const safeMode = !!yn((new URL(location.href)).searchParams.get('safe'));
 
-const isExternal = computed(() =>
-    computedUrl.value.origin !== location.origin &&
-    computedUrl.value.hostname !== domain_name_main_root &&
-    (!webview_trusted_domains.some(v =>
-        computedUrl.value.hostname.endsWith(v)
-    ))
-);
+const isExternal = computed(() => checkUrlIsExternal(computedUrl.value));
 
 async function update() {
     try {
-        disabled.value = true;
-        url.value = (decodeURIComponent(location.hash.substring(1)));
-        if (disabled.value) {
-            if (!safeMode || !isExternal.value) disabled.value = false;
-            else if (await db.get('kv', 'ui.webview.security_prompt.dismiss') === true) {
+        const newUrl = new URL(decodeURIComponent(location.hash.substring(1)));
+        if (!safeMode || !checkUrlIsExternal(newUrl)) disabled.value = false;
+        else {
+            if (await db.get('kv', 'ui.webview.security_prompt.dismiss') === true) {
                 disabled.value = false;
             }
             else {
+                disabled.value = true;
                 const naa = ref(false);
+                Modal.destroyAll();
                 const user = await new Promise(r => Modal.confirm({
                     title: t('common:ui.webview.external.warning.title'),
                     content: h({
@@ -59,12 +55,13 @@ async function update() {
                 if (!user) {
                     setTimeout(() => location.hash = '#/resource/blocked_due_to_security@1.0.0.html');
                 }
-                else { 
+                else {
                     if (naa.value) await db.put('kv', true, 'ui.webview.security_prompt.dismiss');
                     disabled.value = false;
                 }
             }
         }
+
     } catch (e) {
         console.warn('Invalid URL: ', location.hash, String(e));
     }

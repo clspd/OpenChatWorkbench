@@ -103,6 +103,8 @@ declare module 'vue' {
     SwapRightOutlined: typeof import('@ant-design/icons-vue')['SwapRightOutlined']
     UpOutlined: typeof import('@ant-design/icons-vue')['UpOutlined']
     UserOutlined: typeof import('@ant-design/icons-vue')['UserOutlined']
+    WarningTwoTone: typeof import('@ant-design/icons-vue')['WarningTwoTone']
     WebViewCore: typeof import('./src/components/WebViewCore.vue')['default']
+    WorkingModeSwitcher: typeof import('./src/components/WorkingModeSwitcher.vue')['default']
   }
 }

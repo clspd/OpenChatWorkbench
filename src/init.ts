@@ -93,6 +93,10 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     initVpWatch();
     (window as any)._isFirstInstance = new Promise(async r => r(await IsFirstInstance(5000) && await IsFirstInstance(1000)));
 
+    if (await db.get('kv', 'app.world.security.isolate') === true) {
+        document.cookie = 'sys.security.isolateOrigin=true; Path=/; Max-Age=31536000; SameSite=Lax; Secure';
+    }
+
     // setup shortcut
     await setupHotKey();
     
