@@ -18,14 +18,15 @@ import { checkUrlIsExternal } from '@/utils/externalUrl';
 
 const url = ref('');
 const disabled = ref(true);
-const computedUrl = computed(() => new URL(url.value, location.href));
+const computedUrl = computed(() => new URL(url.value));
 const safeMode = !!yn((new URL(location.href)).searchParams.get('safe'));
 
 const isExternal = computed(() => checkUrlIsExternal(computedUrl.value));
 
 async function update() {
     try {
-        const newUrl = new URL(decodeURIComponent(location.hash.substring(1)));
+        const newUrl = new URL(decodeURIComponent(location.hash.substring(1)), location.href);
+        Modal.destroyAll();
         if (!safeMode || !checkUrlIsExternal(newUrl)) disabled.value = false;
         else {
             if (await db.get('kv', 'ui.webview.security_prompt.dismiss') === true) {
@@ -34,7 +35,6 @@ async function update() {
             else {
                 disabled.value = true;
                 const naa = ref(false);
-                Modal.destroyAll();
                 const user = await new Promise(r => Modal.confirm({
                     title: t('common:ui.webview.external.warning.title'),
                     content: h({
@@ -61,7 +61,7 @@ async function update() {
                 }
             }
         }
-
+        url.value = newUrl.href;
     } catch (e) {
         console.warn('Invalid URL: ', location.hash, String(e));
     }
