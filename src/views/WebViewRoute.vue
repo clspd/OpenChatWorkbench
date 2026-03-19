@@ -31,14 +31,15 @@
 </template>
 
 <script setup lang="ts">
-import { t } from 'i18next';
-import { ref, computed, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, defineAsyncComponent, onMounted } from 'vue';
 import { DialogView } from 'vue-dialog-view';
-import WebViewCore from '@/components/WebViewCore.vue';
 import { useRouter } from 'vue-router';
+import { t } from 'i18next';
 import { currentLanguageDisplaying } from '@/i18n';
 import { previousPage } from '@/router';
+import { useAppStateStore } from '@/stores/appState';
 import { checkUrlIsExternal } from '@/utils/externalUrl';
+import WebViewCore from '@/components/WebViewCore.vue';
 const WorkingModeSwitcher = defineAsyncComponent(() => import('@/components/WorkingModeSwitcher.vue'));
 
 const defaultTitle = t('common:ui.webview.title');
@@ -69,6 +70,10 @@ const contentUrl = computed(() => {
 const isExternal = computed(() => checkUrlIsExternal(contentUrl.value));
 
 const title = computed(() => isExternal.value ? t('common:ui.webview.external.title') : (props.title || defaultTitle));
+
+onMounted(() => {
+    useAppStateStore().setTitle(title.value, true);
+});
 
 const isolated = !!window.crossOriginIsolated;
 

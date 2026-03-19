@@ -69,6 +69,7 @@ async function update() {
 
 window.addEventListener('hashchange', update);
 update();
+
 </script>
 
 <style scoped>
