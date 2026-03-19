@@ -3,7 +3,6 @@
         <template #title>
             <div class="titlebar">
                 <a-button class="btn" type="text" @click="goBack"><ArrowLeftOutlined /></a-button>
-                <a-button tabindex="-1" inert class="btn shadow-btn" type="text"><CloseOutlined /></a-button>
                 <div class="title-text">{{ title }}</div>
                 <a-button class="btn" type="text" @click="openInBlank"><FullscreenOutlined /></a-button>
                 <a-button class="btn" type="text" @click="close"><CloseOutlined /></a-button>
