@@ -30,6 +30,7 @@ import { initVpWatch } from "./utils/metaViewport";
 import i18next from "i18next";
 import { GetTitleI18nKeyByText } from "./i18n/titles";
 import { SetupI18n } from "./i18n";
+import currentStatistics from "./modules/statistics/current-statistics";
 
 
 // init: the main init function, which will be called before the app is mounted.
@@ -47,7 +48,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     router.afterEach((to, from) => {
         const { setPage } = useAppStateStore()
         setPage(to.name)
-    })
+    });
 
     await InitCookieConsent(cookie_consent_updated_at);
 
@@ -90,6 +91,7 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     await InitAttachmentIndex();
     
     initVpWatch();
+    (window as any)._isFirstInstance = new Promise(async r => r(await IsFirstInstance(5000) && await IsFirstInstance(1000)));
 
     // setup shortcut
     await setupHotKey();
@@ -99,6 +101,13 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
 
     // send usage report
     AppSendGeneralReport().catch(e => console.warn('[report]', 'Unable to send report:', e));
+
+    // run statistics
+    const statPromises = [];
+    for (const i of currentStatistics) statPromises.push(i());
+    Promise.all(statPromises).then(() => {
+        console.log('[statistics]', 'All statistics scripts has run successfully.');
+    }).catch(e => console.warn('[statistics]', 'Failed to run statistics:', e));
     
     // execute runonce logic
     runonce().catch(e => console.error('[runonce]', 'Runonce failed:', e));
@@ -125,7 +134,8 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
 
 // runonce: The codes that will only run in the first app instance.
 export async function runonce() {
-    const isFirstInstance = await IsFirstInstance(5000) && await IsFirstInstance(1000)
+    const isFirstInstance = await (window as any)._isFirstInstance;
+    (window as any)._isFirstInstance = isFirstInstance;
     console.log('[runonce]', 'isFirstInstance=', isFirstInstance)
     if (!isFirstInstance) return;
     
