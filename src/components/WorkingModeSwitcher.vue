@@ -71,7 +71,6 @@ const canSwitch = computed(() => conversationStore.requestsInProgress.size === 0
 
 async function setDefault(newVal: Mode) {
     const b = newVal === 'isolated' ? true : false
-    await db.put('kv', b, 'app.world.security.isolate');
     setMode(newVal, true, false);
 }
 
@@ -80,9 +79,12 @@ function requestSetMode(mode: Mode) {
     confirming.value = true;
 }
 
-async function setMode(mode: Mode, persist = false, reload = true) {
+// because of the cache policy, trying to set once is almost impossible
+// so we just set it entirely
+async function setMode(mode: Mode, persist = true, reload = true) {
     const b = mode === 'isolated' ? true : false
     document.cookie = `sys.security.isolateOrigin=${b}; Path=/;${persist ? (b ? ' Max-Age=31536000;' : ' Max-Age=0;') : ''} SameSite=Lax; Secure`;
+    if (persist) await db.put('kv', b, 'app.world.security.isolate');
     // ensure changes to be applied
     try {
         await ForceDiscardCache();
