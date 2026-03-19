@@ -86,12 +86,13 @@ async function setMode(mode: Mode, persist = true, reload = true) {
     document.cookie = `sys.security.isolateOrigin=${b}; Path=/;${persist ? (b ? ' Max-Age=31536000;' : ' Max-Age=0;') : ''} SameSite=Lax; Secure`;
     if (persist) await db.put('kv', b, 'app.world.security.isolate');
     // ensure changes to be applied
+    if (reload) disableOperation.value = true;
     try {
         await ForceDiscardCache();
     } catch (e) {
         console.error('[WorkingModeSwitcher]', 'Unable to flush cache:', e);
     }
-    if (reload) (location.reload(), disableOperation.value = true);
+    if (reload) location.reload();
 }
 
 
