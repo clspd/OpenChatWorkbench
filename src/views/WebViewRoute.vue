@@ -43,6 +43,7 @@ import WebViewCore from '@/components/WebViewCore.vue';
 const WorkingModeSwitcher = defineAsyncComponent(() => import('@/components/WorkingModeSwitcher.vue'));
 
 const defaultTitle = t('common:ui.webview.title');
+const appState = useAppStateStore();
 
 const props = withDefaults(defineProps<{
     url?: string;
@@ -70,10 +71,13 @@ const contentUrl = computed(() => {
 const isExternal = computed(() => checkUrlIsExternal(contentUrl.value));
 
 const title = computed(() => isExternal.value ? t('common:ui.webview.external.title') : (props.title || defaultTitle));
+const updateTitle = () => appState.setTitle(title.value, false, true);
 
 onMounted(() => {
-    useAppStateStore().setTitle(title.value, true);
+    updateTitle();
 });
+
+watch(() => contentUrl.value, () => updateTitle());
 
 const isolated = !!window.crossOriginIsolated;
 
