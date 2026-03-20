@@ -6,7 +6,7 @@
                 <HeaderBar></HeaderBar>
             </a-layout-header>
             <router-view v-slot="{ Component }">
-                <keep-alive :include="keepAliveName" :exclude="keepAliveExcludeName">
+                <keep-alive :include="Array.from(keepAliveName)" :exclude="keepAliveExcludeName">
                     <component :is="Component" />
                 </keep-alive>
             </router-view>
@@ -24,7 +24,7 @@ import { DetectAndPromptLanguage } from './i18n/detector';
 
 const router = useRouter();
 const appState = useAppStateStore();
-const keepAliveName = ref<string | undefined>();
+const keepAliveName = ref(new Set<string>());
 const keepAliveExcludeName = ref(['WebViewRoute']);
 
 onMounted(() => {
@@ -35,9 +35,10 @@ router.afterEach((to, from) => {
     if (to.name === 'webview') {
         const cn = (from.meta.componentName) as string | undefined;
         console.debug('[MainView]', 'Keep alive component:', cn);
-        keepAliveName.value = cn;
+        if (cn) keepAliveName.value.add(cn);
+        else keepAliveName.value.clear();
     }
-    else keepAliveName.value = undefined;
+    else keepAliveName.value.clear();
 });
 
 </script>
