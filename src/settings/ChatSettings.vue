@@ -30,23 +30,23 @@
 
         <a-card :title="t('settings:chat.markdown.title')">
             <fieldset>
-                <legend>{{ t('settings:chat.markdown.assistantMessage.legend') }}</legend>
-                <p style="margin-top: 0; color: var(--color-secondary, gray);">
-                    {{ t('settings:chat.markdown.assistantMessage.description') }}
-                </p>
-                <a-radio-group v-model:value="appStatePersist.assistantMarkdownRenderMode" size="small">
-                    <a-radio :value="'full'">{{ t('settings:chat.markdown.options.full') }}</a-radio>
-                    <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
-                    <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
-                </a-radio-group>
-            </fieldset>
-
-            <fieldset>
                 <legend>{{ t('settings:chat.markdown.userSystemMessage.legend') }}</legend>
                 <p style="margin-top: 0; color: var(--color-secondary, gray);">
                     {{ t('settings:chat.markdown.userSystemMessage.description') }}
                 </p>
                 <a-radio-group v-model:value="appStatePersist.userSystemMarkdownRenderMode" size="small">
+                    <a-radio :value="'full'">{{ t('settings:chat.markdown.options.full') }}</a-radio>
+                    <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
+                    <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
+                </a-radio-group>
+            </fieldset>
+            
+            <fieldset>
+                <legend>{{ t('settings:chat.markdown.assistantMessage.legend') }}</legend>
+                <p style="margin-top: 0; color: var(--color-secondary, gray);">
+                    {{ t('settings:chat.markdown.assistantMessage.description') }}
+                </p>
+                <a-radio-group v-model:value="appStatePersist.assistantMarkdownRenderMode" size="small">
                     <a-radio :value="'full'">{{ t('settings:chat.markdown.options.full') }}</a-radio>
                     <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
                     <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>

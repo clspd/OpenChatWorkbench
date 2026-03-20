@@ -13,7 +13,7 @@ const appStatePersist = useAppStatePersistStore()
 
 <template>
     <div class="app-main-app">
-        <a-config-provider :theme="appStatePersist.theme">
+        <a-config-provider :theme="appStatePersist.theme" :autoInsertSpaceInButton="false">
             <main-view></main-view>
             <CookieConsent />
             <ConfigGuide v-if="appState.showConfigGuide" />

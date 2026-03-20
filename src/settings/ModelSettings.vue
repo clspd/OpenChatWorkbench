@@ -508,8 +508,7 @@ const handleCleanup = async () => {
     padding: 12px 16px;
     display: flex;
     align-items: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
 }
 
 .model-id {
