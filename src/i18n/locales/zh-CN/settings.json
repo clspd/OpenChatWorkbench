@@ -73,6 +73,18 @@
             },
             "recommendedNote": "推荐的 Markdown 包括",
             "recommendedTags": "加粗、倾斜、链接、列表和代码块"
+        },
+        "linkTarget": {
+            "title": "链接行为",
+            "openLinkWith": {
+                "legend": "聊天中链接的打开方式",
+                "description": "设置聊天中提及的链接的打开方式。"
+            },
+            "options": {
+                "inline": "总是在当前标签页打开",
+                "newtab": "总是在新标签页中打开",
+                "newtab-when-isolated": "仅当工作模式为隔离模式时在新标签页中打开"
+            }
         }
     },
     "personalization": {

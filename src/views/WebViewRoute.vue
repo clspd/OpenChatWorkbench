@@ -54,6 +54,7 @@ const props = withDefaults(defineProps<{
 });
 
 const fromPage = previousPage;
+const historyLengthWhenLoad = ref(0);
 
 const contentUrl = computed(() => {
     const url = new URL('/webview.html?safe=1', window.location.href);
@@ -74,6 +75,7 @@ const updateTitle = () => appState.setTitle(title.value, false, true);
 
 onMounted(() => {
     updateTitle();
+    historyLengthWhenLoad.value = window.history.length;
 });
 
 watch(() => contentUrl.value, () => updateTitle());
@@ -90,16 +92,19 @@ const goBack = () => {
     }
 }
 
-const open = computed({
-    get: () => !0,
-    set(v) {
-        
-    },
-})
+const open = ref(true);
 
 const openInBlank = () => window.open(props.url);
 
 const close = () => {
+    // check history length first
+    if (window.history.length === historyLengthWhenLoad.value) {
+        window.history.back();
+        return;
+    }
+    // if history length mismatch, it indicates that the user has navigated within
+    // the iframe. In this case just use history.back() cannot close the dialog, 
+    // which confuses the user, so we directly push the route
     if (fromPage) router.push(fromPage);
     else router.push('/');
 }

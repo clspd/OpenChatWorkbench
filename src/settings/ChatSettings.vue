@@ -53,6 +53,22 @@
                 </a-radio-group>
             </fieldset>
         </a-card>
+
+        <a-card :title="t('settings:chat.linkTarget.title')">
+            <fieldset>
+                <legend>{{ t('settings:chat.linkTarget.openLinkWith.legend') }}</legend>
+                <p style="margin-top: 0; color: var(--color-secondary, gray);">
+                    {{ t('settings:chat.linkTarget.openLinkWith.description') }}
+                </p>
+                <a-radio-group v-model:value="appStatePersist.chatInlineLinkTarget" size="small">
+                    <a-radio value="inline">{{ t('settings:chat.linkTarget.options.inline') }}</a-radio>
+                    <a-radio value="newtab">{{ t('settings:chat.linkTarget.options.newtab') }}</a-radio>
+                    <a-radio value="newtab-when-isolated">
+                        {{ t('settings:chat.linkTarget.options.newtab-when-isolated') }}
+                    </a-radio>
+                </a-radio-group>
+            </fieldset>
+        </a-card>
     </div>
 </template>
 

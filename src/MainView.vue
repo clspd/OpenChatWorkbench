@@ -6,7 +6,7 @@
                 <HeaderBar></HeaderBar>
             </a-layout-header>
             <router-view v-slot="{ Component }">
-                <keep-alive :include="keepAliveName">
+                <keep-alive :include="keepAliveName" :exclude="keepAliveExcludeName">
                     <component :is="Component" />
                 </keep-alive>
             </router-view>
@@ -25,6 +25,7 @@ import { DetectAndPromptLanguage } from './i18n/detector';
 const router = useRouter();
 const appState = useAppStateStore();
 const keepAliveName = ref<string | undefined>();
+const keepAliveExcludeName = ref(['WebViewRoute']);
 
 onMounted(() => {
     DetectAndPromptLanguage();

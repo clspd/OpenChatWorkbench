@@ -14,10 +14,12 @@ import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
 import morphdom from 'morphdom'
 import { getSafeHTML } from '@/utils/htmlpurify';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import '@/styles/markdown-beautify.css'
 import '@/modules/webcomponents/ocw-markdown-component.ts'
 
 const router = useRouter();
+const appStatePersist = useAppStatePersistStore();
 
 const md = new MarkdownIt({
     html: true,
@@ -78,7 +80,6 @@ const update = () => {
     }
     
     if (renderMode.value === 'disabled') {
-        console.debug('update',props.content)
         renderer.value.innerText = props.content; // when disabled, render plain text
         return;
     }
@@ -128,7 +129,11 @@ const handleContentClick = (e: PointerEvent) => {
                 switch (url.protocol) {
                     case 'https:':
                     case 'http:':
-                        if (props.trustSameOrigin && url.origin === window.location.origin) {
+                        if (
+                            (props.trustSameOrigin && url.origin === window.location.origin) ||
+                            (appStatePersist.chatInlineLinkTarget === 'inline') ||
+                            (appStatePersist.chatInlineLinkTarget === 'newtab-when-isolated' && (!window.crossOriginIsolated))
+                        ) {
                             router.push({
                                 path: '/webview',
                                 query: {
@@ -137,7 +142,10 @@ const handleContentClick = (e: PointerEvent) => {
                             });
                             break;
                         }
-                        // [[fallthrough]]
+                        else {
+                            window.open(url.href, '_blank', 'noopener,noreferrer');
+                        }
+                        break;
                     case 'mailto:':
                     case 'tel:':
                     case 'sms:':

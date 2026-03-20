@@ -73,6 +73,18 @@
             },
             "recommendedNote": "Recommended markdown includes",
             "recommendedTags": "bold, italic, links, lists, and code blocks"
+        },
+        "linkTarget": {
+            "title": "Link Behavior",
+            "openLinkWith": {
+                "legend": "Open chat links in",
+                "description": "Control how links inside chat messages are opened."
+            },
+            "options": {
+                "inline": "Always open in current view",
+                "newtab": "Always open in new tab",
+                "newtab-when-isolated": "Open in new tab when isolated"
+            }
         }
     },
     "personalization": {

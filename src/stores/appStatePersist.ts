@@ -35,6 +35,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         filePreview: {
             autoWrap: false,
         },
+        chatInlineLinkTarget: 'newtab-when-isolated' as 'inline' | 'newtab' | 'newtab-when-isolated',
     }),
     getters: {
         theme: (state): ThemeConfig => ({
