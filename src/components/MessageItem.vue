@@ -26,8 +26,11 @@
                     :align="(props.message.role === MessageRole.User || props.message.role === MessageRole.System) ? 'right' : 'left'"
                 />
 
-                <div class="message-body" v-show="!isFileOnly">
-                    <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
+                <div class="message-body-container" v-show="!isFileOnly">
+                    <div class="message-fill"></div>
+                    <div class="message-body">
+                        <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
+                    </div>
                 </div>
             </div>
         </template>
@@ -108,12 +111,13 @@ const confirmEditAvatar = () => {
     cursor: pointer;
 }
 
+.message-fill {
+    flex: 1;
+}
+
 .message-item[data-role="system"],
 .message-item[data-role="user"] {
     flex: unset;
-}
-.message-fill {
-    flex: 1;
 }
 .message-item[data-role="system"] .message-avatar,
 .message-item[data-role="user"] .message-avatar {
@@ -139,20 +143,24 @@ const confirmEditAvatar = () => {
     max-width: 50em;
 }
 
+.message-body-container {
+    display: flex;
+}
+
 /* Message body:
 show user message as bubble 
 show assistant message as text
 */
-.message-item[data-role="system"] > .message-body,
-.message-item[data-role="user"] > .message-body {
+.message-item[data-role="system"] > * > .message-body,
+.message-item[data-role="user"] > * > .message-body {
     padding: 0.5em;
     border-radius: 1em;
     background-color: var(--message-bgcolor);
 }
-.message-item[data-role="user"] > .message-body {
+.message-item[data-role="user"] > * > .message-body {
     --message-bgcolor: var(--message-user-bgcolor, #e0ebff);
 }
-.message-item[data-role="system"] > .message-body {
+.message-item[data-role="system"] > * > .message-body {
     --message-bgcolor: var(--message-system-bgcolor, #f0f0f0);
 }
 

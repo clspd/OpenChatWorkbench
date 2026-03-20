@@ -12,7 +12,7 @@
                 :data-type="fragTypeIdentifyMap[frag.type]"
             >
                 <div v-if="frag.type === MessageFragmentType.Error" class="error-tip-text">
-                    An error has occurred. See the details below for more information.
+                    {{ t('chat:messageChain.state.errorOccurred') }}
                 </div>
                 <MarkdownRenderer 
                     :content="frag.content" 
@@ -21,14 +21,14 @@
                 />
             </div>
             <div v-else class="err-not-supported">
-                The content type of this fragment is not supported
+                {{ t('chat:messageChain.state.unsupportedFragType') }}
             </div>
         </template>
         <div v-if="props.message.status === MessageStatus.WIP || props.message.has_pending_fragment" class="wip-tip-text">
             <LoadingOutlined class="spin" />
         </div>
         <div v-else-if="props.message.fragments.length === 0" class="empty-message">
-            This message is empty.
+            {{ t('chat:messageChain.state.emptyMessage') }}
         </div>
     </div>
 </template>
