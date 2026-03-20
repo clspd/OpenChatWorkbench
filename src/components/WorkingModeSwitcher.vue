@@ -100,7 +100,7 @@ async function setMode(mode: Mode, persist = true, reload = true) {
 
 <style scoped>
 .a {
-    max-width: 600px;
+    max-width: min(calc(100% - 2em), 600px);
 }
 .pagetitle {
     font-size: large;

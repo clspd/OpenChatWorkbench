@@ -10,7 +10,6 @@
 import { computed, h, ref } from 'vue';
 import yn from 'yn';
 import WebViewCore from '@/components/WebViewCore.vue';
-import { domain_name_main_root, webview_trusted_domains } from '@/config';
 import { Checkbox, Modal } from 'ant-design-vue';
 import { t } from 'i18next';
 import { db } from '@/userdata';
@@ -39,7 +38,7 @@ async function update() {
                     title: t('common:ui.webview.external.warning.title'),
                     content: h({
                         render: () => h('div', null, [
-                            h('div', { style: { whiteSpace: 'pre-wrap' } }, t('common:ui.webview.external.warning.content')),
+                            h('div', { style: { whiteSpace: 'pre-wrap' } }, t('common:ui.webview.external.warning.content', { url: newUrl.href })),
                             h('hr'),
                             h(Checkbox, {
                                 checked: naa.value,
