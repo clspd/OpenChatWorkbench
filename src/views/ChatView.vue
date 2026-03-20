@@ -186,6 +186,8 @@ onActivated(() => {
     console.debug('[ChatView]', 'Activated, scroll pos:', scrollPos.value);
     if (!el || isNaN(scrollPos.value)) return;
     el.scrollTo(0, scrollPos.value);
+    if (conversation.value && conversation.value.session.title)
+        appState.setTitle(conversation.value.session.title);
 });
 
 // --------
