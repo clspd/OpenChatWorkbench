@@ -18,7 +18,9 @@
             "disabled": "已禁用"
         },
         "header": {
+            "expBtn": "展开侧边栏",
             "moreOptions": {
+                "label": "更多选项",
                 "newConv": "新对话",
                 "delConv": "删除",
                 "settings": "设置"

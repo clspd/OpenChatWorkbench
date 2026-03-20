@@ -18,7 +18,7 @@
                 </a-menu-item>
             </a-menu>
         </template>
-        <a-button shape="circle" type="text">
+        <a-button shape="circle" type="text" :aria-label="t('common:ui.header.moreOptions.label')">
             <EllipsisOutlined />
         </a-button>
     </a-dropdown>

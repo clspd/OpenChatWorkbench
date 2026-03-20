@@ -21,7 +21,7 @@
             <div class="info center bold xl mg05ab">{{ t('common:ui.webview.isolated.title') }}</div>
             <div class="info center">{{ t('common:ui.webview.isolated.desc') }}</div>
             <div class="operations">
-                <a-button type="primary" @click="openModeSwitcher = true">{{ t('common:ui.webview.isolated.switchMode') }}</a-button>
+                <a-button type="primary" autofocus @click="openModeSwitcher = true">{{ t('common:ui.webview.isolated.switchMode') }}</a-button>
                 <a-button @click="openInBlank">{{ t('common:ui.webview.isolated.openBlank') }}</a-button>
             </div>
         </div>

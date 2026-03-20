@@ -27,6 +27,7 @@ const props = withDefaults(defineProps<{
 })
 
 defineExpose({
+    get: () => e.value,
     postMessage(data: any, origin: string, transfer?: Transferable[]) {
         if (!e.value) throw new Error('Frame not prepared or was removed');
         if (!e.value.contentWindow) throw new Error('Cannot access the content of the frame');

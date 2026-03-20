@@ -18,7 +18,9 @@
             "disabled": "Disabled"
         },
         "header": {
+            "expBtn": "Expand the sidebar",
             "moreOptions": {
+                "label": "More options",
                 "newConv": "New Conversation",
                 "delConv": "Delete",
                 "settings": "Settings"

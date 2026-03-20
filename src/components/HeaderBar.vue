@@ -2,16 +2,17 @@
     <div class="header-bar" :class="{'large-screen': windowState.isLargeScreen}">
         <template v-if="windowState.isLargeScreen">
             <!-- 大屏幕显示对话标题和对话设置按钮 -->
-            <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }">
+            <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }" :aria-hidden="!appStatePersist.sidebarCollapsed">
                 <AppLogo :size="16" />
                 <div class="btn-group">
                     <!-- 浮动的“展开”按钮（桌面端） -->
                     <a-button type="text" shape="circle"
+                        :aria-label="t('common:ui.header.expBtn')"
                         @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
                         <CaretRightFilled />
                     </a-button>
                     <!-- 新对话（桌面端） -->
-                    <a-button type="text" shape="circle" @click="newChat">
+                    <a-button type="text" shape="circle" @click="newChat" :aria-label="t('common:ui.header.moreOptions.newConv')">
                         <PlusCircleOutlined />
                     </a-button>
                 </div>
@@ -24,11 +25,11 @@
         </template>
         <template v-else>
             <!-- 小屏幕显示（常驻）菜单展开按钮和新建对话按钮 -->
-            <a-button shape="circle" type="text" @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed">
+            <a-button shape="circle" type="text" @click="appStatePersist.sidebarCollapsed = !appStatePersist.sidebarCollapsed" :aria-label="t('common:ui.header.expBtn')">
                 <CaretRightFilled />
             </a-button>
             <div class="flexible-space"></div>
-            <a-button shape="circle" type="text" @click="newChat">
+            <a-button shape="circle" type="text" @click="newChat" :aria-label="t('common:ui.header.moreOptions.newConv')">
                 <PlusCircleOutlined />
             </a-button>
             <HeaderMoreOptions />
