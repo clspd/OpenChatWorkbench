@@ -49,13 +49,30 @@
                 }
             }
         },
+        "attachmentOptions": {
+            "title": "Attachment Options",
+            "throttleSingleFileSize": {
+                "legend": "Prompt Single File Size",
+                "description": "Maximum size for a single file attachment (in MiB). If a file exceeds this limit, you will be prompted to confirm before uploading."
+            }
+        },
         "markdown": {
             "title": "Markdown Rendering",
-            "rendering": {
-                "legend": "Markdown Rendering",
-                "enable": "Enable markdown rendering",
-                "description": "When enabled, user messages will be rendered as markdown. Disable this option if it confused you with unexpected formatting."
-            }
+            "assistantMessage": {
+                "legend": "Assistant Message",
+                "description": "Control how markdown in assistant messages is rendered."
+            },
+            "userSystemMessage": {
+                "legend": "User and System Messages",
+                "description": "Control how markdown in user and system messages is rendered."
+            },
+            "options": {
+                "full": "Render all markdown",
+                "recommended": "Render recommended markdown only",
+                "disabled": "Don't render markdown"
+            },
+            "recommendedNote": "Recommended markdown includes",
+            "recommendedTags": "bold, italic, links, lists, and code blocks"
         }
     },
     "personalization": {

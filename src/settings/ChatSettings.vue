@@ -14,14 +14,50 @@
             </fieldset>
         </a-card>
 
+        <a-card :title="t('settings:chat.attachmentOptions.title')">
+            <fieldset>
+                <legend>{{ t('settings:chat.attachmentOptions.throttleSingleFileSize.legend') }}</legend>
+                <p>{{ t('settings:chat.attachmentOptions.throttleSingleFileSize.description') }}</p>
+                <a-input-number 
+                    v-model:value="appStatePersist.fileUploadThrottleSize" 
+                    :min="1" 
+                    :max="1024" 
+                    :precision="0"
+                />
+                <span style="margin-left: 0.5em;">MiB</span>
+            </fieldset>
+        </a-card>
+
         <a-card :title="t('settings:chat.markdown.title')">
             <fieldset>
-                <legend>{{ t('settings:chat.markdown.rendering.legend') }}</legend>
-                <a-checkbox v-model:checked="appStatePersist.renderMarkdown">
-                    {{ t('settings:chat.markdown.rendering.enable') }}
-                </a-checkbox>
-                <div style="margin-top: 0.5em; color: var(--color-secondary, gray);">
-                    {{ t('settings:chat.markdown.rendering.description') }}
+                <legend>{{ t('settings:chat.markdown.assistantMessage.legend') }}</legend>
+                <p style="margin-top: 0; color: var(--color-secondary, gray);">
+                    {{ t('settings:chat.markdown.assistantMessage.description') }}
+                </p>
+                <a-radio-group v-model:value="appStatePersist.assistantMarkdownRenderMode" size="small">
+                    <a-radio :value="'full'">{{ t('settings:chat.markdown.options.full') }}</a-radio>
+                    <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
+                    <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
+                </a-radio-group>
+                <div style="margin-top: 0.5em; font-size: 0.9em; color: var(--color-secondary, gray);">
+                    <strong>{{ t('settings:chat.markdown.recommendedNote') }}:</strong>
+                    {{ t('settings:chat.markdown.recommendedTags') }}
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>{{ t('settings:chat.markdown.userSystemMessage.legend') }}</legend>
+                <p style="margin-top: 0; color: var(--color-secondary, gray);">
+                    {{ t('settings:chat.markdown.userSystemMessage.description') }}
+                </p>
+                <a-radio-group v-model:value="appStatePersist.userSystemMarkdownRenderMode" size="small">
+                    <a-radio :value="'full'">{{ t('settings:chat.markdown.options.full') }}</a-radio>
+                    <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
+                    <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
+                </a-radio-group>
+                <div style="margin-top: 0.5em; font-size: 0.9em; color: var(--color-secondary, gray);">
+                    <strong>{{ t('settings:chat.markdown.recommendedNote') }}:</strong>
+                    {{ t('settings:chat.markdown.recommendedTags') }}
                 </div>
             </fieldset>
         </a-card>
@@ -46,15 +82,39 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.sub-settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+h2, p {
+    margin-top: 0;
+}
+
 fieldset {
     border: none;
     padding: 0;
     margin: 1em 0;
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 }
 
 legend {
     padding: 0;
     margin-bottom: 0.5em;
     font-weight: bold;
+}
+
+a-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 }
 </style>

@@ -14,7 +14,11 @@
                 <div v-if="frag.type === MessageFragmentType.Error" class="error-tip-text">
                     An error has occurred. See the details below for more information.
                 </div>
-                <MarkdownRenderer :content="frag.content" :disabled="frag.type === MessageFragmentType.Error || props.showRaw || !appStatePersist.renderMarkdown" />
+                <MarkdownRenderer 
+                    :content="frag.content" 
+                    :mode="getMarkdownMode()"
+                    :disabled="frag.type === MessageFragmentType.Error || props.showRaw"
+                />
             </div>
             <div v-else class="err-not-supported">
                 The content type of this fragment is not supported
@@ -56,6 +60,14 @@ const fragTypeIdentifyMap = {
     [MessageFragmentType.Response]: 'response',
     [MessageFragmentType.Error]: 'error',
 }
+
+const getMarkdownMode = (): 'full' | 'recommended' | 'disabled' => {
+    if (props.message.role === MessageRole.Assistant) {
+        return appStatePersist.assistantMarkdownRenderMode;
+    } else {
+        return appStatePersist.userSystemMarkdownRenderMode;
+    }
+};
 
 const hasThinkingFrag = computed(() => props.message.fragments.some(frag => frag.type === MessageFragmentType.Think || frag.type === MessageFragmentType.Tool));
 const totalThought = computed(() => {
