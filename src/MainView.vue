@@ -5,23 +5,40 @@
             <a-layout-header class="main-content-header">
                 <HeaderBar></HeaderBar>
             </a-layout-header>
-            <router-view></router-view>
+            <router-view v-slot="{ Component }">
+                <keep-alive :include="keepAliveName">
+                    <component :is="Component" />
+                </keep-alive>
+            </router-view>
         </a-layout>
     </a-layout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, type Component } from 'vue';
+import { ref, watch, onMounted, type Component } from 'vue';
+import { useRouter } from 'vue-router';
 import HeaderBar from './components/HeaderBar.vue'
 import Sidebar from './components/Sidebar.vue'
 import { useAppStateStore } from './stores/appState';
 import { DetectAndPromptLanguage } from './i18n/detector';
 
+const router = useRouter();
 const appState = useAppStateStore();
+const keepAliveName = ref<string | undefined>();
 
 onMounted(() => {
     DetectAndPromptLanguage();
 })
+
+router.afterEach((to, from) => {
+    if (to.name === 'webview') {
+        const cn = (from.meta.componentName) as string | undefined;
+        console.debug('[MainView]', 'Keep alive component:', cn);
+        keepAliveName.value = cn;
+    }
+    else keepAliveName.value = undefined;
+});
+
 </script>
 
 <style scoped>

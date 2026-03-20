@@ -18,6 +18,7 @@
                     :content="frag.content" 
                     :mode="getMarkdownMode()"
                     :disabled="frag.type === MessageFragmentType.Error || props.showRaw"
+                    :trust-same-origin="true"
                 />
             </div>
             <div v-else class="err-not-supported">
@@ -37,7 +38,6 @@
 import { computed, ref, watch } from 'vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import { MessageContentType, MessageFragmentType, MessageRole, MessageStatus, type Message } from '@/types/message';
-import { LoadingOutlined } from '@ant-design/icons-vue';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 
 const appStatePersist = useAppStatePersistStore();

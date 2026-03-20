@@ -27,7 +27,7 @@
                 />
 
                 <div class="message-body-container" v-show="!isFileOnly">
-                    <div class="message-fill"></div>
+                    <div class="message-fill" v-if="props.message.role === MessageRole.User || props.message.role === MessageRole.System"></div>
                     <div class="message-body">
                         <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
                     </div>
@@ -145,6 +145,10 @@ const confirmEditAvatar = () => {
 
 .message-body-container {
     display: flex;
+}
+
+.message-body-container, .message-body {
+    overflow: hidden;
 }
 
 /* Message body:

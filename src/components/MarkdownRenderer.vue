@@ -9,12 +9,15 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { getSafeHTML } from '@/utils/htmlpurify';
+import { message } from 'ant-design-vue';
+import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
 import morphdom from 'morphdom'
-import { message } from 'ant-design-vue';
+import { getSafeHTML } from '@/utils/htmlpurify';
 import '@/styles/markdown-beautify.css'
 import '@/modules/webcomponents/ocw-markdown-component.ts'
+
+const router = useRouter();
 
 const md = new MarkdownIt({
     html: true,
@@ -33,7 +36,7 @@ const mdRecommended = new MarkdownIt({
 
 // Disable block-level rules except for lists, code blocks, and paragraphs
 mdRecommended.block.ruler.disable([
-    'blockquote', 'hr', 'heading', 'lheading', 'table'
+    'blockquote', 'hr', 'heading', 'lheading',
 ]);
 
 // Disable inline rules that are not in recommended list
@@ -60,7 +63,7 @@ const renderMode = computed(() => {
 
 const html = computed(() => {
     if (renderMode.value === 'disabled') {
-        return '';
+        return props.content;
     }
     
     const mdInstance = renderMode.value === 'recommended' ? mdRecommended : md;
@@ -71,11 +74,11 @@ const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.cr
 
 const update = () => {
     if (!renderer.value) {
-        // console.warn("[MarkdownRenderer] renderer is not mounted");
         return;
     }
     
     if (renderMode.value === 'disabled') {
+        console.debug('update',props.content)
         renderer.value.innerText = props.content; // when disabled, render plain text
         return;
     }
@@ -102,8 +105,7 @@ const update = () => {
     });
 };
 
-watch(() => html.value, update, { immediate: true })
-watch(() => renderMode.value, update)
+watch(() => html.value, update)
 
 onMounted(() => {
     nextTick(() => update());
@@ -125,12 +127,17 @@ const handleContentClick = (e: PointerEvent) => {
                 const url = new URL((target as HTMLAnchorElement).href, window.location.href);
                 switch (url.protocol) {
                     case 'https:':
-                        if (props.trustSameOrigin && url.hostname === window.location.hostname) {
-                            window.location.href = url.href;
+                    case 'http:':
+                        if (props.trustSameOrigin && url.origin === window.location.origin) {
+                            router.push({
+                                path: '/webview',
+                                query: {
+                                    src: url.href
+                                }
+                            });
                             break;
                         }
                         // [[fallthrough]]
-                    case 'http:':
                     case 'mailto:':
                     case 'tel:':
                     case 'sms:':

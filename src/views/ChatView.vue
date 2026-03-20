@@ -58,8 +58,8 @@
 
 <script setup lang="ts">
 // vendor
-import { ref, onMounted, watch, reactive, h, computed, toRaw } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, watch, reactive, h, computed, toRaw, onDeactivated, onActivated } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { cloneDeep } from 'lodash-es';
 import { message, Modal } from 'ant-design-vue';
 import { CloseCircleFilled, LoadingOutlined } from '@ant-design/icons-vue';
@@ -92,7 +92,8 @@ const props = defineProps({
         default: '',
     },
 });
-const chatId = computed(() => typeof route.params.chatId === 'string' ? route.params.chatId : props.chatId)
+const prevChatId = ref('');
+const chatId = computed(() => (prevChatId.value, props.chatId, typeof route.params.chatId === 'string' ? route.params.chatId : (props.chatId || prevChatId.value)))
 
 const appState = useAppStateStore()
 const conversationStore = useConversationStore()
@@ -122,6 +123,7 @@ async function LoadChat() {
         notFound.value = true;
         return;
     }
+    prevChatId.value = chatId.value;
 
     try {
         const conv = await LoadConversation(chatId.value);
@@ -173,6 +175,18 @@ async function InitChatMsgUI() {
         messageEditorState.files = []
     }
 }
+
+const scrollPos = ref(0);
+onBeforeRouteLeave(() => {
+    scrollPos.value = (appState.mainContentViewEl as any).$el?.scrollTop;
+    console.debug('[ChatView]', 'Deactivated, scroll pos:', scrollPos.value);
+});
+onActivated(() => {
+    const el = ((appState.mainContentViewEl as any).$el) as HTMLElement;
+    console.debug('[ChatView]', 'Activated, scroll pos:', scrollPos.value);
+    if (!el || isNaN(scrollPos.value)) return;
+    el.scrollTo(0, scrollPos.value);
+});
 
 // --------
 
@@ -267,12 +281,6 @@ const requestScrollTo = (pos: 'top' | 'prev' | 'next' | 'bottom') => {
     }
 }
 const requestScrollToBottom = () => requestScrollTo('bottom')
-
-const coreSendMessage = async function (
-
-) {
-
-}
 
 const handleSendMessage = async function () {
     if (messageEditorState.content === '') {
