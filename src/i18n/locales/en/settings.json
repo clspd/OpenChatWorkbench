@@ -15,13 +15,6 @@
         },
         "chat": {
             "title": "Chat",
-            "sendMsgWith": {
-                "legend": "Send Message with...",
-                "options": {
-                    "enter": "Enter",
-                    "ctrl-enter": "Ctrl + Enter"
-                }
-            },
             "attachOptions": {
                 "legend": "Attachment Options",
                 "throttleSingleFileSize": {
@@ -45,7 +38,25 @@
         }
     },
     "chat": {
-        "title": "Chat Settings"
+        "title": "Chat Settings",
+        "sendMessage": {
+            "title": "Send Message",
+            "sendMsgWith": {
+                "legend": "Send Message with...",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            }
+        },
+        "markdown": {
+            "title": "Markdown Rendering",
+            "rendering": {
+                "legend": "Markdown Rendering",
+                "enable": "Enable markdown rendering",
+                "description": "When enabled, user messages will be rendered as markdown. Disable this option if it confused you with unexpected formatting."
+            }
+        }
     },
     "personalization": {
         "title": "Personalization",

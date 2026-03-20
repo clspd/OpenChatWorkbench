@@ -22,6 +22,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
         usePlainInput: false,
         sendMessageWithCtrlEnter: false,
+        renderMarkdown: true,
         domPurifCfg: {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,

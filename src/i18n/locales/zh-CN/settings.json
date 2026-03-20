@@ -15,13 +15,6 @@
         },
         "chat": {
             "title": "对话",
-            "sendMsgWith": {
-                "legend": "消息发送方式",
-                "options": {
-                    "enter": "Enter",
-                    "ctrl-enter": "Ctrl + Enter"
-                }
-            },
             "attachOptions": {
                 "legend": "附件选项",
                 "throttleSingleFileSize": {
@@ -45,7 +38,25 @@
         }
     },
     "chat": {
-        "title": "对话设置"
+        "title": "对话设置",
+        "sendMessage": {
+            "title": "发送消息",
+            "sendMsgWith": {
+                "legend": "消息发送方式",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            }
+        },
+        "markdown": {
+            "title": "Markdown 渲染",
+            "rendering": {
+                "legend": "Markdown 渲染",
+                "enable": "启用 Markdown 渲染",
+                "description": "启用后，用户消息将被渲染为 Markdown。如果意外的格式让你感到困惑，可以禁用此选项。"
+            }
+        }
     },
     "personalization": {
         "title": "个性化",

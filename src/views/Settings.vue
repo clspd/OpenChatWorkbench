@@ -29,6 +29,7 @@ import i18next from 'i18next';
 import { domain_name_main_root } from '@/config';
 
 const GeneralSettings = defineAsyncComponent(() => import('@/settings/GeneralSettings.vue'))
+const ChatSettings = defineAsyncComponent(() => import('@/settings/ChatSettings.vue'))
 const PersonalizationSettings = defineAsyncComponent(() => import('@/settings/Personalization.vue'))
 const ProviderSettings = defineAsyncComponent(() => import('@/settings/ProviderSettings.vue'))
 const ModelSettings = defineAsyncComponent(() => import('@/settings/ModelSettings.vue'))
@@ -50,6 +51,11 @@ const pages = ref([
         id: 'general',
         title: i18next.t('settings:general.title'),
         component: markRaw(GeneralSettings),
+    },
+    {
+        id: 'chat',
+        title: i18next.t('settings:chat.title'),
+        component: markRaw(ChatSettings),
     },
     {
         id: 'personalization',

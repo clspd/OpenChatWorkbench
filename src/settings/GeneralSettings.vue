@@ -17,25 +17,6 @@
             <WorkingModeSwitcher v-model:open="showChangeWorkModeDlg" />
         </a-card>
 
-        <a-card :title="t('settings:general.chat.title')">
-            <fieldset>
-                <legend>{{ t('settings:general.chat.sendMsgWith.legend') }}</legend>
-                <a-radio-group v-model:value="appStatePersist.sendMessageWithCtrlEnter" size="small">
-                    <a-radio :value="false">{{ t('settings:general.chat.sendMsgWith.options.enter') }}</a-radio>
-                    <a-radio :value="true">{{ t('settings:general.chat.sendMsgWith.options.ctrl-enter') }}</a-radio>
-                </a-radio-group>
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ t('settings:general.chat.attachOptions.legend') }}</legend>
-                <div style="display: flex; align-items: center; gap: 0.5em;">
-                    <b>{{ t('settings:general.chat.attachOptions.throttleSingleFileSize.title') }}</b>
-                    <a-input-number v-model:value="appStatePersist.fileUploadThrottleSize" :min="1" />
-                </div>
-                <div>{{ t('settings:general.chat.attachOptions.throttleSingleFileSize.description') }}</div>
-            </fieldset>
-        </a-card>
-
         <a-card :title="t('settings:general.accessibility.title')">
             <a-alert v-if="accessibilityNeedsRefresh" type="warning" show-icon closable>
                 <template #message>

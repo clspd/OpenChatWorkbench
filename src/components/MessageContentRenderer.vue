@@ -14,7 +14,7 @@
                 <div v-if="frag.type === MessageFragmentType.Error" class="error-tip-text">
                     An error has occurred. See the details below for more information.
                 </div>
-                <MarkdownRenderer :content="frag.content" :disabled="frag.type === MessageFragmentType.Error || props.showRaw" />
+                <MarkdownRenderer :content="frag.content" :disabled="frag.type === MessageFragmentType.Error || props.showRaw || !appStatePersist.renderMarkdown" />
             </div>
             <div v-else class="err-not-supported">
                 The content type of this fragment is not supported
@@ -34,6 +34,9 @@ import { computed, ref, watch } from 'vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import { MessageContentType, MessageFragmentType, MessageRole, MessageStatus, type Message } from '@/types/message';
 import { LoadingOutlined } from '@ant-design/icons-vue';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
+
+const appStatePersist = useAppStatePersistStore();
 
 const props = defineProps<{
     message: Message;
