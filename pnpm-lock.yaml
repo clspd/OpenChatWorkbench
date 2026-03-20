@@ -96,8 +96,8 @@ importers:
         specifier: ^3.5.30
         version: 3.5.30(typescript@5.9.3)
       vue-dialog-view:
-        specifier: ^1.8.1
-        version: 1.8.1(vue@3.5.30(typescript@5.9.3))
+        specifier: ^1.8.3
+        version: 1.8.3(vue@3.5.30(typescript@5.9.3))
       vue-router:
         specifier: ^4.6.4
         version: 4.6.4(vue@3.5.30(typescript@5.9.3))
@@ -2225,8 +2225,8 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  vue-dialog-view@1.8.1:
-    resolution: {integrity: sha512-AxhKj6xzImlxmrW7+GeCfUwcW+2ZHjku8NuBEPMV/l+vwiQiENStdCzlVbfv8BiajwG+sFEVlM46eUcj9zb7lw==}
+  vue-dialog-view@1.8.3:
+    resolution: {integrity: sha512-TFmZGYVgDc5lmi6e7jtMiC/GjzneHVTf48zEx/YrLXLk2d7hpc13NLbLGx5yUh3kTB0Vtwj+tnSf1YXPB8RAiQ==}
     peerDependencies:
       vue: ^3.3.0
 
@@ -4469,7 +4469,7 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-dialog-view@1.8.1(vue@3.5.30(typescript@5.9.3)):
+  vue-dialog-view@1.8.3(vue@3.5.30(typescript@5.9.3)):
     dependencies:
       vue: 3.5.30(typescript@5.9.3)
 

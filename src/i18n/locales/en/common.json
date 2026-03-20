@@ -18,7 +18,9 @@
             "disabled": "Disabled"
         },
         "header": {
+            "expBtn": "Expand the sidebar",
             "moreOptions": {
+                "label": "More options",
                 "newConv": "New Conversation",
                 "delConv": "Delete",
                 "settings": "Settings"
@@ -118,7 +120,7 @@
                 "title": "External Web Page",
                 "warning": {
                     "title": "External Website Disclaimer",
-                    "content": "You are about to visit an external website that is not controlled by us. The content and security of this site are not affiliated with or endorsed. Please be aware that we are not responsible for any content, privacy practices, or security risks on the external site.\nBy clicking \"Continue\", you acknowledge and accept these risks.",
+                    "content": "You are about to visit an external website that is not controlled by us. The content and security of this site are not affiliated with or endorsed. Please be aware that we are not responsible for any content, privacy practices, or security risks on the external site.\nBy clicking \"Continue\", you acknowledge and accept these risks.\n\nTarget website: {{url}}",
                     "noask": "Do not ask again"
                 }
             },

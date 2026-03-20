@@ -15,13 +15,6 @@
         },
         "chat": {
             "title": "对话",
-            "sendMsgWith": {
-                "legend": "消息发送方式",
-                "options": {
-                    "enter": "Enter",
-                    "ctrl-enter": "Ctrl + Enter"
-                }
-            },
             "attachOptions": {
                 "legend": "附件选项",
                 "throttleSingleFileSize": {
@@ -45,7 +38,54 @@
         }
     },
     "chat": {
-        "title": "对话设置"
+        "title": "对话设置",
+        "sendMessage": {
+            "title": "发送消息",
+            "sendMsgWith": {
+                "legend": "消息发送方式",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            }
+        },
+        "attachmentOptions": {
+            "title": "附件选项",
+            "throttleSingleFileSize": {
+                "legend": "单文件大小提示阈值",
+                "description": "单个文件附件的大小（MiB）。如果文件大小超过此值，我们将询问您是否继续。"
+            }
+        },
+        "markdown": {
+            "title": "Markdown 渲染",
+            "assistantMessage": {
+                "legend": "助手消息",
+                "description": "控制助手消息中的 Markdown 如何渲染。"
+            },
+            "userSystemMessage": {
+                "legend": "用户和系统消息",
+                "description": "控制用户和系统消息中的 Markdown 如何渲染。"
+            },
+            "options": {
+                "full": "渲染全部 Markdown",
+                "recommended": "仅渲染推荐的 Markdown",
+                "disabled": "不渲染 Markdown"
+            },
+            "recommendedNote": "推荐的 Markdown 包括",
+            "recommendedTags": "加粗、倾斜、链接、列表和代码块"
+        },
+        "linkTarget": {
+            "title": "链接行为",
+            "openLinkWith": {
+                "legend": "聊天中链接的打开方式",
+                "description": "设置聊天中提及的链接的打开方式。"
+            },
+            "options": {
+                "inline": "总是在当前标签页打开",
+                "newtab": "总是在新标签页中打开",
+                "newtab-when-isolated": "仅当工作模式为隔离模式时在新标签页中打开"
+            }
+        }
     },
     "personalization": {
         "title": "个性化",

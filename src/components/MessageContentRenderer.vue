@@ -12,19 +12,24 @@
                 :data-type="fragTypeIdentifyMap[frag.type]"
             >
                 <div v-if="frag.type === MessageFragmentType.Error" class="error-tip-text">
-                    An error has occurred. See the details below for more information.
+                    {{ t('chat:messageChain.state.errorOccurred') }}
                 </div>
-                <MarkdownRenderer :content="frag.content" :disabled="frag.type === MessageFragmentType.Error || props.showRaw" />
+                <MarkdownRenderer 
+                    :content="frag.content" 
+                    :mode="getMarkdownMode()"
+                    :disabled="frag.type === MessageFragmentType.Error || props.showRaw"
+                    :trust-same-origin="true"
+                />
             </div>
             <div v-else class="err-not-supported">
-                The content type of this fragment is not supported
+                {{ t('chat:messageChain.state.unsupportedFragType') }}
             </div>
         </template>
         <div v-if="props.message.status === MessageStatus.WIP || props.message.has_pending_fragment" class="wip-tip-text">
             <LoadingOutlined class="spin" />
         </div>
         <div v-else-if="props.message.fragments.length === 0" class="empty-message">
-            This message is empty.
+            {{ t('chat:messageChain.state.emptyMessage') }}
         </div>
     </div>
 </template>
@@ -33,7 +38,9 @@
 import { computed, ref, watch } from 'vue';
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import { MessageContentType, MessageFragmentType, MessageRole, MessageStatus, type Message } from '@/types/message';
-import { LoadingOutlined } from '@ant-design/icons-vue';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
+
+const appStatePersist = useAppStatePersistStore();
 
 const props = defineProps<{
     message: Message;
@@ -53,6 +60,14 @@ const fragTypeIdentifyMap = {
     [MessageFragmentType.Response]: 'response',
     [MessageFragmentType.Error]: 'error',
 }
+
+const getMarkdownMode = (): 'full' | 'recommended' | 'disabled' => {
+    if (props.message.role === MessageRole.Assistant) {
+        return appStatePersist.assistantMarkdownRenderMode;
+    } else {
+        return appStatePersist.userSystemMarkdownRenderMode;
+    }
+};
 
 const hasThinkingFrag = computed(() => props.message.fragments.some(frag => frag.type === MessageFragmentType.Think || frag.type === MessageFragmentType.Tool));
 const totalThought = computed(() => {

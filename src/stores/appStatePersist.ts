@@ -22,6 +22,8 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         userSendMsgDefaultFeatures: [] as MessageFeatureItem[],
         usePlainInput: false,
         sendMessageWithCtrlEnter: false,
+        assistantMarkdownRenderMode: 'full' as 'full' | 'recommended' | 'disabled',
+        userSystemMarkdownRenderMode: 'recommended' as 'full' | 'recommended' | 'disabled',
         domPurifCfg: {
             FORBID_TAGS: ["style", "img"],
         } as DomPurifyConfig,
@@ -33,6 +35,7 @@ export const useAppStatePersistStore = defineStore('AppStatePersist', {
         filePreview: {
             autoWrap: false,
         },
+        chatInlineLinkTarget: 'newtab-when-isolated' as 'inline' | 'newtab' | 'newtab-when-isolated',
     }),
     getters: {
         theme: (state): ThemeConfig => ({

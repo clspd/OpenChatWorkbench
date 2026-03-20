@@ -13,7 +13,7 @@
             >
                 <MessageItem v-if="chatFlow[vi.index]"
                     :message="chatFlow[vi.index]!.data"
-                    :show-raw="chatFlowPref[vi.index]?.showRaw"
+                    :show-raw="chatFlowPref[chatFlow[vi.index]!.data.id]?.showRaw"
                     :disabled="props.disabled"
                 />
                 <div v-else class="err-data-corrupted">{{ t('chat:messageChain.error.dataCorrupted') }}</div>
@@ -27,8 +27,8 @@
                     @edit-message="handleRequestEditMessage(chatFlow[vi.index]!.data.id)"
                     @regenerate-message="handleRequestRegenerateMessage(chatFlow[vi.index]!.data.id)"
                     @like-message="(newState) => handleRequestLikeMessage(chatFlow[vi.index]!.data.id, newState)"
-                    :show-raw-message="chatFlowPref[vi.index]?.showRaw"
-                    @update:show-raw-message="(showRaw) => updateShowRawMessage(vi.index, showRaw)"
+                    :show-raw-message="chatFlowPref[chatFlow[vi.index]!.data.id]?.showRaw"
+                    @update:show-raw-message="(showRaw) => updateShowRawMessage(chatFlow[vi.index]!.data.id, showRaw)"
                 />
             </div>
         </div>

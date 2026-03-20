@@ -13,6 +13,11 @@
     },
     "messageChain": {
         "emptyState": "No message",
+        "state": {
+            "emptyMessage": "This message is empty.",
+            "unsupportedFragType": "The content type of this fragment is not supported.",
+            "errorOccurred": "An error has occurred. See the details below for more information."
+        },
         "error": {
             "dataCorrupted": "Data corrupted",
             "cannotRegenerate": "The message couldn't be regenerated.",

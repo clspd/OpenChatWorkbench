@@ -15,13 +15,6 @@
         },
         "chat": {
             "title": "Chat",
-            "sendMsgWith": {
-                "legend": "Send Message with...",
-                "options": {
-                    "enter": "Enter",
-                    "ctrl-enter": "Ctrl + Enter"
-                }
-            },
             "attachOptions": {
                 "legend": "Attachment Options",
                 "throttleSingleFileSize": {
@@ -45,7 +38,54 @@
         }
     },
     "chat": {
-        "title": "Chat Settings"
+        "title": "Chat Settings",
+        "sendMessage": {
+            "title": "Send Message",
+            "sendMsgWith": {
+                "legend": "Send Message with...",
+                "options": {
+                    "enter": "Enter",
+                    "ctrl-enter": "Ctrl + Enter"
+                }
+            }
+        },
+        "attachmentOptions": {
+            "title": "Attachment Options",
+            "throttleSingleFileSize": {
+                "legend": "Prompt Single File Size",
+                "description": "Maximum size for a single file attachment (in MiB). If a file exceeds this limit, you will be prompted to confirm before uploading."
+            }
+        },
+        "markdown": {
+            "title": "Markdown Rendering",
+            "assistantMessage": {
+                "legend": "Assistant Message",
+                "description": "Control how markdown in assistant messages is rendered."
+            },
+            "userSystemMessage": {
+                "legend": "User and System Messages",
+                "description": "Control how markdown in user and system messages is rendered."
+            },
+            "options": {
+                "full": "Render all markdown",
+                "recommended": "Render recommended markdown only",
+                "disabled": "Don't render markdown"
+            },
+            "recommendedNote": "Recommended markdown includes",
+            "recommendedTags": "bold, italic, links, lists, and code blocks"
+        },
+        "linkTarget": {
+            "title": "Link Behavior",
+            "openLinkWith": {
+                "legend": "Open chat links in",
+                "description": "Control how links inside chat messages are opened."
+            },
+            "options": {
+                "inline": "Always open in current view",
+                "newtab": "Always open in new tab",
+                "newtab-when-isolated": "Open in new tab when isolated"
+            }
+        }
     },
     "personalization": {
         "title": "Personalization",

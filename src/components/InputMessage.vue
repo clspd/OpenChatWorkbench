@@ -196,6 +196,7 @@ onMounted(() => {
         extensions: [
             StarterKit.configure({
                 link: false,
+                heading: false,
             }),
             Placeholder.configure({
                 placeholder: t('common:ui.mainInput.placeholder'),
@@ -539,10 +540,10 @@ textarea.edit-message {
 .file-ref {
     padding: 1em 1em 0.5em 1em;
 }
-</style>
-
-<style scoped>
-.edit-message :deep(p) {
-    margin: 0;
+.edit-message :deep(p[data-placeholder]::after) {
+    content: attr(data-placeholder);
+    color: var(--color-secondary, gray);
+    position: relative;
+    top: calc(-1em - 5px);
 }
 </style>

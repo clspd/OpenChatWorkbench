@@ -9,12 +9,17 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { getSafeHTML } from '@/utils/htmlpurify';
+import { message } from 'ant-design-vue';
+import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
 import morphdom from 'morphdom'
-import { message } from 'ant-design-vue';
+import { getSafeHTML } from '@/utils/htmlpurify';
+import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import '@/styles/markdown-beautify.css'
 import '@/modules/webcomponents/ocw-markdown-component.ts'
+
+const router = useRouter();
+const appStatePersist = useAppStatePersistStore();
 
 const md = new MarkdownIt({
     html: true,
@@ -23,30 +28,62 @@ const md = new MarkdownIt({
     typographer: true,
 });
 
+// Markdown-it instance for recommended mode (limited tags only)
+const mdRecommended = new MarkdownIt({
+    html: false,
+    breaks: true,
+    linkify: true,
+    typographer: false,
+});
+
+// Disable block-level rules except for lists, code blocks, and paragraphs
+mdRecommended.block.ruler.disable([
+    'blockquote', 'hr', 'heading', 'lheading',
+]);
+
+// Disable inline rules that are not in recommended list
+mdRecommended.inline.ruler.disable([
+    'image', 'autolink', 'html_inline'
+]);
+
 const props = withDefaults(defineProps<{
     content: string;
     disabled?: boolean;
+    mode?: 'full' | 'recommended' | 'disabled';
     trustSameOrigin?: boolean;
 }>(), {
     disabled: false,
+    mode: 'full',
     trustSameOrigin: false,
 });
 
+// For backward compatibility: if disabled prop is true, treat as 'disabled' mode
+const renderMode = computed(() => {
+    if (props.disabled) return 'disabled';
+    return props.mode;
+});
+
 const html = computed(() => {
-    return getSafeHTML(md.render(props.content));
+    if (renderMode.value === 'disabled') {
+        return props.content;
+    }
+    
+    const mdInstance = renderMode.value === 'recommended' ? mdRecommended : md;
+    return getSafeHTML(mdInstance.render(props.content));
 });
 
 const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
 
 const update = () => {
     if (!renderer.value) {
-        // console.warn("[MarkdownRenderer] renderer is not mounted");
         return;
     }
-    if (props.disabled) {
+    
+    if (renderMode.value === 'disabled') {
         renderer.value.innerText = props.content; // when disabled, render plain text
         return;
     }
+    
     buffer.value.innerHTML = html.value;
     for (const i of buffer.value.querySelectorAll('pre')) {
         const newCom = document.createElement("ocw-markdown-component");
@@ -69,8 +106,7 @@ const update = () => {
     });
 };
 
-watch(() => html.value, update, { immediate: true })
-watch(() => props.disabled, update)
+watch(() => html.value, update)
 
 onMounted(() => {
     nextTick(() => update());
@@ -92,12 +128,24 @@ const handleContentClick = (e: PointerEvent) => {
                 const url = new URL((target as HTMLAnchorElement).href, window.location.href);
                 switch (url.protocol) {
                     case 'https:':
-                        if (props.trustSameOrigin && url.hostname === window.location.hostname) {
-                            window.location.href = url.href;
+                    case 'http:':
+                        if (
+                            (props.trustSameOrigin && url.origin === window.location.origin) ||
+                            (appStatePersist.chatInlineLinkTarget === 'inline') ||
+                            (appStatePersist.chatInlineLinkTarget === 'newtab-when-isolated' && (!window.crossOriginIsolated))
+                        ) {
+                            router.push({
+                                path: '/webview',
+                                query: {
+                                    src: url.href
+                                }
+                            });
                             break;
                         }
-                        // [[fallthrough]]
-                    case 'http:':
+                        else {
+                            window.open(url.href, '_blank', 'noopener,noreferrer');
+                        }
+                        break;
                     case 'mailto:':
                     case 'tel:':
                     case 'sms:':

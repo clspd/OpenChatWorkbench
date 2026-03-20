@@ -17,6 +17,9 @@ const router = createRouter({
       path: '/chat/c/:chatId',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
+      meta: {
+        keepAliveComponentName: 'ChatView'
+      },
     },
     {
       path: '/workspace/new',

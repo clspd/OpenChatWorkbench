@@ -8,7 +8,7 @@
                 <a-radio :checked="defaultMode === 'standard'" @update:checked="defaultMode = 'standard'">{{ t('settings:working_mode.makeDefault') }}</a-radio>
             </div>
             <div class="set">
-                <a-button v-if="currentMode !== 'standard'" type="primary" @click="requestSetMode('standard')">{{ t('settings:working_mode.switch.to') }}</a-button>
+                <a-button v-if="currentMode !== 'standard'" autofocus type="primary" @click="requestSetMode('standard')">{{ t('settings:working_mode.switch.to') }}</a-button>
                 <div v-else class="already">{{ t('settings:working_mode.switch.already') }}</div>
             </div>
         </a-card>
@@ -18,14 +18,14 @@
                 <a-radio :checked="defaultMode === 'isolated'" @update:checked="defaultMode = 'isolated'">{{ t('settings:working_mode.makeDefault') }}</a-radio>
             </div>
             <div class="set">
-                <a-button v-if="currentMode !== 'isolated'" type="primary" @click="requestSetMode('isolated')">{{ t('settings:working_mode.switch.to') }}</a-button>
+                <a-button v-if="currentMode !== 'isolated'" autofocus type="primary" @click="requestSetMode('isolated')">{{ t('settings:working_mode.switch.to') }}</a-button>
                 <div v-else class="already">{{ t('settings:working_mode.switch.already') }}</div>
             </div>
         </a-card>
         <div class="confirmation" v-if="confirming">
             <div class="confirm-text">{{ canSwitch ? t('settings:working_mode.switch.confirm', { mode: t('settings:working_mode.i.' + wantSwitch) }) : t('settings:working_mode.switch.blockedDueToActiveReq') }}</div>
             <div class="confirm-buttons">
-                <a-button v-if="canSwitch" :disabled="disableOperation" type="primary" @click="wantSwitch && setMode(wantSwitch)">{{ t('settings:working_mode.switch.switchNow') }}</a-button>
+                <a-button v-if="canSwitch" :disabled="disableOperation" type="primary" @click="wantSwitch && setMode(wantSwitch)" autofocus>{{ t('settings:working_mode.switch.switchNow') }}</a-button>
                 <a-button :disabled="disableOperation" @click="confirming = false">{{ canSwitch ? t('common:ui.dialog.cancel') : t('settings:working_mode.switch.tryLater') }}</a-button>
             </div>
         </div>
@@ -100,7 +100,7 @@ async function setMode(mode: Mode, persist = true, reload = true) {
 
 <style scoped>
 .a {
-    max-width: 600px;
+    max-width: min(calc(100% - 2em), 600px);
 }
 .pagetitle {
     font-size: large;
