@@ -18,7 +18,7 @@ const router = createRouter({
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
       meta: {
-        componentName: 'ChatView'
+        keepAliveComponentName: 'ChatView'
       },
     },
     {

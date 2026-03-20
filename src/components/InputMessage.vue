@@ -196,6 +196,7 @@ onMounted(() => {
         extensions: [
             StarterKit.configure({
                 link: false,
+                heading: false,
             }),
             Placeholder.configure({
                 placeholder: t('common:ui.mainInput.placeholder'),

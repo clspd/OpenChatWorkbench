@@ -6,7 +6,7 @@
                 <HeaderBar></HeaderBar>
             </a-layout-header>
             <router-view v-slot="{ Component }">
-                <keep-alive :include="Array.from(keepAliveName)" :exclude="keepAliveExcludeName">
+                <keep-alive :include="keepAliveNameComputed" :exclude="keepAliveExcludeName">
                     <component :is="Component" />
                 </keep-alive>
             </router-view>
@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, type Component } from 'vue';
+import { ref, computed, onMounted, type Component, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import HeaderBar from './components/HeaderBar.vue'
 import Sidebar from './components/Sidebar.vue'
@@ -26,19 +26,24 @@ const router = useRouter();
 const appState = useAppStateStore();
 const keepAliveName = ref(new Set<string>());
 const keepAliveExcludeName = ref(['WebViewRoute']);
+const keepAliveNameComputed = computed(() => (Array.from(keepAliveName.value)));
 
 onMounted(() => {
     DetectAndPromptLanguage();
 })
 
-router.afterEach((to, from) => {
+router.beforeEach((to, from, next) => {
     if (to.name === 'webview') {
-        const cn = (from.meta.componentName) as string | undefined;
-        console.debug('[MainView]', 'Keep alive component:', cn);
+        const cn = (from.meta.keepAliveComponentName) as string | undefined;
         if (cn) keepAliveName.value.add(cn);
         else keepAliveName.value.clear();
+        console.debug('[MainView]', 'Keep alive component:', keepAliveNameComputed.value);
+    }
+    else if (to.meta.keepAliveComponentName) {
+        keepAliveName.value.add(to.meta.keepAliveComponentName as string);
     }
     else keepAliveName.value.clear();
+    nextTick(() => next());
 });
 
 </script>
