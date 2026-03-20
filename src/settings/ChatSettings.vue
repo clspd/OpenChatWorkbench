@@ -39,10 +39,6 @@
                     <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
                     <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
                 </a-radio-group>
-                <div style="margin-top: 0.5em; font-size: 0.9em; color: var(--color-secondary, gray);">
-                    <strong>{{ t('settings:chat.markdown.recommendedNote') }}:</strong>
-                    {{ t('settings:chat.markdown.recommendedTags') }}
-                </div>
             </fieldset>
 
             <fieldset>
@@ -55,10 +51,6 @@
                     <a-radio :value="'recommended'">{{ t('settings:chat.markdown.options.recommended') }}</a-radio>
                     <a-radio :value="'disabled'">{{ t('settings:chat.markdown.options.disabled') }}</a-radio>
                 </a-radio-group>
-                <div style="margin-top: 0.5em; font-size: 0.9em; color: var(--color-secondary, gray);">
-                    <strong>{{ t('settings:chat.markdown.recommendedNote') }}:</strong>
-                    {{ t('settings:chat.markdown.recommendedTags') }}
-                </div>
             </fieldset>
         </a-card>
     </div>

@@ -38,7 +38,7 @@ mdRecommended.block.ruler.disable([
 
 // Disable inline rules that are not in recommended list
 mdRecommended.inline.ruler.disable([
-    'strikethrough', 'subscript', 'superscript', 'abbr', 'mark', 'insert', 'footnote', 'image'
+    'image', 'autolink', 'html_inline'
 ]);
 
 const props = withDefaults(defineProps<{
