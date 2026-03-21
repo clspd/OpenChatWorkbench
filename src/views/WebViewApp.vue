@@ -1,7 +1,7 @@
 <template>
     <WebViewCore
         class="webview"
-        :content="computedUrl.href"
+        :content="url"
         :disabled="disabled"
     />
 </template>
@@ -17,10 +17,7 @@ import { checkUrlIsExternal } from '@/utils/externalUrl';
 
 const url = ref('');
 const disabled = ref(true);
-const computedUrl = computed(() => new URL(url.value));
 const safeMode = !!yn((new URL(location.href)).searchParams.get('safe'));
-
-const isExternal = computed(() => checkUrlIsExternal(computedUrl.value));
 
 async function update() {
     try {
