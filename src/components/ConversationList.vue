@@ -3,7 +3,7 @@
         <div v-if="displayContent.length === 0" class="empty">
             <a-empty description="" />
         </div>
-        <div v-else class="conversation-vlist-wrapper">
+        <div v-else class="conversation-vlist-wrapper" :style="{ height: totalSize + 'px' }">
             <div v-for="vi in virtualItems" :key="vi.index" class="vItem" :data-index="vi.index" :style="{ top: vi.start + 'px' }" :ref="measureItem as any">
                 <div :data-index="vi.index" v-if="displayContent[vi.index]?.type === 'text-mark'" class="group-label">{{ (displayContent[vi.index] as FlattenedConversationIndexItemTextMark).content }}</div>
                 <a :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'conversation'"
@@ -87,6 +87,7 @@ import { t } from 'i18next'
 
 const router = useRouter()
 const route = useRoute()
+const appStatePersist = useAppStatePersistStore()
 const conversationStore = useConversationStore()
 const props = defineProps({
     type: {
@@ -125,18 +126,23 @@ const displayContent = computed(() => {
 })
 
 const msgList = ref<HTMLDivElement>();
+const fsize = appStatePersist.fontSizeGlobal;
 
 const itemSizeCache = reactive<Record<string, number>>({
-    'text-mark': 40,
+    'text-mark': fsize * 3 + 10,
     'has-more-mark': 100,
-    conversation: 60,
+    conversation: fsize * 4 + 20,
 });
+
+// const debug = <T>(v: T, t: string = 'default') => (console.debug('app:debug', t, v), v);
 
 const vOptions = computed(() => ({
     count: displayContent.value.length,
     getScrollElement: () => msgList.value?.parentElement || null,
+    // estimateSize: (idx: number) => debug(itemSizeCache[displayContent.value[idx]?.type ?? 'conversation'] ?? 80, 'estimateSize'),
     estimateSize: (idx: number) => itemSizeCache[displayContent.value[idx]?.type ?? 'conversation'] ?? 80,
     overscan: 5,
+    key: ''
 }))
 
 const virtualizer = useVirtualizer(vOptions)
@@ -145,21 +151,13 @@ const totalSize = computed(() => virtualizer.value.getTotalSize())
 
 const measureItem = (el: HTMLElement) => {
     if (!el) return;
-    const idx = Number(el.dataset.index);
-    if (isNaN(idx)) {
-        if (el) virtualizer.value.measureElement(el)
-        return;
-    }
-    const type = displayContent.value[idx].type;
-    const actualSize = el.getBoundingClientRect().height;
     virtualizer.value.measureElement(el);
-    itemSizeCache[type] = actualSize;
 };
 
 const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
     if (!useWindowStateStore().isLargeScreen) {
-        useAppStatePersistStore().sidebarCollapsed = true
+        appStatePersist.sidebarCollapsed = true
     }
 }
 
@@ -350,10 +348,7 @@ const handleConvMenuClick = (key: string, index: number) => {
     fill: transparent;
     transition: fill 0.2s;
 }
-.conversation-item:hover > .conversation-operations > .trigger-button :deep(svg),
-.conversation-item:focus-within > .conversation-operations > .trigger-button :deep(svg),
-.conversation-item:focus-visible > .conversation-operations > .trigger-button :deep(svg),
-.conversation-item.is-selected > .conversation-operations > .trigger-button :deep(svg) {
+.conversation-item:is(:hover, :focus-within, :focus-visible, .is-selected) > .conversation-operations > .trigger-button :deep(svg) {
     fill: currentColor;
 }
 </style>

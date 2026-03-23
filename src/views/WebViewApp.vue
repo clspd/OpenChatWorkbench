@@ -22,6 +22,7 @@ const safeMode = !!yn((new URL(location.href)).searchParams.get('safe'));
 async function update() {
     try {
         const newUrl = new URL(decodeURIComponent(location.hash.substring(1)), location.href);
+        if (window.location.protocol === 'https:' && newUrl.protocol === 'http:') newUrl.protocol = 'https:';
         Modal.destroyAll();
         if (!safeMode || !checkUrlIsExternal(newUrl)) disabled.value = false;
         else {
