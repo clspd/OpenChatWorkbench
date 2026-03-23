@@ -12,20 +12,30 @@
 import addCSS from 'add-css-constructed';
 
 // randomize the class name so that malicious input cannot fake a styleful element
-const md_blank_line_spacer_name = (function () {
+const [md_blank_line_spacer_name, remove] = (function () {
     const array = new Uint8Array(16);
     window.crypto.getRandomValues(array);
     const md_blank_line_spacer_name = 'a-' + array.join('-');
     const { remove } = addCSS(`.renderer.markdown-renderer.renderer-main .${md_blank_line_spacer_name} {display: block}.renderer.markdown-renderer.renderer-main[data-isregular="true"] .${md_blank_line_spacer_name} {display: none}`);
     console.log('[MarkdownRenderer]', 'inject global stylesheet');
-    if (import.meta.hot) {
-        import.meta.hot.dispose(() => {
-            remove()
-        })
-        import.meta.hot.accept()
-    }
-    return md_blank_line_spacer_name;
+    return [md_blank_line_spacer_name, remove];
 }());
+
+const removes = [remove];
+
+import css1 from '@/styles/markdown-beautify.css?inline'
+import css2 from 'katex/dist/katex.min.css?inline'
+
+removes.push(...([
+    css1, css2,
+].map((v) => addCSS(v).remove)));
+
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        for (const i of removes) i();
+    })
+    import.meta.hot.accept()
+}
 </script>
 
 <script setup lang="ts">
@@ -33,10 +43,10 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
-import morphdom from 'morphdom'
+import katexPlugin from '@vscode/markdown-it-katex';
+import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import '@/styles/markdown-beautify.css'
 import '@/modules/webcomponents/ocw-markdown-component.ts'
 
 const router = useRouter();
@@ -49,6 +59,11 @@ const md = new MarkdownIt({
     breaks: true,
     linkify: true,
     typographer: true,
+});
+
+md.use((katexPlugin as any).default, {
+    throwOnError: false,
+    errorColor: '#cc0000'
 });
 
 function preserveBlankLines(md: MarkdownIt) {
@@ -105,6 +120,10 @@ const mdRecommended = new MarkdownIt({
     typographer: false,
 });
 mdRecommended.use(preserveBlankLines);
+mdRecommended.use((katexPlugin as any).default, {
+    throwOnError: false,
+    errorColor: '#cc0000'
+});
 
 // Disable block-level rules except for lists, code blocks, and paragraphs
 mdRecommended.block.ruler.disable([
