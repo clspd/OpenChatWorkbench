@@ -4,7 +4,7 @@
             <a-empty description="" />
         </div>
         <div v-else class="conversation-vlist-wrapper">
-            <div v-for="vi in virtualItems" :key="vi.index" class="vItem" :data-index="vi.index" :style="{ top: vi.start + 'px' }" :ref="el => { if (el) virtualizer.measureElement(el as Element) }">
+            <div v-for="vi in virtualItems" :key="vi.index" class="vItem" :data-index="vi.index" :style="{ top: vi.start + 'px' }" :ref="measureItem as any">
                 <div :data-index="vi.index" v-if="displayContent[vi.index]?.type === 'text-mark'" class="group-label">{{ (displayContent[vi.index] as FlattenedConversationIndexItemTextMark).content }}</div>
                 <a :data-index="vi.index" v-else-if="displayContent[vi.index]?.type === 'conversation'"
                     class="conversation-item"
@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { DialogView } from 'vue-dialog-view'
@@ -76,7 +76,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { formatConversationTime } from '@/utils/conversationGroup'
 import { useWindowStateStore } from '@/stores/windowState'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
-import { useVirtualizer } from '@tanstack/vue-virtual'
+import { useVirtualizer, type VirtualizerOptions } from '@tanstack/vue-virtual'
 import type { FlattenedConversationIndexItem, FlattenedConversationIndexItemConversation, FlattenedConversationIndexItemTextMark } from '@/types/conversation'
 import { handleRequestDeleteConversation, handleRequestRenameConversation } from '@/modules/ui-utils/convManager'
 import { LoadConversationPreference } from '@/modules/chat/convPref'
@@ -103,7 +103,7 @@ const emit = defineEmits(['initialized'])
 const conversationGroupsData = computed(() => {
     return conversationStore.groupedConversationsList
 });
-const flattenedConversations = computed<FlattenedConversationIndexItem[]>(() => {
+const flattenedConversations = computed(() => {
     const result: FlattenedConversationIndexItem[] = []
     for (const i of conversationGroupsData.value.groups) {
         result.push({ type: "text-mark", content: i.label })
@@ -126,16 +126,35 @@ const displayContent = computed(() => {
 
 const msgList = ref<HTMLDivElement>();
 
+const itemSizeCache = reactive<Record<string, number>>({
+    'text-mark': 40,
+    'has-more-mark': 100,
+    conversation: 60,
+});
+
 const vOptions = computed(() => ({
     count: displayContent.value.length,
     getScrollElement: () => msgList.value?.parentElement || null,
-    estimateSize: () => 60,
+    estimateSize: (idx: number) => itemSizeCache[displayContent.value[idx]?.type ?? 'conversation'] ?? 80,
     overscan: 5,
 }))
 
 const virtualizer = useVirtualizer(vOptions)
 const virtualItems = computed(() => virtualizer.value.getVirtualItems())
 const totalSize = computed(() => virtualizer.value.getTotalSize())
+
+const measureItem = (el: HTMLElement) => {
+    if (!el) return;
+    const idx = Number(el.dataset.index);
+    if (isNaN(idx)) {
+        if (el) virtualizer.value.measureElement(el)
+        return;
+    }
+    const type = displayContent.value[idx].type;
+    const actualSize = el.getBoundingClientRect().height;
+    virtualizer.value.measureElement(el);
+    itemSizeCache[type] = actualSize;
+};
 
 const handleConversationClick = (conversationId: string) => {
     router.push(`/chat/c/${conversationId}`)
