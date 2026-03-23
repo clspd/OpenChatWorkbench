@@ -36,6 +36,7 @@ export interface MessageFragment {
     type: MessageFragmentType;
     ts: number; // timestamp in milliseconds
     elapsed?: number; // elapsed time in milliseconds
+    first_token_latency?: number;
     contentType: MessageContentType;
     content: MessageContent<this['contentType']>;
 }

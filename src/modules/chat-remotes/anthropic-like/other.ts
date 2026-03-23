@@ -14,6 +14,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
     // See also: https://platform.claude.com/docs/en/build-with-claude/extended-thinking
     const base_offset = respMsg.fragments.length + 1;
     let modelId: string | null = respMsg.model || null;
+    const startTs = Date.now();
     return await _base_stream(conv, reqMsg, respMsg, {
         buildRequestUrl: async (req, conv, reqMsg, respMsg, prov, model) => {
             return GetProviderUrl(prov);
@@ -80,6 +81,7 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
                         content: "",
                         contentType: MessageContentType.Text,
                         elapsed: 0,
+                        first_token_latency: (chunk.index === 0) ? (Date.now() - startTs) : undefined,
                     });
                     break;
                 case "content_block_delta":
