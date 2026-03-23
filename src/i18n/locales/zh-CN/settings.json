@@ -64,7 +64,8 @@
             },
             "userSystemMessage": {
                 "legend": "用户和系统消息",
-                "description": "控制用户和系统消息中的 Markdown 如何渲染。"
+                "description": "控制用户和系统消息中的 Markdown 如何渲染。",
+                "useHtml": "编辑消息时，优先粘贴为 HTML 而不是纯文本"
             },
             "options": {
                 "full": "渲染全部 Markdown",

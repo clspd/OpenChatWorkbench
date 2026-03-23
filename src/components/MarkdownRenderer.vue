@@ -28,6 +28,52 @@ const md = new MarkdownIt({
     typographer: true,
 });
 
+function preserveBlankLines(md: MarkdownIt) {
+    md.core.ruler.after('block', 'preserve_blank_lines', (state) => {
+        const out: any[] = []
+        const Token = state.Token
+
+        let prevEnd: number | null = null
+
+        for (const token of state.tokens) {
+            const isTopLevelBlock =
+                token.block &&
+                token.level === 0 &&
+                token.map &&
+                (
+                    token.type.endsWith('_open') || 
+                    token.type === 'fence' ||
+                    token.type === 'code_block'
+                )
+
+            if (isTopLevelBlock) {
+                if (prevEnd !== null) {
+                    const blankLines = token.map![0] - prevEnd
+
+                    if (blankLines > 0) {
+                        const spacer = new Token('blank_line_spacer', '', 0)
+                        spacer.block = true
+                        spacer.level = 0
+                        spacer.meta = { blankLines }
+                        out.push(spacer)
+                    }
+                }
+
+                prevEnd = token.map![1]
+            }
+
+            out.push(token)
+        }
+
+        state.tokens = out
+    })
+
+    md.renderer.rules.blank_line_spacer = (tokens, idx) => {
+        const n = tokens[idx]?.meta?.blankLines ?? 1
+        return `<div class="md-blank-line-spacer" data-size="${n}"></div>\n`
+    }
+}
+
 // Markdown-it instance for recommended mode (limited tags only)
 const mdRecommended = new MarkdownIt({
     html: false,
@@ -35,10 +81,11 @@ const mdRecommended = new MarkdownIt({
     linkify: true,
     typographer: false,
 });
+mdRecommended.use(preserveBlankLines);
 
 // Disable block-level rules except for lists, code blocks, and paragraphs
 mdRecommended.block.ruler.disable([
-    'blockquote', 'hr', 'heading', 'lheading',
+    'blockquote', 'hr', 'heading', 'lheading', 'code'
 ]);
 
 // Disable inline rules that are not in recommended list
@@ -64,12 +111,31 @@ const renderMode = computed(() => {
 });
 
 const html = computed(() => {
-    if (renderMode.value === 'disabled') {
-        return props.content;
+    switch (renderMode.value) {
+        case 'full':
+            return getSafeHTML(md.render(props.content));
+        case 'recommended':
+            return getSafeHTML(mdRecommended.render(props.content.replace(/^[ \t]+/gm, match => {
+                let out = ''
+                let col = 0
+
+                for (const ch of match) {
+                    if (ch === '\t') {
+                        const tabSize = 4
+                        const nextTabStop = tabSize - (col % tabSize)
+                        out += '&nbsp;'.repeat(nextTabStop)
+                        col += nextTabStop
+                    } else {
+                        out += '&nbsp;'
+                        col += 1
+                    }
+                }
+
+                return out
+            })));
+        default:
+            return props.content;
     }
-    
-    const mdInstance = renderMode.value === 'recommended' ? mdRecommended : md;
-    return getSafeHTML(mdInstance.render(props.content));
 });
 
 const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
@@ -163,3 +229,14 @@ const handleContentClick = (e: PointerEvent) => {
 
 
 </script>
+
+<style scoped>
+.renderer.markdown-renderer.renderer-main {
+    white-space: normal;
+}
+.renderer.markdown-renderer.renderer-main :deep(.md-blank-line-spacer) {
+    display: block;
+    /* pointer-events: none; */
+    height: calc(1lh * attr(data-size number));
+}
+</style>

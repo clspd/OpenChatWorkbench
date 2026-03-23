@@ -21,6 +21,7 @@
         <a-textarea v-if="appStatePersist.usePlainInput" class="edit-message"
             :disabled="props.disabled" auto-size
             :value="tiptap2markdown(props.modelValue)" @update:value="emit('update:modelValue', convertToTiptapFmt($event))"
+            :placeholder="t('common:ui.mainInput.placeholder')"
         ></a-textarea>
         <div class="bottom-view">
            <div class="attacher">
@@ -247,11 +248,12 @@ onMounted(() => {
                 const pastedText = clipboardData.getData('text/plain');
                 const pastedHTML = clipboardData.getData('text/html');
                 event.preventDefault();
-                if (pastedHTML) editor.value.commands.insertContent(getSafeHTML(pastedHTML, undefined, false));
+                if (pastedHTML && appStatePersist.inputOptions.useHtml) editor.value.commands.insertContent(getSafeHTML(pastedHTML, undefined, false));
                 else if (pastedText) editor.value.commands.insertContent({
                     type: 'text',
                     text: pastedText
                 });
+                else return false;
 
                 return true;
             },

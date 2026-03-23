@@ -27,7 +27,7 @@
             <ArrowLeftOutlined />
         </div>
 
-        <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog" close-on-click-mask>
+        <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog">
             <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
             <common-file-preview class="preview-body" ref="previewElement" :data-auto-wrap="autowrapEnabled" />
             <div class="preview-floating-buttons">
