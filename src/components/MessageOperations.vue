@@ -82,6 +82,10 @@
                             <div class="message-detail-label">Elapsed</div>
                             <div class="message-detail-value">{{ computeTotalElapsed(props.message) }}ms</div>
                         </div>
+                        <div class="message-detail-item" v-if="props.message.fragments[0]?.first_token_latency">
+                            <div class="message-detail-label">First token latency</div>
+                            <div class="message-detail-value">{{ props.message.fragments[0].first_token_latency }}ms</div>
+                        </div>
                         <div class="message-detail-item">
                             <div class="message-detail-label">Status</div>
                             <div class="message-detail-value">{{ props.message.status }}</div>
@@ -197,7 +201,10 @@ const currentLikeState = computed(() => (
 
 const computeTotalElapsed = (msg: Message) => {
     let total = 0n;
-    for (const i of msg.fragments) total += BigInt(String(i.elapsed ?? 0));
+    for (const i of msg.fragments) {
+        total += BigInt(String(i.elapsed ?? 0));
+        if (i.first_token_latency) total += BigInt(String(i.first_token_latency));
+    }
     return total;
 }
 

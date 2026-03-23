@@ -41,6 +41,8 @@
                 </a-radio-group>
             </fieldset>
             
+            <p><a-checkbox v-model:checked="appStatePersist.inputOptions.useHtml">{{ t('settings:chat.markdown.userSystemMessage.useHtml') }}</a-checkbox></p>
+            
             <fieldset>
                 <legend>{{ t('settings:chat.markdown.assistantMessage.legend') }}</legend>
                 <p style="margin-top: 0; color: var(--color-secondary, gray);">

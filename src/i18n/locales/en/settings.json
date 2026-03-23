@@ -64,7 +64,8 @@
             },
             "userSystemMessage": {
                 "legend": "User and System Messages",
-                "description": "Control how markdown in user and system messages is rendered."
+                "description": "Control how markdown in user and system messages is rendered.",
+                "useHtml": "Use HTML if possible when pasting in user messages"
             },
             "options": {
                 "full": "Render all markdown",

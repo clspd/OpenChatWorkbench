@@ -4,26 +4,128 @@
         border-radius: 5px;
         overflow: auto;
     }
+
     a {
         color: #409eff;
     }
+
     a:hover {
         color: #66b1ff;
     }
+
     a:focus-visible {
         outline: 2px solid rgba(64, 158, 255, 0.5);
     }
-    :not(pre) > code {
+
+    :not(pre)>code {
         padding: 2px 4px;
         margin-bottom: 4px;
         display: inline-block;
         border-radius: 4px;
         background-color: var(--code-bg, #f6f8fa);
     }
+
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+        border-spacing: 0;
+        font-size: 0.95em;
+        line-height: 1.6;
+        background: transparent;
+        overflow: hidden;
+    }
+
+    thead {
+        border-bottom: 2px solid rgba(127, 127, 127, 0.25);
+    }
+
+    thead th {
+        font-weight: 600;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    th,
+    td {
+        padding: 0.65rem 0.85rem;
+        vertical-align: top;
+        border: 1px solid rgba(127, 127, 127, 0.2);
+        word-break: break-word;
+    }
+
+    tbody tr {
+        background: transparent;
+    }
+
+    tbody tr:nth-child(even) {
+        background: rgba(127, 127, 127, 0.04);
+    }
+
+    tbody tr:hover {
+        background: rgba(127, 127, 127, 0.08);
+    }
+
+    thead th {
+        background: rgba(127, 127, 127, 0.08);
+    }
+
+    th:first-child,
+    td:first-child {
+        padding-left: 1rem;
+    }
+
+    th:last-child,
+    td:last-child {
+        padding-right: 1rem;
+    }
+
+    td code,
+    th code {
+        padding: 0.15rem 0.35rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+        background: rgba(127, 127, 127, 0.12);
+    }
+
+    caption {
+        caption-side: bottom;
+        padding-top: 0.5rem;
+        color: rgba(127, 127, 127, 0.85);
+        font-size: 0.9em;
+    }
+
+    th[align="center"],
+    td[align="center"] {
+        text-align: center;
+    }
+
+    th[align="right"],
+    td[align="right"] {
+        text-align: right;
+    }
+
+    table {
+        table-layout: fixed;
+    }
+
+    th,
+    td {
+        overflow-wrap: anywhere;
+    }
 }
-.renderer.markdown-renderer.renderer-main > :is(p, h1, h2, h3, h4, h5, h6):first-child {
+
+.renderer.markdown-renderer.renderer-main> :is(p, h1, h2, h3, h4, h5, h6):first-child {
     margin-top: 0;
 }
-.renderer.markdown-renderer.renderer-main > :is(p, h1, h2, h3, h4, h5, h6):last-child {
+
+.renderer.markdown-renderer.renderer-main> :is(p, h1, h2, h3, h4, h5, h6):last-child {
     margin-bottom: 0;
 }

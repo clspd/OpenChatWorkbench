@@ -104,11 +104,14 @@ export async function _base_stream(
         throw new Error("There is an ongoing request for this conversation");
     conversationStore.requestsInProgress.set(conv.id, pendingReq);
 
+    const startFragIdx = respMsg.fragments.length - 1;
     let currentFragment: MessageFragment | null = null;
-    let lastResponseChunkType: MessageFragmentType | null = null;
+    let lastResponseChunkType: MessageFragmentType | null = null,
+        lastFragIdx = startFragIdx;
 
     // send request.
     try {
+        const startTs = Date.now();
         await fetchEventSource(new Request(new URL(await options.buildRequestUrl(req, conv, reqMsg, respMsg, providerInfo, modelInfo))), {
             method: "POST",
             headers: await options.buildRequestHeaders(req, conv, reqMsg, respMsg, providerInfo, modelInfo),
@@ -170,6 +173,7 @@ export async function _base_stream(
                         // distinct reasoning content from content
                         const type = GetResponseChunkFragmentType(json, 0);
                         if (type !== lastResponseChunkType) {
+                            const isFirstFragmentSinceStart = (lastFragIdx === startFragIdx);
                             lastResponseChunkType = type;
                             if (currentFragment) currentFragment.elapsed = Date.now() - currentFragment.ts;
                             currentFragment = type ? {
@@ -179,7 +183,13 @@ export async function _base_stream(
                                 contentType: MessageContentType.Text,
                                 content: "",
                             } : null;
-                            if (currentFragment) respMsg.fragments.push(currentFragment);
+                            if (currentFragment) {
+                                if (isFirstFragmentSinceStart) {
+                                    currentFragment.first_token_latency = Date.now() - startTs;
+                                }
+                                respMsg.fragments.push(currentFragment);
+                                ++lastFragIdx;
+                            }
                         }
 
                         // append data
