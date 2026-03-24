@@ -8,15 +8,9 @@
     ></div>
     
     <!-- Mermaid Diagram Modal -->
-    <dialog-view v-model="mermaidModalVisible">
+    <dialog-view v-model="showMermaidPreview">
         <template #title>{{ t('chat:mermaid.preview.title') }}</template>
-            <ocw-mermaid-component
-                v-if="mermaidModalVisible"
-                mode="modal"
-                :content="mermaidModalContent"
-                ref="mermaidModalRef"
-                style="flex: 1"
-            ></ocw-mermaid-component>
+
     </dialog-view>
 </template>
 
@@ -60,11 +54,43 @@ import katexPlugin from '@vscode/markdown-it-katex';
 import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import '@/modules/webcomponents/ocw-markdown-component.ts'
-import '@/modules/webcomponents/ocw-mermaid-component.ts'
+import '@/modules/webcomponents/ocw-code-block'
 
 const router = useRouter();
 const appStatePersist = useAppStatePersistStore();
+
+const props = withDefaults(defineProps<{
+    content: string;
+    disabled?: boolean;
+    mode?: 'full' | 'recommended' | 'disabled';
+    trustSameOrigin?: boolean;
+}>(), {
+    disabled: false,
+    mode: 'full',
+    trustSameOrigin: false,
+});
+
+// For backward compatibility: if disabled prop is true, treat as 'disabled' mode
+const renderMode = computed(() => {
+    if (props.disabled) return 'disabled';
+    return props.mode;
+});
+
+const html = computed(() => {
+    switch (renderMode.value) {
+        case 'full':
+            return getSafeHTML(md.render(props.content));
+        case 'recommended':
+            return getSafeHTML(mdRecommended.render(props.content));
+        default:
+            return props.content;
+    }
+});
+
+const showMermaidPreview = ref(false);
+const mermaidModalContent = ref('');
+
+const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
 
 const isRegular = ref(false);
 
@@ -194,39 +220,6 @@ mdRecommended.inline.ruler.disable([
     'image', 'autolink', 'html_inline'
 ]);
 
-const props = withDefaults(defineProps<{
-    content: string;
-    disabled?: boolean;
-    mode?: 'full' | 'recommended' | 'disabled';
-    trustSameOrigin?: boolean;
-}>(), {
-    disabled: false,
-    mode: 'full',
-    trustSameOrigin: false,
-});
-
-// For backward compatibility: if disabled prop is true, treat as 'disabled' mode
-const renderMode = computed(() => {
-    if (props.disabled) return 'disabled';
-    return props.mode;
-});
-
-const html = computed(() => {
-    switch (renderMode.value) {
-        case 'full':
-            return getSafeHTML(md.render(props.content));
-        case 'recommended':
-            return getSafeHTML(mdRecommended.render(props.content));
-        default:
-            return props.content;
-    }
-});
-
-const mermaidModalVisible = ref(false);
-const mermaidModalContent = ref('');
-
-const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
-
 const update = () => {
     if (!renderer.value) {
         return;
@@ -239,33 +232,16 @@ const update = () => {
     
     buffer.value.innerHTML = html.value;
     for (const i of buffer.value.querySelectorAll('pre')) {
-        const newCom = document.createElement("ocw-markdown-component");
+        const newCom = document.createElement("ocw-code-block");
         newCom.append(...i.childNodes);
-        newCom.setAttribute("type", i.tagName.toLowerCase());
         // no extra attributes is needed
         i.replaceWith(newCom);
     }
-    for (const i of buffer.value.querySelectorAll('ocw-markdown-component>code[class]')) {
+    for (const i of buffer.value.querySelectorAll('ocw-code-block>code[class]')) {
         const lang = /language-(\w+)/.exec(i.getAttribute('class') || '')?.[1];
         if (lang) {
             i.parentElement?.setAttribute("language", lang);
         }
-    }
-    
-    // Handle mermaid diagrams - convert mermaid code blocks to mermaid component
-    for (const markdownComponent of buffer.value.querySelectorAll('ocw-markdown-component[language="mermaid"]')) {
-        const mermaidCode = markdownComponent.textContent || '';
-        const mermaidComponent = document.createElement("ocw-mermaid-component");
-        mermaidComponent.setAttribute("mode", "inline");
-        mermaidComponent.setAttribute("content", mermaidCode);
-        
-        // Add event listener for maximize event
-        mermaidComponent.addEventListener('maximize', () => {
-            mermaidModalContent.value = mermaidCode;
-            mermaidModalVisible.value = true;
-        });
-        
-        markdownComponent.replaceWith(mermaidComponent);
     }
     
     isRegular.value = (buffer.value.querySelector(`.${md_blank_line_spacer_name}:not([data-size="1"])`) ? false : true);

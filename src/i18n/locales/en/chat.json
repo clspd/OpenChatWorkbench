@@ -118,16 +118,23 @@
         }
     },
     "mermaid": {
-        "rendering": "Rendering diagram...",
-        "noContent": "No mermaid diagram content provided",
-        "loadFailed": "Failed to load mermaid library",
-        "renderFailed": "Failed to render mermaid diagram",
-        "download": "Download",
-        "downloadSVG": "Download as SVG",
-        "downloadPNG": "Download as PNG",
-        "downloadSource": "Download source code",
-        "downloadSuccess": "Diagram downloaded successfully",
-        "downloadFailed": "Failed to download diagram",
+        "rendering": "Loading...",
+        "errors": {
+            "load": "Failed to load content",
+            "render": "Cannot render this diagram: {{error}}"
+        },
+        "download": {
+            "btn": "Download",
+            "types": {
+                "svg": "Download as SVG",
+                "png": "Download as PNG",
+                "plain": "Download source code"
+            },
+            "results": {
+                "success": "Downloaded",
+                "fail": "Failed to download diagram: {{error}}"
+            }
+        },
         "expand": "Expand",
         "preview": {
             "title": "Preview"

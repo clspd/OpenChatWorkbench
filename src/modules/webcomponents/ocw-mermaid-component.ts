@@ -5,17 +5,10 @@ import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import i18next from 'i18next';
-import type { PanZoom } from 'panzoom';
-import panzoom from 'panzoom';
-import type * as MermaidType from 'mermaid';
+import panzoom, { type PanZoom } from 'panzoom';
+import mermaid from 'mermaid';
 
-declare global {
-    interface Window {
-        mermaid: any;
-    }
-}
-
-export class OcwMermaidComponent extends LitElement {
+export class OcwMermaidRenderer extends LitElement {
     static styles = css`
 :host {
     display: block;
@@ -198,27 +191,25 @@ sl-menu-item {
                 this.requestUpdate();
                 return;
             }
-            const mermaidModule = await import('mermaid');
-            const mermaid = mermaidModule.default;
             mermaid.initialize({
                 startOnLoad: false,
                 theme: 'default',
                 securityLevel: 'loose',
             });
-            await this.renderMermaid(mermaid);
+            await this.renderMermaid();
             if (this.mode === 'modal') {
                 await this.updateComplete;
                 this.initPanzoom();
             }
         } catch (e) {
-            // console.error('[OcwMermaidComponent] Failed to load mermaid:', e);
+            // console.error('[OcwMermaidRenderer] Failed to load mermaid:', e);
             this.error = i18next.t('chat:mermaid.loadFailed');
             this.loading = false;
             this.requestUpdate();
         }
     }
 
-    private async renderMermaid(mermaid: typeof MermaidType.default) {
+    private async renderMermaid() {
         try {
             const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
             const result = await mermaid.render(id, this.content);
@@ -242,7 +233,7 @@ sl-menu-item {
                 }
             }
         } catch (e: any) {
-            console.error('[OcwMermaidComponent] Mermaid render error:', e);
+            console.error('[OcwMermaidRenderer] Mermaid render error:', e);
             this.error = String(e);
             this.loading = false;
             this.requestUpdate();
@@ -486,4 +477,4 @@ sl-menu-item {
 }
 
 if (window.customElements.get('ocw-mermaid-component') && process.env.NODE_ENV === 'development') window.location.reload();
-else window.customElements.define('ocw-mermaid-component', OcwMermaidComponent);
+else window.customElements.define('ocw-mermaid-component', OcwMermaidRenderer);

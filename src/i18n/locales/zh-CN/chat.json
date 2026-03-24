@@ -118,16 +118,26 @@
         }
     },
     "mermaid": {
-        "rendering": "正在渲染图表...",
-        "noContent": "未提供 Mermaid 图表内容",
-        "loadFailed": "加载 Mermaid 库失败",
-        "renderFailed": "渲染 Mermaid 图表失败",
-        "download": "下载",
-        "downloadSVG": "下载为 SVG",
-        "downloadPNG": "下载为 PNG",
-        "downloadSource": "下载源代码",
-        "downloadSuccess": "图表下载成功",
-        "downloadFailed": "下载图表失败",
-        "expand": "展开"
+        "rendering": "Loading...",
+        "errors": {
+            "load": "Failed to load content",
+            "render": "Cannot render this diagram"
+        },
+        "download": {
+            "btn": "Download",
+            "types": {
+                "svg": "Download as SVG",
+                "png": "Download as PNG",
+                "plain": "Download source code"
+            },
+            "results": {
+                "success": "Downloaded",
+                "fail": "Failed to download diagram: {{error}}"
+            }
+        },
+        "expand": "Expand",
+        "preview": {
+            "title": "Preview"
+        }
     }
 }
