@@ -6,6 +6,18 @@
         :data-isregular="isRegular"
         @click.capture="handleContentClick"
     ></div>
+    
+    <!-- Mermaid Diagram Modal -->
+    <dialog-view v-model="mermaidModalVisible">
+        <template #title>{{ t('chat:mermaid.preview.title') }}</template>
+            <ocw-mermaid-component
+                v-if="mermaidModalVisible"
+                mode="modal"
+                :content="mermaidModalContent"
+                ref="mermaidModalRef"
+                style="flex: 1"
+            ></ocw-mermaid-component>
+    </dialog-view>
 </template>
 
 <script lang="ts">
@@ -25,6 +37,7 @@ const removes = [remove];
 
 import css1 from '@/styles/markdown-beautify.css?inline'
 import css2 from 'katex/dist/katex.min.css?inline'
+import { DialogView } from 'vue-dialog-view';
 
 removes.push(...([
     css1, css2,
@@ -48,6 +61,7 @@ import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import '@/modules/webcomponents/ocw-markdown-component.ts'
+import '@/modules/webcomponents/ocw-mermaid-component.ts'
 
 const router = useRouter();
 const appStatePersist = useAppStatePersistStore();
@@ -208,6 +222,9 @@ const html = computed(() => {
     }
 });
 
+const mermaidModalVisible = ref(false);
+const mermaidModalContent = ref('');
+
 const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
 
 const update = () => {
@@ -234,6 +251,23 @@ const update = () => {
             i.parentElement?.setAttribute("language", lang);
         }
     }
+    
+    // Handle mermaid diagrams - convert mermaid code blocks to mermaid component
+    for (const markdownComponent of buffer.value.querySelectorAll('ocw-markdown-component[language="mermaid"]')) {
+        const mermaidCode = markdownComponent.textContent || '';
+        const mermaidComponent = document.createElement("ocw-mermaid-component");
+        mermaidComponent.setAttribute("mode", "inline");
+        mermaidComponent.setAttribute("content", mermaidCode);
+        
+        // Add event listener for maximize event
+        mermaidComponent.addEventListener('maximize', () => {
+            mermaidModalContent.value = mermaidCode;
+            mermaidModalVisible.value = true;
+        });
+        
+        markdownComponent.replaceWith(mermaidComponent);
+    }
+    
     isRegular.value = (buffer.value.querySelector(`.${md_blank_line_spacer_name}:not([data-size="1"])`) ? false : true);
     morphdom(renderer.value, buffer.value, {
         childrenOnly: true,

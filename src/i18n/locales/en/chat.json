@@ -116,5 +116,21 @@
             "copy": "Unable to copy message: ",
             "fstop": "Unable to force stop message: "
         }
+    },
+    "mermaid": {
+        "rendering": "Rendering diagram...",
+        "noContent": "No mermaid diagram content provided",
+        "loadFailed": "Failed to load mermaid library",
+        "renderFailed": "Failed to render mermaid diagram",
+        "download": "Download",
+        "downloadSVG": "Download as SVG",
+        "downloadPNG": "Download as PNG",
+        "downloadSource": "Download source code",
+        "downloadSuccess": "Diagram downloaded successfully",
+        "downloadFailed": "Failed to download diagram",
+        "expand": "Expand",
+        "preview": {
+            "title": "Preview"
+        }
     }
 }
