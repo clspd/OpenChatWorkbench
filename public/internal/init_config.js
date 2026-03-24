@@ -4,8 +4,8 @@ globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.fr
     CACHE_VERSION: 3,
     IMMUTABLE_CACHE_FILE_MATCH: [
         /^\/assets\/.+\.s\.[\w$]+?$/,
-        /^\/vendor\/npm\/([\w-]+?)@(\d+?\.\d+?\.\d+?)\//,
-        /^\/(assets|resource)\/([^\/]+?)@(\d+?\.\d+?\.\d+?)\.([\w$]+?)$/,
+        /^\/vendor\/npm\/([\w-]+?)(@|%40)(\d+?\.\d+?\.\d+?)\//,
+        /^\/(assets|resource)\/([^\/]+?)(@|%40)(\d+?\.\d+?\.\d+?)\.([\w$]+?)$/,
     ],
     NEVER_CACHE_FILE_MATCH: [],
     CACHE_BY_TS_QUERY_FILE_MATCH: [
