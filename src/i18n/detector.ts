@@ -51,17 +51,18 @@ export async function DetectAndPromptLanguage() {
                     type: 'primary',
                     onClick: async () => {
                         await db.put('kv', true, 'ui.languagePromptShown');
+                        if (!await isFunctionalCookieConsented()) {
+                            currentLanguage.value = lang;
+                            message.warning("You've disabled the functional cookies. The language settings will not be persisted.");
+                            notification.close(nKey);
+                            return;
+                        }
                         watch(() => currentLanguageDisplaying.value, async () => {
                             // reload to apply language change
                             await new Promise(r => setTimeout(r, 500));
                             window.location.reload();
                         });
                         currentLanguage.value = lang;
-                        if (!await isFunctionalCookieConsented()) {
-                            message.warning("You've disabled the functional cookies. The language settings will not be persisted.");
-                            notification.close(nKey);
-                            return;
-                        }
                         // show loading dialog
                         const dlg = document.body.appendChild(document.createElement('dialog'));
                         dlg.append('Loading...');

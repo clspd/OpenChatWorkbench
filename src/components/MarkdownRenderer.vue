@@ -112,6 +112,50 @@ function preserveBlankLines(md: MarkdownIt) {
     }
 }
 
+function preserveLeadingIndentation(md: MarkdownIt) {
+    const expandIndent = (indent: string) => {
+        let out = ''
+        let col = 0
+
+        for (const ch of indent) {
+            if (ch === '\t') {
+                const tabSize = 4
+                const n = tabSize - (col % tabSize)
+                out += '\u00A0'.repeat(n)
+                col += n
+            } else {
+                out += '\u00A0'
+                col += 1
+            }
+        }
+
+        return out
+    }
+
+    md.core.ruler.after('inline', 'preserve_leading_indentation', (state) => {
+        for (const token of state.tokens) {
+            if (token.type !== 'inline' || !token.children) continue
+
+            let atLineStart = true
+
+            for (const child of token.children) {
+                if (child.type === 'softbreak' || child.type === 'hardbreak') {
+                    atLineStart = true
+                    continue
+                }
+
+                if (child.type === 'text' && atLineStart && child.content) {
+                    child.content = child.content.replace(/^[ \t]+/, (m) => expandIndent(m))
+                }
+
+                if (child.type === 'text' || child.type === 'code_inline') {
+                    atLineStart = false
+                }
+            }
+        }
+    })
+}
+
 // Markdown-it instance for recommended mode (limited tags only)
 const mdRecommended = new MarkdownIt({
     html: false,
@@ -120,6 +164,7 @@ const mdRecommended = new MarkdownIt({
     typographer: false,
 });
 mdRecommended.use(preserveBlankLines);
+mdRecommended.use(preserveLeadingIndentation);
 mdRecommended.use((katexPlugin as any).default, {
     throwOnError: false,
     errorColor: '#cc0000'
@@ -157,24 +202,7 @@ const html = computed(() => {
         case 'full':
             return getSafeHTML(md.render(props.content));
         case 'recommended':
-            return getSafeHTML(mdRecommended.render(props.content.replace(/^[ \t]+/gm, match => {
-                let out = ''
-                let col = 0
-
-                for (const ch of match) {
-                    if (ch === '\t') {
-                        const tabSize = 4
-                        const nextTabStop = tabSize - (col % tabSize)
-                        out += '&nbsp;'.repeat(nextTabStop)
-                        col += nextTabStop
-                    } else {
-                        out += '&nbsp;'
-                        col += 1
-                    }
-                }
-
-                return out
-            })));
+            return getSafeHTML(mdRecommended.render(props.content));
         default:
             return props.content;
     }
