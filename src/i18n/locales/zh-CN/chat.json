@@ -116,5 +116,43 @@
             "copy": "无法复制消息: ",
             "fstop": "无法强行停止消息: "
         }
+    },
+    "codeBlock": {
+        "toolbar": {
+            "copy": "复制",
+            "copied": "已复制",
+            "dl": "下载"
+        },
+        "renderer": {
+            "loading": "加载中...",
+            "empty": "此内容为空。",
+            "error": {
+                "latex": "无法渲染此内容"
+            }
+        }
+    },
+    "mermaid": {
+        "rendering": "加载中...",
+        "errors": {
+            "load": "加载内容失败",
+            "render": "无法渲染此图表",
+            "empty": "此图表为空。"
+        },
+        "download": {
+            "btn": "下载…",
+            "types": {
+                "svg": "下载为 SVG",
+                "png": "下载为 PNG",
+                "plain": "下载源代码"
+            },
+            "results": {
+                "success": "下载成功",
+                "fail": "无法下载图此表：{{error}}"
+            }
+        },
+        "expand": "展开",
+        "preview": {
+            "title": "预览"
+        }
     }
 }

@@ -116,5 +116,43 @@
             "copy": "Unable to copy message: ",
             "fstop": "Unable to force stop message: "
         }
+    },
+    "codeBlock": {
+        "toolbar": {
+            "copy": "Copy",
+            "copied": "Copied",
+            "dl": "Download"
+        },
+        "renderer": {
+            "loading": "Loading...",
+            "empty": "This content is empty.",
+            "error": {
+                "latex": "Cannot render this content"
+            }
+        }
+    },
+    "mermaid": {
+        "rendering": "Loading...",
+        "errors": {
+            "load": "Failed to load content",
+            "render": "Cannot render this diagram",
+            "empty": "This diagram is empty."
+        },
+        "download": {
+            "btn": "Download…",
+            "types": {
+                "svg": "Download as SVG",
+                "png": "Download as PNG",
+                "plain": "Download source code"
+            },
+            "results": {
+                "success": "Downloaded",
+                "fail": "Failed to download diagram: {{error}}"
+            }
+        },
+        "expand": "Expand",
+        "preview": {
+            "title": "Preview"
+        }
     }
 }
