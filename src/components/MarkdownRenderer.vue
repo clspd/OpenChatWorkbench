@@ -9,6 +9,7 @@
     ></div>
 
     <a-image
+        v-if="imagePreviewUrl"
         style="display: none !important;"
         :preview="{ visible: showImagePreview, onVisibleChange: v => showImagePreview = v }"
         :src="imagePreviewUrl"
