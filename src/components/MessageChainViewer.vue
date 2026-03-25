@@ -137,7 +137,7 @@ const vOptions = computed(() => ({
     count: chatFlow.value.length,
     getScrollElement: () => (appState.mainContentViewEl as any)?.$el || null,
     estimateSize: () => 3000,
-    overscan: 5,
+    overscan: 2,
     useScrollendEvent: !isSafari,
     shouldAdjustScrollPositionOnItemSizeChange: ((item: VirtualItem, delta: number, instance: Virtualizer<any, any>): boolean => {
         return (item.index === instance.getVirtualIndexes().length - 1) ? (false): true;

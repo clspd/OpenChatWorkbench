@@ -5,13 +5,14 @@
         ref="renderer"
         :data-isregular="isRegular"
         @click.capture="handleContentClick"
+        @preview-svg="handlePreviewSvg"
     ></div>
-    
-    <!-- Mermaid Diagram Modal -->
-    <dialog-view v-model="showMermaidPreview">
-        <template #title>{{ t('chat:mermaid.preview.title') }}</template>
 
-    </dialog-view>
+    <a-image
+        style="display: none !important;"
+        :preview="{ visible: showImagePreview, onVisibleChange: v => showImagePreview = v }"
+        :src="imagePreviewUrl"
+        />
 </template>
 
 <script lang="ts">
@@ -29,13 +30,8 @@ const [md_blank_line_spacer_name, remove] = (function () {
 
 const removes = [remove];
 
-import css1 from '@/styles/markdown-beautify.css?inline'
-import css2 from 'katex/dist/katex.min.css?inline'
-import { DialogView } from 'vue-dialog-view';
-import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
-
 removes.push(...([
-    css1, css2,
+    
 ].map((v) => addCSS(v).remove)));
 
 if (import.meta.hot) {
@@ -47,14 +43,19 @@ if (import.meta.hot) {
 </script>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { message } from 'ant-design-vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { message, Image as AImage } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
-import katexPlugin from '@vscode/markdown-it-katex';
+import katex from 'katex';
+// @ts-ignore markdown-it-texmath@1.0.0 has no type definitions
+import texmath from 'markdown-it-texmath';
 import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
+import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
+import 'katex/dist/katex.min.css'
+import '@/styles/markdown-beautify.css'
 
 const router = useRouter();
 const appStatePersist = useAppStatePersistStore();
@@ -89,12 +90,18 @@ const html = computed(() => {
     }
 });
 
-const showMermaidPreview = ref(false);
-const mermaidModalContent = ref('');
-
 const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
 
 const isRegular = ref(false);
+
+const showImagePreview = ref(false), imagePreviewUrl = ref<string>();
+
+onBeforeUnmount(() => {
+    if (imagePreviewUrl.value) {
+        URL.revokeObjectURL(imagePreviewUrl.value);
+        imagePreviewUrl.value = undefined;
+    }
+});
 
 const md = new MarkdownIt({
     html: true,
@@ -103,9 +110,11 @@ const md = new MarkdownIt({
     typographer: true,
 });
 
-md.use((katexPlugin as any).default, {
+md.use(texmath, {
+    engine: katex,
+    delimiters: ['dollars', 'brackets'],
     throwOnError: false,
-    errorColor: '#cc0000'
+    errorColor: '#cc0000',
 });
 
 function preserveBlankLines(md: MarkdownIt) {
@@ -207,9 +216,11 @@ const mdRecommended = new MarkdownIt({
 });
 mdRecommended.use(preserveBlankLines);
 mdRecommended.use(preserveLeadingIndentation);
-mdRecommended.use((katexPlugin as any).default, {
+mdRecommended.use(texmath, {
+    engine: katex,
+    delimiters: ['dollars', 'brackets'],
     throwOnError: false,
-    errorColor: '#cc0000'
+    errorColor: '#cc0000',
 });
 
 // Disable block-level rules except for lists, code blocks, and paragraphs
@@ -236,6 +247,7 @@ const update = () => {
     for (const i of buffer.value.querySelectorAll('pre')) {
         const newCom = document.createElement(OCW_CODE_BLOCK_TAG_NAME);
         newCom.append(...i.childNodes);
+        if (props.wip) newCom.setAttribute('wip', '');
         // no extra attributes is needed
         i.replaceWith(newCom);
     }
@@ -246,7 +258,7 @@ const update = () => {
         }
     }
     
-    isRegular.value = (buffer.value.querySelector(`.${md_blank_line_spacer_name}:not([data-size="1"])`) ? false : true);
+    isRegular.value = (buffer.value.querySelector(`.${md_blank_line_spacer_name}:not([data-size="1"]), p>br`) ? false : true);
     morphdom(renderer.value, buffer.value, {
         childrenOnly: true,
         onBeforeElChildrenUpdated(fromEl, toEl) {
@@ -307,6 +319,29 @@ const handleContentClick = (e: PointerEvent) => {
             }
             catch { }
             break;
+    }
+}
+
+const handlePreviewSvg = async (e: CustomEvent) => {
+    if (!e.detail) return;
+    e.preventDefault();
+
+    const getElement = (str: string) => {
+        const div = document.createElement('div');
+        div.innerHTML = str;
+        return div.firstElementChild;
+    };
+
+    try {
+        const svgData = new XMLSerializer().serializeToString(getElement(e.detail)!);
+        if (imagePreviewUrl.value) {
+            URL.revokeObjectURL(imagePreviewUrl.value);
+            imagePreviewUrl.value = undefined;
+        }
+        imagePreviewUrl.value = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
+        showImagePreview.value = true;
+    } catch (e) {
+        message.error(String(e));
     }
 }
 

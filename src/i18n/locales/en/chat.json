@@ -117,6 +117,13 @@
             "fstop": "Unable to force stop message: "
         }
     },
+    "codeBlock": {
+        "toolbar": {
+            "copy": "Copy",
+            "copied": "Copied",
+            "dl": "Download"
+        }
+    },
     "mermaid": {
         "rendering": "Loading...",
         "errors": {
@@ -125,7 +132,7 @@
             "empty": "This diagram is empty."
         },
         "download": {
-            "btn": "Download",
+            "btn": "Download…",
             "types": {
                 "svg": "Download as SVG",
                 "png": "Download as PNG",
