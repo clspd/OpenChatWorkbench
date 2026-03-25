@@ -136,12 +136,12 @@ const isSafari = /safari/i.test(navigator.userAgent) && (!/chrom|crios|edg|opr|b
 const vOptions = computed(() => ({
     count: chatFlow.value.length,
     getScrollElement: () => (appState.mainContentViewEl as any)?.$el || null,
-    estimateSize: () => 3000,
-    overscan: 2,
+    estimateSize: () => 10000,
+    overscan: 3,
     useScrollendEvent: !isSafari,
-    shouldAdjustScrollPositionOnItemSizeChange: ((item: VirtualItem, delta: number, instance: Virtualizer<any, any>): boolean => {
+    /*shouldAdjustScrollPositionOnItemSizeChange: ((item: VirtualItem, delta: number, instance: Virtualizer<any, any>): boolean => {
         return (item.index === instance.getVirtualIndexes().length - 1) ? (false): true;
-    }),
+    }),*/
 }))
 
 const virtualizer = useVirtualizer(vOptions)
