@@ -7,13 +7,6 @@
         @click.capture="handleContentClick"
         @preview-svg="handlePreviewSvg"
     ></div>
-
-    <a-image
-        v-if="imagePreviewUrl"
-        style="display: none !important;"
-        :preview="{ visible: showImagePreview, onVisibleChange: v => showImagePreview = v }"
-        :src="imagePreviewUrl"
-        />
 </template>
 
 <script lang="ts">
@@ -46,8 +39,8 @@ if (import.meta.hot) {
 </script>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { message, Image as AImage } from 'ant-design-vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { message } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
 import katex from 'katex';
@@ -57,6 +50,7 @@ import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
+import { previewImage } from '@/utils/imagePreview';
 import '@/styles/markdown-beautify.css'
 
 const router = useRouter();
@@ -95,15 +89,6 @@ const html = computed(() => {
 const renderer = ref<HTMLDivElement>(), buffer = ref<HTMLDivElement>(document.createElement('div'));
 
 const isRegular = ref(false);
-
-const showImagePreview = ref(false), imagePreviewUrl = ref<string>();
-
-onBeforeUnmount(() => {
-    if (imagePreviewUrl.value) {
-        URL.revokeObjectURL(imagePreviewUrl.value);
-        imagePreviewUrl.value = undefined;
-    }
-});
 
 const md = new MarkdownIt({
     html: true,
@@ -336,12 +321,8 @@ const handlePreviewSvg = async (e: CustomEvent) => {
 
     try {
         const svgData = new XMLSerializer().serializeToString(getElement(e.detail)!);
-        if (imagePreviewUrl.value) {
-            URL.revokeObjectURL(imagePreviewUrl.value);
-            imagePreviewUrl.value = undefined;
-        }
-        imagePreviewUrl.value = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
-        showImagePreview.value = true;
+        const url = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
+        previewImage(url, () => URL.revokeObjectURL(url));
     } catch (e) {
         message.error(String(e));
     }

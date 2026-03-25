@@ -135,12 +135,8 @@ export class OcwCodeBlock extends LitElement {
 
     private renderers: Record<string, () => ReturnType<typeof html>> = {
         default: () => html`<slot></slot>`,
-        mermaid: () => html`<div class="mermaid-renderer custom-renderer">
-            ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}
-        </div>`,
-        latex: () => html`<div class="latex-renderer custom-renderer">
-            ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:codeBlock.renderer.error.latex')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:codeBlock.renderer.empty') : t('chat:codeBlock.renderer.loading')))}
-        </div>`,
+        mermaid: () => html`<div class="mermaid-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}</div>`,
+        latex: () => html`<div class="latex-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:codeBlock.renderer.error.latex')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:codeBlock.renderer.empty') : t('chat:codeBlock.renderer.loading')))}</div>`,
     };
 
     private operationRenderers: Record<string, () => ReturnType<typeof html>> = {
