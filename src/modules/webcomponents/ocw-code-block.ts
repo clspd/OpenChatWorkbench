@@ -3,7 +3,6 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import { message } from 'ant-design-vue';
 import { t } from 'i18next';
@@ -212,8 +211,8 @@ export class OcwCodeBlock extends LitElement {
         }
     }
 
-    private downloadFile(content: BlobPart, ext = this.language) {
-        const blob = new Blob([content], { type: 'text/plain' });
+    private downloadFile(content: BlobPart, ext = this.language, type = 'text/plain') {
+        const blob = new Blob([content], { type });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = app_name_id + '-' + new Date().toISOString() + '.' + ext;
@@ -275,14 +274,14 @@ export class OcwCodeBlock extends LitElement {
                 case 'svg': {
                     const svgData = new XMLSerializer().serializeToString(getElement(this.#state.h)!);
                     const blob = new Blob([svgData], { type: 'image/svg+xml' });
-                    this.downloadFile(blob, 'svg');
+                    this.downloadFile(blob, 'svg', 'image/svg+xml');
                     message.success(t('chat:mermaid.download.results.success'));
                 }
                     break;
             
                 case 'png':
                     (await this.svgToCanvas(this.#state.h)).toBlob((blob) => {
-                        blob ? (this.downloadFile(blob, 'png'), message.success(t('chat:mermaid.download.results.success'))) : message.error(t('chat:mermaid.download.results.fail', { error: 'Unknown error' }));
+                        blob ? (this.downloadFile(blob, 'png', 'image/png'), message.success(t('chat:mermaid.download.results.success'))) : message.error(t('chat:mermaid.download.results.fail', { error: 'Unknown error' }));
                     }, 'image/png');
                     break;
         
