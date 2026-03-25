@@ -121,7 +121,8 @@
         "rendering": "Loading...",
         "errors": {
             "load": "Failed to load content",
-            "render": "Cannot render this diagram: {{error}}"
+            "render": "Cannot render this diagram",
+            "empty": "This diagram is empty."
         },
         "download": {
             "btn": "Download",

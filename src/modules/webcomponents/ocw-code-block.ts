@@ -15,7 +15,11 @@ mermaid.initialize({
     theme: 'default',
     securityLevel: 'loose',
     suppressErrorRendering: true,
+    htmlLabels: false,
 });
+
+export const OCW_CODE_BLOCK_TAG_NAME = 'ocw-code-block' + ((window.customElements.get('ocw-code-block')) ?
+    ('-' + crypto.randomUUID()) : '');
 
 export class OcwCodeBlock extends LitElement {
     static styles = css`
@@ -63,14 +67,23 @@ export class OcwCodeBlock extends LitElement {
         white-space: pre;
     }
 
-    .mermaid-source {
-        display: none;
+    .mermaid-renderer > .mermaid-error-banner {
+        text-align: center;
+        color: var(--mermaid-error-color, #cc0000);
+    }
+
+    .mermaid-renderer > .mermaid-error-detail {
+        margin-top: 0.5em;
+        color: var(--color-secondary, gray);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
     }
     `;
 
     static properties = {
         language: { type: String, reflect: true },
         wip: { type: Boolean, reflect: true },
+        copied: { state: true },
     };
 
     declare copied: boolean;
@@ -83,13 +96,14 @@ export class OcwCodeBlock extends LitElement {
         super();
         this.copied = false;
         this.language = '';
+        this.wip = false;
         this.#state = null;
         this.#observer = new MutationObserver(() => this.myRenderContent());
     }
 
     private renderers: Record<string, () => ReturnType<typeof html>> = {
         default: () => html`<slot></slot>`,
-        mermaid: () => html`<div class="mermaid-renderer"> ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.h) ? '' : ((this.#state && this.#state.e && !this.wip) ? t('chat:mermaid.errors.render', { error: this.#state.d }) : t('chat:mermaid.rendering')))}</div>`,
+        mermaid: () => html`<div class="mermaid-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="mermaid-error-banner">${t('chat:mermaid.errors.render')}</div><div class="mermaid-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}</div>`,
     };
 
     private operationRenderers: Record<string, () => ReturnType<typeof html>> = {
@@ -136,15 +150,23 @@ export class OcwCodeBlock extends LitElement {
 
     private async renderMermaid() {
         const code = this.textContent;
-        if (!code) return;
+        if (!code) return (this.#state = { e: false, n: true }, void 0);
 
         try {
             const id = new Uint32Array(4);
             crypto.getRandomValues(id);
             const result = await mermaid.render('s-' + id.join('-'), code);
-            this.#state = { e: false, h: getSafeHTML(result.svg, undefined, false) };
+            this.#state = {
+                e: false,
+                h: getSafeHTML(result.svg, {
+                    
+                }, false)
+            };
         } catch (e) {
             this.#state = { e: true, d: String(e) };
+            console.debug(e)
+        } finally {
+            this.requestUpdate();
         }
     }
 
@@ -182,5 +204,4 @@ export class OcwCodeBlock extends LitElement {
 
 }
 
-if (window.customElements.get('ocw-code-block') && process.env.NODE_ENV === 'development') window.location.reload();
-else window.customElements.define('ocw-code-block', OcwCodeBlock);
+window.customElements.define(OCW_CODE_BLOCK_TAG_NAME, OcwCodeBlock);

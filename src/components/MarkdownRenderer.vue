@@ -32,6 +32,7 @@ const removes = [remove];
 import css1 from '@/styles/markdown-beautify.css?inline'
 import css2 from 'katex/dist/katex.min.css?inline'
 import { DialogView } from 'vue-dialog-view';
+import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
 
 removes.push(...([
     css1, css2,
@@ -54,17 +55,18 @@ import katexPlugin from '@vscode/markdown-it-katex';
 import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import '@/modules/webcomponents/ocw-code-block'
 
 const router = useRouter();
 const appStatePersist = useAppStatePersistStore();
 
 const props = withDefaults(defineProps<{
     content: string;
+    wip?: boolean;
     disabled?: boolean;
     mode?: 'full' | 'recommended' | 'disabled';
     trustSameOrigin?: boolean;
 }>(), {
+    wip: false,
     disabled: false,
     mode: 'full',
     trustSameOrigin: false,
@@ -232,12 +234,12 @@ const update = () => {
     
     buffer.value.innerHTML = html.value;
     for (const i of buffer.value.querySelectorAll('pre')) {
-        const newCom = document.createElement("ocw-code-block");
+        const newCom = document.createElement(OCW_CODE_BLOCK_TAG_NAME);
         newCom.append(...i.childNodes);
         // no extra attributes is needed
         i.replaceWith(newCom);
     }
-    for (const i of buffer.value.querySelectorAll('ocw-code-block>code[class]')) {
+    for (const i of buffer.value.querySelectorAll(OCW_CODE_BLOCK_TAG_NAME + '>code[class]')) {
         const lang = /language-(\w+)/.exec(i.getAttribute('class') || '')?.[1];
         if (lang) {
             i.parentElement?.setAttribute("language", lang);

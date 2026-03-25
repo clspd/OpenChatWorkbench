@@ -17,6 +17,7 @@
                 <MarkdownRenderer 
                     :content="frag.content" 
                     :mode="getMarkdownMode()"
+                    :wip="message.status === MessageStatus.WIP"
                     :disabled="frag.type === MessageFragmentType.Error || props.showRaw"
                     :trust-same-origin="true"
                 />
