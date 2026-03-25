@@ -1,4 +1,4 @@
-import { LitElement, html, css, type PropertyValues } from 'lit';
+import { LitElement, html, css, type PropertyValues, unsafeCSS } from 'lit';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
@@ -8,8 +8,10 @@ import '@shoelace-style/shoelace/dist/themes/light.css';
 import { message } from 'ant-design-vue';
 import { t } from 'i18next';
 import mermaid from 'mermaid';
+import katex from 'katex';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { app_name_id } from '@/config';
+import css1 from 'katex/dist/katex.min.css?inline';
 
 mermaid.initialize({
     startOnLoad: false,
@@ -31,7 +33,8 @@ const getElement = (str: string) => {
 };
 
 export class OcwCodeBlock extends LitElement {
-    static styles = css`
+    static styles = [
+        css`
     :host {
         display: block;
         white-space: pre-wrap;
@@ -90,18 +93,24 @@ export class OcwCodeBlock extends LitElement {
         white-space: pre;
     }
 
-    .mermaid-renderer > .mermaid-error-banner {
+    .custom-renderer > .render-error-banner {
         text-align: center;
-        color: var(--mermaid-error-color, #cc0000);
+        color: var(--render-error-color, #cc0000);
     }
 
-    .mermaid-renderer > .mermaid-error-detail {
+    .custom-renderer > .render-error-detail {
         margin-top: 0.5em;
         color: var(--color-secondary, gray);
         white-space: pre-wrap;
         overflow-wrap: anywhere;
     }
-    `;
+
+    .custom-renderer .katex {
+        white-space: unset !important;
+    }
+        `,
+        unsafeCSS(css1),
+    ];
 
     static properties = {
         language: { type: String, reflect: true },
@@ -126,8 +135,11 @@ export class OcwCodeBlock extends LitElement {
 
     private renderers: Record<string, () => ReturnType<typeof html>> = {
         default: () => html`<slot></slot>`,
-        mermaid: () => html`<div class="mermaid-renderer">
-            ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="mermaid-error-banner">${t('chat:mermaid.errors.render')}</div><div class="mermaid-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}
+        mermaid: () => html`<div class="mermaid-renderer custom-renderer">
+            ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}
+        </div>`,
+        latex: () => html`<div class="latex-renderer custom-renderer">
+            ${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:codeBlock.renderer.error.latex')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:codeBlock.renderer.empty') : t('chat:codeBlock.renderer.loading')))}
         </div>`,
     };
 
@@ -180,6 +192,9 @@ export class OcwCodeBlock extends LitElement {
         switch (this.language) {
             case 'mermaid':
                 await this.renderMermaid();
+                break;
+            case 'latex':
+                await this.renderLatex();
                 break;
             default:
                 this.#state = null;
@@ -239,9 +254,7 @@ export class OcwCodeBlock extends LitElement {
             this.#state = {
                 t: 'mermaid',
                 e: false,
-                h: getSafeHTML(result.svg, {
-                    
-                }, false)
+                h: getSafeHTML(result.svg, {}, false)
             };
         } catch (e) {
             // for renderer cache
@@ -324,6 +337,33 @@ export class OcwCodeBlock extends LitElement {
             };
             img.src = url;
         });
+    }
+
+    // LaTeX
+
+    private async renderLatex() {
+        const code = this.textContent;
+        if (!code) {
+            this.#state = { t: 'latex', e: false, n: true };
+            return;
+        }
+
+        try {
+            const rendered = katex.renderToString(code, {
+                displayMode: true,
+                throwOnError: false,
+                errorColor: '#cc0000',
+            });
+            this.#state = {
+                t: 'latex',
+                e: false,
+                h: getSafeHTML(rendered, {}, false),
+            };
+        } catch (e) {
+            this.#state = { t: 'latex', e: true, d: String(e) };
+        } finally {
+            this.requestUpdate();
+        }
     }
 
 }

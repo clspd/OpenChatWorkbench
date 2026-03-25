@@ -122,6 +122,13 @@
             "copy": "Copy",
             "copied": "Copied",
             "dl": "Download"
+        },
+        "renderer": {
+            "loading": "Loading...",
+            "empty": "This content is empty.",
+            "error": {
+                "latex": "Cannot render this content"
+            }
         }
     },
     "mermaid": {

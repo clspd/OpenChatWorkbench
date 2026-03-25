@@ -30,8 +30,10 @@ const [md_blank_line_spacer_name, remove] = (function () {
 
 const removes = [remove];
 
+import css1 from 'katex/dist/katex.min.css?inline';
+
 removes.push(...([
-    
+    css1,
 ].map((v) => addCSS(v).remove)));
 
 if (import.meta.hot) {
@@ -54,7 +56,6 @@ import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
-import 'katex/dist/katex.min.css'
 import '@/styles/markdown-beautify.css'
 
 const router = useRouter();
