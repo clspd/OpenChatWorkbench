@@ -81,7 +81,7 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
             cssFile.result = processCSS(new TextDecoder().decode(raw), path);
         }
         return await importModule(prefix + mainModule);
-    } finally { if (progress) progress.close() }
+    } catch {} finally { if (progress) progress.close() }
 
     try {
         const cdnUrls = cdnList.map(template =>
