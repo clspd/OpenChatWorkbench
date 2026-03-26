@@ -7,10 +7,11 @@ import '@shoelace-style/shoelace/dist/themes/light.css';
 import { message } from 'ant-design-vue';
 import { t } from 'i18next';
 import mermaid from 'mermaid';
-import katex from 'katex';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { app_name_id } from '@/config';
-import css1 from 'katex/dist/katex.min.css?inline';
+import { KaTeX_CSS, load_katex } from '@/vendor/npm/katex';
+
+const katex = await load_katex();
 
 mermaid.initialize({
     startOnLoad: false,
@@ -116,7 +117,7 @@ export class OcwCodeBlock extends LitElement {
         margin: auto;
     }
         `,
-        unsafeCSS(css1),
+        unsafeCSS(KaTeX_CSS),
     ];
 
     static properties = {

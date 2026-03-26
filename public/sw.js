@@ -15,7 +15,7 @@ const /** @type {ServiceWorkerGlobalScope & typeof globalThis} */global = (typeo
 // update ts if the external file is changed (in order to bust the cache);
 // no need to update ts if sw.js itself changed
 const CONFIG_FILE = '/internal/init_config.js';
-const CONFIG_FILE_TS = '202603250422+0800';
+const CONFIG_FILE_TS = '202603270419+0800';
 const REWRITES_FILE = '/internal/swRewrites.js';
 const REWRITES_FILE_TS = '202602161150+0800';
 const OFFLINE_PAGE_FILE = '/resource/offline@1.0.0.html';

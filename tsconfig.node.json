@@ -6,11 +6,16 @@
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "eslint.config.*"
+    "eslint.config.*",
+    "before-build.js"
   ],
   "compilerOptions": {
     "noEmit": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
 
     "module": "ESNext",
     "moduleResolution": "Bundler",
