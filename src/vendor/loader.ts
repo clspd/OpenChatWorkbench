@@ -88,15 +88,8 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
             template.replace(/\{(p|v)\}/g, (match, p1) => ({ p: libName, v: ver } as any)[p1])
         );
 
-        progress = createProgressNotification(
-            t('common:loader.downloading.title'),
-            t('common:loader.downloading.desc', { pkg: libName }),
-            -1, cdnUrls.length + 1, -1
-        );
-
         let current = -1;
         for (const baseUrl of cdnUrls) try {
-            progress.update(++current);
             console.debug('[vendor]', '[loader]', 'downloading package:', libName + '@' + ver, 'from:' + current);
 
             let css: string | null = null;
@@ -108,7 +101,6 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
             }
 
             const mainUrl = baseUrl + mainModule;
-            progress.close();
             const module = await importModule(mainUrl);
             if (cssFile && css) cssFile.result = css;
             return module;
@@ -116,7 +108,6 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
 
         throw new Error('all cdn failed');
     } catch (e) {
-        if (progress) progress.close();
         (isCritical ? Modal.error : Modal.confirm)({
             title: 'Failed to load ' + libName + '@' + ver,
             content: isCritical ? 'The application will not work.' : 'Some part of the application might not work.',
