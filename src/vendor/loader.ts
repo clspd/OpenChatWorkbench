@@ -8,7 +8,7 @@ import { extractTgz } from "@/utils/compress";
 import { createProgressNotification } from "@/utils/progressNotification";
 import { t } from "i18next";
 
-export const VendorLoaderVersion = '1.0.0';
+export const VendorLoaderVersion = '1.0.1';
 
 const LoadMap = new Map<string, Promise<any>>();
 
@@ -68,7 +68,7 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
                     'cross-origin-resource-policy': 'cross-origin',
                     'access-control-allow-origin': '*',
                     'content-length': String(content.byteLength),
-                    'content-type': types['.' + name.replace(/^.*\./, '').toLowerCase()] || 'application/octet-stream',
+                    'content-type': types[name.replace(/^.*\./, '').toLowerCase()] || 'application/octet-stream',
                 }
             })
             await cache.put(url, resp);

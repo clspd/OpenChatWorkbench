@@ -54,6 +54,9 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].s.js',
         assetFileNames: 'assets/[name]-[hash].s.[ext]',
       },
+      external: [
+        'katex',
+      ],
     },
   },
 })

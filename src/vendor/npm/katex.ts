@@ -1,7 +1,6 @@
 import { GetWellknownTarballDownloadUrl, resolveDepVersion } from "@/utils/npmutil";
 import { LoadVendor } from "../loader";
-
-let chosenCDN: string | undefined;
+import addCSS from "add-css-constructed";
 
 const KaTeX_package = 'katex';
 const KaTeX_version = resolveDepVersion('katex', '0.16.43');
@@ -11,8 +10,8 @@ const KaTeX_files = {
 };
 
 const cdnList = [
-    'https://cdn.jsdelivr.net/npm/{p}@{v}/',
     'https://unpkg.com/{p}@{v}/',
+    'https://cdn.jsdelivr.net/npm/{p}@{v}/',
 ];
 
 const tarballList = [
@@ -23,7 +22,7 @@ const tarballList = [
 export let KaTeX_CSS: string;
 
 export async function load_katex(): Promise<typeof import('katex')> { 
-    return await LoadVendor(
+    const module = await LoadVendor(
         KaTeX_package,
         KaTeX_version,
         tarballList,
@@ -36,5 +35,7 @@ export async function load_katex(): Promise<typeof import('katex')> {
             set result(value) { KaTeX_CSS = value },
         }
     );
+    addCSS(KaTeX_CSS);
+    return module;
 }
 

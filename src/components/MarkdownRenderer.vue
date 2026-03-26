@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import addCSS from 'add-css-constructed';
-import { KaTeX_CSS, load_katex } from '@/vendor/npm/katex';
+import { load_katex } from '@/vendor/npm/katex';
 
 const katex = await load_katex();
 
@@ -28,7 +28,7 @@ const [md_blank_line_spacer_name, remove] = (function () {
 const removes = [remove];
 
 removes.push(...([
-    KaTeX_CSS,
+    
 ].map((v) => addCSS(v).remove)));
 
 if (import.meta.hot) {
