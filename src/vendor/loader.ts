@@ -76,7 +76,7 @@ async function _LoadVendor(libName: string, ver: string, tarballList: string[], 
         await db.put('cache', ver + '_' + VendorLoaderVersion, 'npm:downloaded_lib_version:' + libName);
         if (cssFile) {
             const path = prefix + cssFile.path;
-            const raw = files.get(cssFile.path);
+            const raw = files.get(PACKAGE + cssFile.path);
             if (!raw) throw new Error(`Missing file in tarball: ${cssFile.path}`)
             cssFile.result = processCSS(new TextDecoder().decode(raw), path);
         }
