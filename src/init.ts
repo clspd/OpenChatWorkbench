@@ -130,7 +130,8 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     }
     
     // preload some frequently used modules
-    import('@/utils/prompt').catch(() => {});
+    import('@/utils/prompt').catch(() => { });
+    import('@/views/ChatView.vue').catch(() => { });
     
     
 };

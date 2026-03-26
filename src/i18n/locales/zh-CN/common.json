@@ -145,6 +145,12 @@
             "fail": "无法导出对话: {{error}}"
         }
     },
+    "loader": {
+        "downloading": {
+            "title": "正在下载资源",
+            "desc": "正在下载 {{pkg}} ，请稍候…"
+        }
+    },
     "page_not_found": {
         "title": "页面不存在",
         "newChat": "新对话"

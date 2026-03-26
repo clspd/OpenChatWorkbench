@@ -145,6 +145,12 @@
             "fail": "Failed to export conversation because {{error}}"
         }
     },
+    "loader": {
+        "downloading": {
+            "title": "Downloading Resource",
+            "desc": "Downloading {{pkg}}, please wait…"
+        }
+    },
     "page_not_found": {
         "title": "Page Not Found",
         "newChat": "New Chat"

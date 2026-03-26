@@ -2,7 +2,7 @@
     <div class="header-bar" :class="{'large-screen': windowState.isLargeScreen}">
         <template v-if="windowState.isLargeScreen">
             <!-- 大屏幕显示对话标题和对话设置按钮 -->
-            <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }" :aria-hidden="!appStatePersist.sidebarCollapsed">
+            <div class="s-tl-extra" :style="{ visibility: appStatePersist.sidebarCollapsed ? 'visible' : 'hidden' }" :aria-hidden="!appStatePersist.sidebarCollapsed" :inert="!appStatePersist.sidebarCollapsed">
                 <AppLogo :size="16" />
                 <div class="btn-group">
                     <!-- 浮动的“展开”按钮（桌面端） -->
@@ -17,6 +17,8 @@
                     </a-button>
                 </div>
             </div>
+
+            <div class="s-tl-extra-lg-screen-fill" v-if="appStatePersist.sidebarCollapsed"></div>
 
             <div class="flexible-space"></div>
             <div class="title-text">{{ (appState.titleCustomize || appState.titleNoTranslate) ? appState.title : t(GetTitleI18nKeyByText(appState.title)) }}</div>
@@ -76,7 +78,7 @@ const newChat = () => {
     align-items: center;
 }
 .s-tl-extra > * + * {
-    margin-left: 1em;
+    margin-left: 14px;
 }
 .s-tl-extra > .btn-group {
     border: 1px solid var(--split-border-color);
@@ -85,6 +87,9 @@ const newChat = () => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 100px;
     background: var(--background);
+}
+.s-tl-extra-lg-screen-fill {
+    width: 100px;
 }
 .title-text {
     font-weight: bold;

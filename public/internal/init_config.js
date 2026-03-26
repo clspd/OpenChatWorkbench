@@ -17,8 +17,6 @@ globalThis.Object.defineProperty(globalThis, "appInitConfig", { value: Object.fr
     ],
     MANIFEST_FILE: '/internal/manifest.json',
     SKIP_CACHE_DOMAIN: [
-        'localhost',
-        '127.0.0.1',
     ],
     CROSS_ORIGIN_REQUEST_MODE: "bypass",
 }

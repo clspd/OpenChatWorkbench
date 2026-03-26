@@ -5,7 +5,7 @@
     props.message.role === MessageRole.User || 
     props.message.role === MessageRole.Assistant">
             <div class="message-fill" v-if="props.message.role === MessageRole.User || props.message.role === MessageRole.System">&NoBreak;</div>
-            <div class="message-item" :data-role="msgRoleIdentifyMap[props.message.role]">
+            <div class="message-item" :data-role="msgRoleIdentifyMap[props.message.role]" :data-fill="props.message.role === MessageRole.Assistant">
                 <div class="message-avatar" v-if="appStatePersist.showAvatar !== 'off'">
                     <div class="message-avatar-icon" v-if="appStatePersist.showAvatar === 'default' || avatarUrl === 'N/A'">
                         <UserOutlined @click="confirmEditAvatar" v-if="props.message.role === MessageRole.User" />
@@ -28,7 +28,7 @@
 
                 <div class="message-body-container" v-show="!isFileOnly">
                     <div class="message-fill" v-if="props.message.role === MessageRole.User || props.message.role === MessageRole.System"></div>
-                    <div class="message-body">
+                    <div class="message-body" :data-fill="props.message.role === MessageRole.Assistant">
                         <MessageContentRenderer :message="props.message" :show-raw="props.showRaw" />
                     </div>
                 </div>
@@ -111,7 +111,7 @@ const confirmEditAvatar = () => {
     cursor: pointer;
 }
 
-.message-fill {
+.message-fill, [data-fill="true"] {
     flex: 1;
 }
 
@@ -119,6 +119,7 @@ const confirmEditAvatar = () => {
 .message-item[data-role="user"] {
     flex: unset;
 }
+
 .message-item[data-role="system"] .message-avatar,
 .message-item[data-role="user"] .message-avatar {
     text-align: right;

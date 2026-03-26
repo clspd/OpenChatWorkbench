@@ -11,6 +11,9 @@
 
 <script lang="ts">
 import addCSS from 'add-css-constructed';
+import { load_katex } from '@/vendor/npm/katex';
+
+const katex = await load_katex();
 
 // randomize the class name so that malicious input cannot fake a styleful element
 const [md_blank_line_spacer_name, remove] = (function () {
@@ -24,10 +27,8 @@ const [md_blank_line_spacer_name, remove] = (function () {
 
 const removes = [remove];
 
-import css1 from 'katex/dist/katex.min.css?inline';
-
 removes.push(...([
-    css1,
+    
 ].map((v) => addCSS(v).remove)));
 
 if (import.meta.hot) {
@@ -43,7 +44,6 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 import MarkdownIt from 'markdown-it';
-import katex from 'katex';
 // @ts-ignore markdown-it-texmath@1.0.0 has no type definitions
 import texmath from 'markdown-it-texmath';
 import morphdom from 'morphdom';

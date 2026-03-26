@@ -7,10 +7,11 @@ import '@shoelace-style/shoelace/dist/themes/light.css';
 import { message } from 'ant-design-vue';
 import { t } from 'i18next';
 import mermaid from 'mermaid';
-import katex from 'katex';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { app_name_id } from '@/config';
-import css1 from 'katex/dist/katex.min.css?inline';
+import { KaTeX_CSS, load_katex } from '@/vendor/npm/katex';
+
+const katex = await load_katex();
 
 mermaid.initialize({
     startOnLoad: false,
@@ -107,8 +108,16 @@ export class OcwCodeBlock extends LitElement {
     .custom-renderer .katex {
         white-space: unset !important;
     }
+
+    .mermaid-renderer > .render-content {
+        display: flex;
+    }
+
+    .mermaid-renderer > .render-content > svg {
+        margin: auto;
+    }
         `,
-        unsafeCSS(css1),
+        unsafeCSS(KaTeX_CSS),
     ];
 
     static properties = {
@@ -134,7 +143,7 @@ export class OcwCodeBlock extends LitElement {
 
     private renderers: Record<string, () => ReturnType<typeof html>> = {
         default: () => html`<slot></slot>`,
-        mermaid: () => html`<div class="mermaid-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}</div>`,
+        mermaid: () => html`<div class="mermaid-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div class="render-content" .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}</div>`,
         latex: () => html`<div class="latex-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:codeBlock.renderer.error.latex')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:codeBlock.renderer.empty') : t('chat:codeBlock.renderer.loading')))}</div>`,
     };
 
