@@ -20,6 +20,7 @@ const tarballList = [
 ];
 
 export let KaTeX_CSS: string;
+let CSS_added = false;
 
 export async function load_katex(): Promise<typeof import('katex')> { 
     const module = await LoadVendor(
@@ -35,7 +36,7 @@ export async function load_katex(): Promise<typeof import('katex')> {
             set result(value) { KaTeX_CSS = value },
         }
     );
-    addCSS(KaTeX_CSS);
+    if (!CSS_added) (addCSS(KaTeX_CSS), CSS_added = true);
     return module;
 }
 
