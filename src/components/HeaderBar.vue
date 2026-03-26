@@ -18,6 +18,8 @@
                 </div>
             </div>
 
+	    <div class="s-tl-extra-lg-screen-fill"></div>
+
             <div class="flexible-space"></div>
             <div class="title-text">{{ (appState.titleCustomize || appState.titleNoTranslate) ? appState.title : t(GetTitleI18nKeyByText(appState.title)) }}</div>
             <div class="flexible-space"></div>
@@ -76,7 +78,7 @@ const newChat = () => {
     align-items: center;
 }
 .s-tl-extra > * + * {
-    margin-left: 1em;
+    margin-left: 14px;
 }
 .s-tl-extra > .btn-group {
     border: 1px solid var(--split-border-color);
@@ -85,6 +87,9 @@ const newChat = () => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 100px;
     background: var(--background);
+}
+.s-tl-extra-lg-screen-fill {
+    width: 100px;
 }
 .title-text {
     font-weight: bold;
