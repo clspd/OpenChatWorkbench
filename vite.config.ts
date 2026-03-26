@@ -58,6 +58,10 @@ export default defineConfig({
         'katex',
       ],
     },
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies: () => [],
+    },
   },
 })
 
