@@ -50,7 +50,7 @@ import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
-import { previewImage } from '@/utils/imagePreview';
+import { previewSvg } from '@/utils/imagePreview';
 import '@/styles/markdown-beautify.css'
 
 const router = useRouter();
@@ -234,7 +234,7 @@ const update = () => {
     for (const i of buffer.value.querySelectorAll('pre')) {
         const newCom = document.createElement(OCW_CODE_BLOCK_TAG_NAME);
         newCom.append(...i.childNodes);
-        if (props.wip) newCom.setAttribute('wip', '');
+        if (props.wip && !newCom.nextElementSibling) newCom.setAttribute('wip', '');
         // no extra attributes is needed
         i.replaceWith(newCom);
     }
@@ -320,9 +320,8 @@ const handlePreviewSvg = async (e: CustomEvent) => {
     };
 
     try {
-        const svgData = new XMLSerializer().serializeToString(getElement(e.detail)!);
-        const url = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml' }));
-        previewImage(url, () => URL.revokeObjectURL(url));
+        const svg = (getElement(e.detail)!);
+        previewSvg(svg as SVGSVGElement);
     } catch (e) {
         message.error(String(e));
     }

@@ -61,16 +61,18 @@ export class OcwCodeBlock extends LitElement {
         border-bottom: 1px solid var(--code-border, #e5e5e5);
         white-space: nowrap;
         user-select: none;
-        overflow: hidden;
+        overflow: auto;
         flex-wrap: nowrap;
     }
 
+    .pre-renderer > .header::-webkit-scrollbar {
+        width: 0; height: 0;
+    }
+
     .pre-renderer > .header > .language {
-        margin-right: 0.5em;
+        margin-right: 1em;
         padding-left: 0.5em;
         font-size: 0.8em;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .pre-renderer > .header > .operations {
@@ -161,6 +163,7 @@ export class OcwCodeBlock extends LitElement {
                 <sl-menu-item @click=${() => this.downloadMermaid('svg')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.svg')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('png')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.png')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('src')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.plain')}</sl-menu-item>
+                <sl-menu-item @click=${() => this.downloadMermaid('cpsrc')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.cpsrc')}</sl-menu-item>
             </sl-menu>
         </sl-dropdown>`,
     };
@@ -292,6 +295,10 @@ export class OcwCodeBlock extends LitElement {
                     (await this.svgToCanvas(this.#state.h)).toBlob((blob) => {
                         blob ? (this.downloadFile(blob, 'png', 'image/png'), message.success(t('chat:mermaid.download.results.success'))) : message.error(t('chat:mermaid.download.results.fail', { error: 'Unknown error' }));
                     }, 'image/png');
+                    break;
+                
+                case 'cpsrc':
+                    this.copyContent();
                     break;
         
                 default:

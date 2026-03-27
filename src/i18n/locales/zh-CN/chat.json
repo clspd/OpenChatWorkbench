@@ -143,7 +143,8 @@
             "types": {
                 "svg": "下载为 SVG",
                 "png": "下载为 PNG",
-                "plain": "下载源代码"
+                "plain": "下载源代码",
+                "cpsrc": "复制源代码"
             },
             "results": {
                 "success": "下载成功",

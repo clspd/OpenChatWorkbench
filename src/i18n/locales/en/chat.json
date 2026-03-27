@@ -143,7 +143,8 @@
             "types": {
                 "svg": "Download as SVG",
                 "png": "Download as PNG",
-                "plain": "Download source code"
+                "plain": "Download source code",
+                "cpsrc": "Copy source code"
             },
             "results": {
                 "success": "Downloaded",
