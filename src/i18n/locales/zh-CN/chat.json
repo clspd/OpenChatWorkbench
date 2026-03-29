@@ -144,11 +144,13 @@
                 "svg": "下载为 SVG",
                 "png": "下载为 PNG",
                 "plain": "下载源代码",
-                "cpsrc": "复制源代码"
+                "cpsrc": "复制源代码",
+                "cperr": "复制错误信息"
             },
             "results": {
                 "success": "下载成功",
-                "fail": "无法下载图此表：{{error}}"
+                "fail": "无法下载图此表：{{error}}",
+                "copied": "已复制"
             }
         },
         "expand": "展开",

@@ -170,7 +170,7 @@ async function handleWindowError(e: ErrorEvent) {
     addToQueue({
         type: 'runtime-error',
         errorType: 'error',
-        errorMessage: e.message ?? 'Unknown error',
+        errorMessage: (e && e.message) ?? String(e) ?? 'Unknown error',
         env: location.hostname,
         ctx: {
             fileName: e.filename,
@@ -191,6 +191,8 @@ async function handleWindowUnhandledRejection(e: PromiseRejectionEvent) {
     } catch {
         reason = String(reason);
     }
+    
+    if (reason.includes('ResizeObserver loop completed with undelivered notifications.')) return;
 
     addToQueue({
         type: 'runtime-error',
