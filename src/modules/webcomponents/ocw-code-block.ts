@@ -10,6 +10,8 @@ import mermaid from 'mermaid';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { app_name_id } from '@/config';
 import { KaTeX_CSS, load_katex } from '@/vendor/npm/katex';
+import type { EditorView } from '@codemirror/view';
+import { createCodeMirrorHighlighter, destroyCodeMirrorHighlighter, isSupportedLanguage } from './codemirror-highlighter';
 
 const katex = await load_katex();
 
@@ -120,6 +122,40 @@ export class OcwCodeBlock extends LitElement {
     .mermaid-renderer > .render-content > svg {
         margin: auto;
     }
+
+    .code-highlighter {
+        padding: 0;
+        margin: 0;
+        font-size: 0.95em;
+        line-height: 1.5;
+        background-color: transparent;
+    }
+
+    .code-highlighter :deep(.cm-editor) {
+        background-color: transparent !important;
+        font-family: 'Consolas', 'Courier New', monospace;
+    }
+
+    .code-highlighter :deep(.cm-gutters) {
+        background-color: transparent;
+        border-right: 1px solid var(--code-border, #e5e5e5);
+    }
+
+    .code-highlighter :deep(.cm-lineNumbers) {
+        min-width: 2.5em;
+    }
+
+    .code-highlighter :deep(.cm-content) {
+        padding: 0 0.5em;
+    }
+
+    .code-highlighter :deep(.cm-line) {
+        padding-left: 0;
+    }
+
+    .code-highlighter :deep(.cm-activeLineGutter) {
+        background-color: transparent;
+    }
         `,
         unsafeCSS(KaTeX_CSS),
     ];
@@ -135,6 +171,7 @@ export class OcwCodeBlock extends LitElement {
     declare wip: boolean;
     #state: any;
     #observer: MutationObserver;
+    #codeMirrorView: EditorView | null = null;
 
     constructor() {
         super();
@@ -142,6 +179,7 @@ export class OcwCodeBlock extends LitElement {
         this.language = '';
         this.wip = false;
         this.#state = null;
+        this.#codeMirrorView = null;
         this.#observer = new MutationObserver(() => this.myRenderContent());
     }
 
@@ -149,6 +187,7 @@ export class OcwCodeBlock extends LitElement {
         default: () => html`<slot></slot>`,
         mermaid: () => html`<div class="mermaid-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div class="render-content" .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:mermaid.errors.render')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:mermaid.errors.empty') : t('chat:mermaid.rendering')))}</div>`,
         latex: () => html`<div class="latex-renderer custom-renderer">${(this.#state && this.#state.h) ? html`<div .innerHTML=${this.#state.h}></div>` : ((this.#state && this.#state.e && !this.wip) ? html`<div class="render-error-banner">${t('chat:codeBlock.renderer.error.latex')}</div><div class="render-error-detail">${this.#state.d}</div>` : ((this.#state && this.#state.n && !this.wip) ? t('chat:codeBlock.renderer.empty') : t('chat:codeBlock.renderer.loading')))}</div>`,
+        highlighted: () => html`<div class="code-highlighter" id="cm-container"></div>`,
     };
 
     private operationRenderers: Record<string, () => ReturnType<typeof html>> = {
@@ -172,11 +211,17 @@ export class OcwCodeBlock extends LitElement {
     };
 
     render() {
+        // Determine which renderer to use
+        let rendererKey = this.language;
+        if (this.#state && this.#state.t === 'code' && this.#state.h) {
+            rendererKey = 'highlighted';
+        }
+
         return html`<div class="pre-renderer"><div class="header">
             <div class="language"><slot name="language"><span>${this.language}</span></slot></div>
             <div class="flexible-space"></div>
             <div class="operations">${(this.operationRenderers[this.language] ?? this.operationRenderers.default!)()}</div>
-        </div><div class="content">${(this.renderers[this.language] ?? this.renderers.default!)()}</div></div>`;
+        </div><div class="content">${(this.renderers[rendererKey] ?? this.renderers.default!)()}</div></div>`;
     }
 
     connectedCallback(): void {
@@ -194,6 +239,9 @@ export class OcwCodeBlock extends LitElement {
     disconnectedCallback(): void {
         super.disconnectedCallback();
         this.#observer.disconnect();
+        // Clean up CodeMirror editor
+        destroyCodeMirrorHighlighter(this.#codeMirrorView);
+        this.#codeMirrorView = null;
     }
 
     protected async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
@@ -209,7 +257,12 @@ export class OcwCodeBlock extends LitElement {
                 await this.renderLatex();
                 break;
             default:
-                this.#state = null;
+                // Try to use CodeMirror for syntax highlighting
+                if (isSupportedLanguage(this.language)) {
+                    await this.renderHighlightedCode();
+                } else {
+                    this.#state = null;
+                }
         }
     }
 
@@ -392,6 +445,51 @@ export class OcwCodeBlock extends LitElement {
         } finally {
             try { this.requestUpdate(); }
             catch (e) {}
+        }
+    }
+
+    // Code Syntax Highlighting
+
+    private async renderHighlightedCode() {
+        const code = this.textContent;
+        if (!code) {
+            this.#state = { t: 'code', e: false, n: true };
+            return;
+        }
+
+        try {
+            // Mark as highlighted to trigger the renderer
+            this.#state = {
+                t: 'code',
+                e: false,
+                h: true, // Flag indicating CodeMirror should be used
+            };
+            
+            // Update the render to trigger template change
+            this.requestUpdate();
+
+            // Wait for the DOM to be updated
+            await this.updateComplete;
+
+            // Now mount CodeMirror in the container
+            const container = this.renderRoot.querySelector('#cm-container') as HTMLElement | null;
+            if (container) {
+                // Clean up old CodeMirror instance if exists
+                destroyCodeMirrorHighlighter(this.#codeMirrorView);
+
+                // Create new CodeMirror instance
+                this.#codeMirrorView = createCodeMirrorHighlighter(code, this.language, container);
+
+                if (!this.#codeMirrorView) {
+                    // Language not supported, use default rendering
+                    this.#state = null;
+                    this.requestUpdate();
+                }
+            }
+        } catch (e) {
+            console.error('Error rendering highlighted code:', e);
+            this.#state = { t: 'code', e: true, d: String(e) };
+            this.requestUpdate();
         }
     }
 
