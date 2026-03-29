@@ -144,11 +144,13 @@
                 "svg": "Download as SVG",
                 "png": "Download as PNG",
                 "plain": "Download source code",
-                "cpsrc": "Copy source code"
+                "cpsrc": "Copy source code",
+                "cperr": "Copy error message"
             },
             "results": {
                 "success": "Downloaded",
-                "fail": "Failed to download diagram: {{error}}"
+                "fail": "Failed to download diagram: {{error}}",
+                "copied": "Copied"
             }
         },
         "expand": "Expand",

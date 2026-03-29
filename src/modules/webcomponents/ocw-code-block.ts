@@ -24,7 +24,8 @@ mermaid.initialize({
 export const OCW_CODE_BLOCK_TAG_NAME = 'ocw-code-block' + ((window.customElements.get('ocw-code-block')) ?
     ('-' + crypto.randomUUID()) : '');
 
-export const download_icon = '<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M160 832h704a32 32 0 1 1 0 64H160a32 32 0 1 1 0-64m384-253.696 236.288-236.352 45.248 45.248L508.8 704 192 387.2l45.248-45.248L480 584.704V128h64z"></path></svg>';
+const download_icon = '<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M160 832h704a32 32 0 1 1 0 64H160a32 32 0 1 1 0-64m384-253.696 236.288-236.352 45.248 45.248L508.8 704 192 387.2l45.248-45.248L480 584.704V128h64z"></path></svg>';
+const copy_icon = '<svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M768 832a128 128 0 0 1-128 128H192A128 128 0 0 1 64 832V384a128 128 0 0 1 128-128v64a64 64 0 0 0-64 64v448a64 64 0 0 0 64 64h448a64 64 0 0 0 64-64z"></path><path fill="currentColor" d="M384 128a64 64 0 0 0-64 64v448a64 64 0 0 0 64 64h448a64 64 0 0 0 64-64V192a64 64 0 0 0-64-64zm0-64h448a128 128 0 0 1 128 128v448a128 128 0 0 1-128 128H384a128 128 0 0 1-128-128V192A128 128 0 0 1 384 64"></path></svg>';
 
 const getElement = (str: string) => {
     const div = document.createElement('div');
@@ -44,7 +45,6 @@ export class OcwCodeBlock extends LitElement {
     :host {
         background-color: var(--code-bg, #f6f8fa);
         border-radius: 5px;
-        padding: 0.5em;
         font-family: 'Consolas', 'Courier New', monospace;
         overflow: hidden;
     }
@@ -56,6 +56,7 @@ export class OcwCodeBlock extends LitElement {
     .pre-renderer > .header {
         display: flex;
         align-items: center;
+        margin: 0.5em;
         margin-bottom: 0.5em;
         padding-bottom: 0.5em;
         border-bottom: 1px solid var(--code-border, #e5e5e5);
@@ -92,6 +93,8 @@ export class OcwCodeBlock extends LitElement {
     .pre-renderer > .content {
         overflow: auto;
         white-space: pre;
+        padding: 0.5em;
+        padding-top: 0;
     }
 
     .custom-renderer > .render-error-banner {
@@ -162,7 +165,8 @@ export class OcwCodeBlock extends LitElement {
                 <sl-menu-item @click=${() => this.downloadMermaid('svg')} ?disabled=${!(this.#state && this.#state.h)}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.svg')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('png')} ?disabled=${!(this.#state && this.#state.h)}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.png')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('src')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.plain')}</sl-menu-item>
-                <sl-menu-item @click=${() => this.downloadMermaid('cpsrc')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.cpsrc')}</sl-menu-item>
+                <sl-menu-item @click=${() => this.downloadMermaid('cpsrc')}><span slot="prefix" class="icon" .innerHTML=${copy_icon}></span>${t('chat:mermaid.download.types.cpsrc')}</sl-menu-item>
+                ${(this.#state && this.#state.e && this.#state.d) ? html`<sl-menu-item @click=${() => this.downloadMermaid('cperr')}><span slot="prefix" class="icon" .innerHTML=${copy_icon}></span>${t('chat:mermaid.download.types.cperr')}</sl-menu-item>` : ''}
             </sl-menu>
         </sl-dropdown>`,
     };
@@ -182,6 +186,8 @@ export class OcwCodeBlock extends LitElement {
             characterData: true,
             subtree: true,
             childList: true,
+            attributes: true,
+            attributeFilter: ['wip'],
         });
     }
 
@@ -207,10 +213,10 @@ export class OcwCodeBlock extends LitElement {
         }
     }
 
-    private copyContent() {
+    private async copyContent() {
         const content = this.textContent;
         if (content) {
-            navigator.clipboard.writeText(content).then(() => {
+            await navigator.clipboard.writeText(content).then(() => {
                 this.copied = true;
                 setTimeout(() => this.copied = false, 2000);
             }).catch(e => {
@@ -267,7 +273,8 @@ export class OcwCodeBlock extends LitElement {
             const h = (this.wip && this.#state && this.#state.t === 'mermaid' && this.#state.h) ? this.#state.h : undefined;
             this.#state = { t: 'mermaid', e: true, d: String(e), h };
         } finally {
-            this.requestUpdate();
+            try { this.requestUpdate(); }
+            catch (e) {}
         }
     }
 
@@ -299,7 +306,16 @@ export class OcwCodeBlock extends LitElement {
                     break;
                 
                 case 'cpsrc':
-                    this.copyContent();
+                case 'cperr':
+                    switch (type) {
+                        case 'cpsrc':
+                            await this.copyContent();
+                            break;
+                        case 'cperr':
+                            await navigator.clipboard.writeText(String(this.#state.d));
+                            break;
+                    }
+                    message.success(t('chat:mermaid.download.results.copied'));
                     break;
         
                 default:
@@ -374,7 +390,8 @@ export class OcwCodeBlock extends LitElement {
         } catch (e) {
             this.#state = { t: 'latex', e: true, d: String(e) };
         } finally {
-            this.requestUpdate();
+            try { this.requestUpdate(); }
+            catch (e) {}
         }
     }
 

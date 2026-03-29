@@ -229,14 +229,16 @@ const update = () => {
         renderer.value.innerText = props.content; // when disabled, render plain text
         return;
     }
-    
+    // console.clear()
     buffer.value.innerHTML = html.value;
     for (const i of buffer.value.querySelectorAll('pre')) {
         const newCom = document.createElement(OCW_CODE_BLOCK_TAG_NAME);
         newCom.append(...i.childNodes);
-        if (props.wip && !newCom.nextElementSibling) newCom.setAttribute('wip', '');
-        // no extra attributes is needed
         i.replaceWith(newCom);
+        if (props.wip && !newCom.nextElementSibling) newCom.setAttribute('wip', '');
+        else newCom.removeAttribute('wip');
+        // no extra attributes is needed
+        // console.log(newCom.textContent,newCom.hasAttribute('wip'))
     }
     for (const i of buffer.value.querySelectorAll(OCW_CODE_BLOCK_TAG_NAME + '>code[class]')) {
         const lang = /language-(\w+)/.exec(i.getAttribute('class') || '')?.[1];
@@ -254,7 +256,7 @@ const update = () => {
     });
 };
 
-watch(() => html.value, update)
+watch(() => [props.content, props.mode, props.wip, props.disabled], update)
 
 onMounted(() => {
     nextTick(() => update());

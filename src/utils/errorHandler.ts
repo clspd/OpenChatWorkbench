@@ -103,7 +103,7 @@ async function flushQueue() {
     pendingMap.clear();
 
     for (const report of toSend) {
-        try {
+        for (let i = 0; i < 3; ++i) try {
             const reportCtx = { ...report.ctx, count: report.count };
             await sendStatisticsReport({
                 type: report.type,
@@ -112,12 +112,9 @@ async function flushQueue() {
                 env: report.env,
                 ctx: reportCtx,
             });
-
-            await deleteReport(report.mergeKey);
-        } catch (e) {
-            console.warn('[errorHandler] Failed to send report:', e);
-            pendingMap.set(report.mergeKey, report);
-        }
+            break;
+        } catch {}
+        await deleteReport(report.mergeKey);
     }
 
     if (pendingMap.size > 0) {
@@ -170,7 +167,7 @@ async function handleWindowError(e: ErrorEvent) {
     addToQueue({
         type: 'runtime-error',
         errorType: 'error',
-        errorMessage: e.message ?? 'Unknown error',
+        errorMessage: (e && e.message) ?? String(e) ?? 'Unknown error',
         env: location.hostname,
         ctx: {
             fileName: e.filename,
@@ -191,6 +188,8 @@ async function handleWindowUnhandledRejection(e: PromiseRejectionEvent) {
     } catch {
         reason = String(reason);
     }
+    
+    if (reason.includes('ResizeObserver loop completed with undelivered notifications.')) return;
 
     addToQueue({
         type: 'runtime-error',
