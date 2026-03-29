@@ -1,5 +1,5 @@
 // chat-request/respond.ts: functions about message respond
-import type { FileAttachmentInfo, Message, MessageFeatureItem } from "@/types/message";
+import type { FileAttachmentInfoBase, Message, MessageFeatureItem } from "@/types/message";
 import { streamResponse } from "../chat-remotes/streamResponse";
 import { LoadConversation } from "../chat/conversation";
 import { useConfigStore } from "@/stores/configStore";
@@ -23,7 +23,7 @@ export async function GenerateResponse(
     model: string,
     provider: string,
     features: MessageFeatureItem[],
-    files: FileAttachmentInfo[],
+    files: FileAttachmentInfoBase[],
     onCreated?: (msg: Message) => void | Promise<void>,
     updateUserPreference = true,
 ): Promise<number> {

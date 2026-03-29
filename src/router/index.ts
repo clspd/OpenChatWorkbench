@@ -50,6 +50,7 @@ const router = createRouter({
         url: route.query.src,
         title: route.query.title,
         navhide: !!yn(route.query.navhide),
+        ignoreIsolation: !!yn(route.query.ignoreIsolation),
       }),
     },
     {

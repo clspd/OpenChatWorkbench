@@ -18,7 +18,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
             this.$subscribe(debounce(async (mutation, state) => {
                 if (!await isFunctionalCookieConsented()) return;
                 try {
-                    const json = JSON.stringify(state)
+                    const json = JSON.parse(JSON.stringify(state))
                     let windowId = window.sessionStorage.getItem(app_name_id + '@windowId')
                     if (!windowId) windowId = this.createWindowId()
                     // window.sessionStorage.setItem(app_name_id + '@appStateSession', json)
@@ -41,7 +41,7 @@ export const useAppStateSessionStore = defineStore('AppStateSession', {
                 if (!windowId) return;
                 const json = await db.get('kv', 'sessionState_' + windowId)
                 if (!json) return;
-                const state = JSON.parse(json)
+                const state = JSON.parse(JSON.stringify(json))
                 this.$patch(state)
             } catch (error) {
                 console.error('[AppStateSession]', "Error loading appStateSession: " + error);

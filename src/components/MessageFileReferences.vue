@@ -27,7 +27,7 @@
             <ArrowLeftOutlined />
         </div>
 
-        <DialogView v-if="showPreview" v-model="showPreview" class="preview-dialog">
+        <DialogView v-if="showPreview && previewPrepared" v-model="showPreview" class="preview-dialog">
             <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
             <common-file-preview class="preview-body" ref="previewElement" :data-auto-wrap="autowrapEnabled" />
             <div class="preview-floating-buttons">
@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import type { FileAttachmentInfo } from '@/types/message';
+import type { FileAttachmentInfoBase } from '@/types/message';
 import { DialogView } from 'vue-dialog-view';
 import { nextTick } from 'vue';
 import { message } from 'ant-design-vue';
@@ -52,11 +52,12 @@ import { t } from 'i18next';
 import { HTMLCommonFilePreviewElement } from 'common-file-preview';
 import { GetAttachmentById } from '@/modules/chat/attachment';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
+import { previewImage } from '@/utils/imagePreview';
 
 const appStatePersist = useAppStatePersistStore();
 
 const props = withDefaults(defineProps<{
-    references: FileAttachmentInfo[],
+    references: FileAttachmentInfoBase[],
     hasUploading?: boolean,
     canRemove?: boolean,
     disabled?: boolean,
@@ -85,7 +86,19 @@ defineExpose({
 })
 
 const container = ref<HTMLElement>();
-const showPreview = ref(false);
+const { showPreview, previewPrepared } = (() => {
+    const _show = ref(false), _prep = ref(false);
+    return {
+        showPreview: computed({
+            get: () => _show.value,
+            set: value => value ? (_show.value = value) : (_show.value = _prep.value = false),
+        }),
+        previewPrepared: computed({
+            get: () => _show.value && _prep.value,
+            set: value => (_show.value = _prep.value = value),
+        })
+    }
+})();
 const previewId = ref("");
 
 const transformWheel = (e: WheelEvent) => {
@@ -130,15 +143,22 @@ onBeforeUnmount(() => {
 watch(() => showPreview.value, (newValue) => {
     if (newValue) nextTick(async () => {
         try {
-            if (!previewElement.value) throw "Preview element not found";
             const info = props.references.find((item) => item.id === previewId.value);
             if (!info) throw "File info not found";
+            if (!info.type.startsWith('image/')) previewPrepared.value = true;
             const file = await GetAttachmentById(previewId.value);
             if (tempObjUrl.value) {
                 URL.revokeObjectURL(tempObjUrl.value);
                 tempObjUrl.value = "";
             }
             tempObjUrl.value = URL.createObjectURL(file);
+            if (info.type.startsWith('image/')) {
+                previewImage(tempObjUrl.value);
+                showPreview.value = false;
+                return;
+            }
+            await nextTick();
+            if (!previewElement.value) throw "Preview element not found";
             await previewElement.value.init(
                 async () => tempObjUrl.value,
                 info.type.startsWith('image/') ? info.type : 'text/plain',

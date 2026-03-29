@@ -1,7 +1,7 @@
 <template>
-    <a-layout class="main-layout">
+    <a-layout class="main-layout app-main-view_main-layout">
         <Sidebar></Sidebar>
-        <a-layout class="main-content" :ref="(el: Component | null) => appState.mainContentViewEl = el">
+        <a-layout class="main-content app-main-view_main-content app-scroll-container" :ref="(el: Component | null) => appState.mainContentViewEl = el">
             <a-layout-header class="main-content-header">
                 <HeaderBar></HeaderBar>
             </a-layout-header>

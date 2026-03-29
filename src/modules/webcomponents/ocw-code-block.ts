@@ -90,7 +90,6 @@ export class OcwCodeBlock extends LitElement {
     }
 
     .pre-renderer > .content {
-        padding: 0.5em;
         overflow: auto;
         white-space: pre;
     }
@@ -155,13 +154,13 @@ export class OcwCodeBlock extends LitElement {
         </sl-button><sl-button size="small" @click=${this.downloadContent}>
             ${t('chat:codeBlock.toolbar.dl')}
         </sl-button>`,
-        mermaid: () => html`<sl-button size="small" @click=${this.expandMermaid}>
+        mermaid: () => html`<sl-button size="small" @click=${this.expandMermaid} ?disabled=${!(this.#state && this.#state.h)}>
             ${t('chat:mermaid.expand')}
         </sl-button><sl-dropdown>
             <sl-button size="small" slot="trigger" caret>${t('chat:mermaid.download.btn')}</sl-button>
             <sl-menu>
-                <sl-menu-item @click=${() => this.downloadMermaid('svg')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.svg')}</sl-menu-item>
-                <sl-menu-item @click=${() => this.downloadMermaid('png')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.png')}</sl-menu-item>
+                <sl-menu-item @click=${() => this.downloadMermaid('svg')} ?disabled=${!(this.#state && this.#state.h)}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.svg')}</sl-menu-item>
+                <sl-menu-item @click=${() => this.downloadMermaid('png')} ?disabled=${!(this.#state && this.#state.h)}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.png')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('src')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.plain')}</sl-menu-item>
                 <sl-menu-item @click=${() => this.downloadMermaid('cpsrc')}><span slot="prefix" class="icon" .innerHTML=${download_icon}></span>${t('chat:mermaid.download.types.cpsrc')}</sl-menu-item>
             </sl-menu>
@@ -284,6 +283,7 @@ export class OcwCodeBlock extends LitElement {
         try {
             switch (type) {
                 case 'svg': {
+                    if (!this.#state.h) break;
                     const svgData = new XMLSerializer().serializeToString(getElement(this.#state.h)!);
                     const blob = new Blob([svgData], { type: 'image/svg+xml' });
                     this.downloadFile(blob, 'svg', 'image/svg+xml');
@@ -292,6 +292,7 @@ export class OcwCodeBlock extends LitElement {
                     break;
             
                 case 'png':
+                    if (!this.#state.h) break;
                     (await this.svgToCanvas(this.#state.h)).toBlob((blob) => {
                         blob ? (this.downloadFile(blob, 'png', 'image/png'), message.success(t('chat:mermaid.download.results.success'))) : message.error(t('chat:mermaid.download.results.fail', { error: 'Unknown error' }));
                     }, 'image/png');

@@ -1,5 +1,5 @@
 import type { Conversation } from "@/types/conversation";
-import type { MessageFeatureItem, FileAttachmentInfo, Message } from "@/types/message";
+import type { Message } from "@/types/message";
 
 export const MessageStreamer = {
     "other-openai": async () => (await import('./openai-like/other')).stream,

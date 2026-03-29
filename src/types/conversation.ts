@@ -1,4 +1,4 @@
-import type { Message, MessageFeatureItem, FileAttachmentInfo, MessageContent, MessageContentType } from "./message";
+import type { Message, MessageFeatureItem, FileAttachmentInfoBase, MessageContent, MessageContentType } from "./message";
 
 // Conversation types
 export type ConversationTitleType = "USER" | "SYSTEM";
@@ -64,7 +64,7 @@ export type ChatEditBuffer = Record<string, {
     contentType: MessageContentType;
     content: MessageContent<MessageContentType>;
     features: MessageFeatureItem[];
-    files: FileAttachmentInfo[];
+    files: FileAttachmentInfoBase[];
     systemPrompt?: string;
     isEditing: boolean;
     editId?: number;
@@ -73,7 +73,7 @@ export type ChatEditBuffer = Record<string, {
     oldEditorState?: {
         content: string;
         features: MessageFeatureItem[];
-        files: FileAttachmentInfo[];
+        files: FileAttachmentInfoBase[];
     };
 }>
 

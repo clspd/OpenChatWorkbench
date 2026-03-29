@@ -114,18 +114,21 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import { message, Modal } from 'ant-design-vue'
-// utils, types, stores
+// config
+import { app_name_id } from '@/config'
+// modules
+import { COMMON_TEXT_FILE_EXTENSION } from '@/modules/ui-utils/commonExt'
 import { DeleteAttachment, PutAttachment } from '@/modules/chat/attachment'
+import { MarkAttachmentAsUse } from '@/modules/chat/attachment-cleanup'
+// utils, types, stores
 import { safeParseJSON, tiptap2markdown } from '@/utils/parseTiptap'
-import { EMPTY_MESSAGE, MessageFeatureType, type FileAttachmentInfo, type MessageFeatureItem } from '@/types/message'
+import { getSafeHTML } from '@/utils/htmlpurify'
+import { EMPTY_MESSAGE, MessageFeatureType, type FileAttachmentInfoBase, type MessageFeatureItem } from '@/types/message'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 // components
 import ModelChooser from './ModelChooser.vue'
 import FileChooser from './FileChooser.vue'
 import MessageFileReferences from './MessageFileReferences.vue'
-import { COMMON_TEXT_FILE_EXTENSION } from '@/modules/ui-utils/commonExt'
-import { app_name_id } from '@/config'
-import { getSafeHTML } from '@/utils/htmlpurify'
 
 const props = withDefaults(defineProps<{
     modelValue: string,
@@ -136,7 +139,7 @@ const props = withDefaults(defineProps<{
     isEditing?: boolean,
     editMessageId?: number,
     features: MessageFeatureItem[],
-    files: FileAttachmentInfo[],
+    files: FileAttachmentInfoBase[],
     instanceId?: string,
     isCreatingConversation?: boolean,
     globalDnD?: boolean,
@@ -322,7 +325,7 @@ const eatFile = async (files: File[]) => {
                     onCancel: () => r(false),
                 }))) continue;
             }
-            newFiles.push(await PutAttachment(file));
+            newFiles.push(await PutAttachment(file, true));
         }
         emit('update:files', [...props.files, ...newFiles]);
         nextTick(() => fileReferencesRef.value?.scrollToEnd())
@@ -336,7 +339,7 @@ const eatFile = async (files: File[]) => {
 
 const removeFile = async (id: string) => {
     try {
-        await DeleteAttachment(id);
+        await DeleteAttachment(id, true);
     } catch (error) {
         console.error('[InputMessage]', 'Unable to delete attachment: ' + error);
         message.error(t('common:ui.mainInput.errors.delAtta') + error);
@@ -352,7 +355,7 @@ const removeAllFiles = async () => {
     const ids = cloneDeep(props.files.map((item) => item.id));
     emit('update:files', []);
     for (const id of ids) try {
-        await DeleteAttachment(id);
+        await DeleteAttachment(id, true);
     } catch { errCnt++ }
     if (errCnt > 0) {
         message.error(t('common:ui.mainInput.errors.delAttaSome', { count: errCnt }));
@@ -361,6 +364,9 @@ const removeAllFiles = async () => {
         message.success(t('common:ui.mainInput.removedAllAtta'))
     }
 }
+
+watch(() => props.files, (newValue) => newValue.forEach(v => MarkAttachmentAsUse(v.hash, true)), { deep: true, immediate: true });
+onBeforeUnmount(() => props.files.forEach(v => MarkAttachmentAsUse(v.hash, false)));
 
 // --------
 

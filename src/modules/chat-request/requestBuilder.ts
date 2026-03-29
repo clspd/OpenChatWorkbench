@@ -1,10 +1,11 @@
 import { cloneDeep } from "lodash-es";
+import type { ChatCompletionMessageParam, ChatCompletionContentPart, ChatCompletionContentPartText } from "openai/resources";
 import { useAppStatePersistStore } from "@/stores/appStatePersist";
 import type { Conversation } from "@/types/conversation";
 import { MessageContentType, MessageFragmentType, MessageRole, type Message } from "@/types/message";
-import type { ChatCompletionMessageParam, ChatCompletionContentPart, ChatCompletionContentPartText } from "openai/resources";
 import { GetAttachmentById, MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE, MAX_POSSIBLE_TEXT_CONTENT_FILE_SIZE } from "../chat/attachment";
 import { ConvCircularReferenceError, CONVERSATION_MAX_MESSAGE_COUNT, ConvInvalidReferenceError, ConvMaxMessageCountError } from "../chat/conversation";
+import { compressImage } from "@/utils/compress";
 
 // Convert Open Chat Workbench data structure to OpenAI-API Compatible
 export const Ocw2OaiMap = {
@@ -110,13 +111,24 @@ export async function IntegrateMessageFilesToContext(msg: Message, config: Reque
     if (totalSize > MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE) throw new Error(`Total size of files (${totalSize} bytes) exceeds max allowed size (${MAX_POSSIBLE_MESSAGE_FILES_TOTAL_SIZE} bytes)`);
     // 2nd round: add data
     for (const f of msg.files) try {
-        const fileContent = await GetAttachmentById(f.id);
+        const fileContent = await GetAttachmentById(f.id, f.type);
         if (f.type.startsWith("image/")) {
-            if (config.stringOnly) throw new Error("The message includes image content but stringOnly is set");
+            if (config.stringOnly) throw new Error("The message     includes image content but stringOnly is set");
+            let url: string;
+            if (fileContent.size > 1048576) {
+                // compress the image
+                try {
+                    url = await blobToDataURL(await compressImage(fileContent, 'image/jpeg', 0.8, 1920));
+                } catch {
+                    url = await blobToDataURL(fileContent);
+                }
+            } else {
+                url = await blobToDataURL(fileContent);
+            }
             result.push({
                 type: "image_url",
                 image_url: {
-                    url: await blobToDataURL(fileContent),
+                    url
                 },
             });
         }

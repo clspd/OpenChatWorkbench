@@ -22,12 +22,15 @@ export enum MessageFeedback {
     Negative = '-',
 }
 
-export interface FileAttachmentInfo {
+export interface FileAttachmentInfoBase {
     id: string; // file UUID
     name: string;
     type: string;
     size: number;
     hash: string;
+}
+
+export interface FileAttachmentInfo extends FileAttachmentInfoBase {
     referenceCount: number;
 }
 
@@ -95,7 +98,7 @@ export interface Message {
 
     // content fields
     status: MessageStatus; // finished or work in progress
-    files: FileAttachmentInfo[]; // attached files
+    files: FileAttachmentInfoBase[]; // attached files
     fragments: MessageFragment[]; // message fragments (core content)
     has_pending_fragment: boolean; // whether there is a pending fragment (work in progress)
 }

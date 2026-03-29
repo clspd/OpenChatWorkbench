@@ -1,8 +1,14 @@
 import Panzoom from '@panzoom/panzoom'
 
+export interface PreviewController {
+    zoomWithWheel: (e: WheelEvent) => void
+    destroy: () => void
+    resetStyle: () => void
+}
+
 function createPreview(
     content: HTMLElement,
-    initPanzoom: (stage: HTMLElement) => ReturnType<typeof Panzoom>,
+    initPanzoom: (stage: HTMLElement) => PreviewController,
     dispose?: () => void
 ) {
     const body = document.body
@@ -12,10 +18,10 @@ function createPreview(
     const stage = document.createElement('div')
     const closeBtn = document.createElement('button')
 
-    let panzoom: ReturnType<typeof Panzoom> | null = null
+    let controller: PreviewController | null = null
     let closed = false;
 
-    (dialog as any).closedBy = 'closeRequest';
+    (dialog as any).closedBy = 'closeRequest'
 
     dialog.style.cssText = `
         width: 100%;
@@ -42,10 +48,9 @@ function createPreview(
         position: absolute;
         left: 0;
         top: 0;
-        will-change: transform;
         cursor: grab;
     `
-    content.autofocus = true;
+    content.autofocus = true
 
     closeBtn.type = 'button'
     closeBtn.textContent = '×'
@@ -74,7 +79,7 @@ function createPreview(
     body.style.overflow = 'hidden'
 
     const onWheel = (e: WheelEvent) => {
-        panzoom?.zoomWithWheel(e)
+        controller?.zoomWithWheel(e)
     }
 
     const cleanup = () => {
@@ -83,9 +88,9 @@ function createPreview(
 
         stage.removeEventListener('wheel', onWheel)
 
-        panzoom?.destroy()
-        panzoom?.resetStyle()
-        panzoom = null
+        controller?.destroy()
+        controller?.resetStyle()
+        controller = null
 
         dialog.remove()
         body.style.overflow = previousOverflow
@@ -99,7 +104,8 @@ function createPreview(
 
     dialog.addEventListener('close', cleanup)
 
-    panzoom = initPanzoom(stage)
+    dialog.style.visibility = 'hidden';
+    requestAnimationFrame(() => (controller = initPanzoom(stage), requestAnimationFrame(() => dialog.style.visibility = 'visible')));
     stage.addEventListener('wheel', onWheel, { passive: false })
 
     dialog.showModal()
@@ -119,22 +125,35 @@ export function previewImage(url: string, dispose?: () => void) {
         max-height: none;
     `
 
-    const init = (stage: HTMLElement) => {
-        const vw = window.innerWidth
-        const vh = window.innerHeight
-        const nw = img.naturalWidth || 1
-        const nh = img.naturalHeight || 1
+    const init = (stage: HTMLElement): PreviewController => {
+        const stageRect = stage.getBoundingClientRect()
+        const w = img.naturalWidth || 1
+        const h = img.naturalHeight || 1
 
-        const fitScale = Math.min((vw - 32) / nw, (vh - 32) / nh, 1)
+        const fitScale = Math.min(
+            (stageRect.width - 0) / w,
+            (stageRect.height - 0) / h,
+        );
 
-        return Panzoom(img, {
+        const x = (stageRect.width - w) / (2 * fitScale)
+        const y = (stageRect.height - h) / (2 * fitScale)
+
+        const panzoom = Panzoom(img, {
             startScale: fitScale,
-            minScale: 0.3,
+            minScale: 0.1,
             maxScale: 8,
             roundPixels: true,
             cursor: 'grab',
             touchAction: 'none',
+            startX: x,
+            startY: y,
         })
+
+        return {
+            zoomWithWheel: (e: WheelEvent) => panzoom.zoomWithWheel(e),
+            destroy: () => panzoom.destroy(),
+            resetStyle: () => panzoom.resetStyle(),
+        }
     }
 
     if (img.complete && img.naturalWidth > 0) {
@@ -153,48 +172,43 @@ export function previewImage(url: string, dispose?: () => void) {
     }
 }
 
-/*
-export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
-    // clone，避免污染原始 DOM
-    const cloned = svg.cloneNode(true) as SVGSVGElement
-
-    cloned.removeAttribute('width')
-    cloned.removeAttribute('height')
-
-    cloned.style.cssText = `
-        display: block;
-        max-width: none;
-        max-height: none;
-    `
-
-    const init = () => {
-        return Panzoom(cloned, {
-            startScale: 1,
-            minScale: 0.3,
-            maxScale: 16, // SVG 可以更大
-            roundPixels: false, // 保持矢量精度
-            cursor: 'grab',
-            touchAction: 'none',
-        })
-    }
-
-    return createPreview(cloned as unknown as HTMLElement, init, dispose)
-}*/
-
 export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
     const cloned = svg.cloneNode(true) as SVGSVGElement
 
     cloned.removeAttribute('width')
     cloned.removeAttribute('height')
 
-    const vb = cloned.viewBox.baseVal
-    let viewBox = {
-        x: vb.x || 0,
-        y: vb.y || 0,
-        w: vb.width || cloned.clientWidth || 100,
-        h: vb.height || cloned.clientHeight || 100,
+    type ViewBox = { x: number; y: number; w: number; h: number }
+    type Point = { x: number; y: number }
+
+    function getInitialViewBox(el: SVGSVGElement): ViewBox {
+        const vb = el.viewBox.baseVal
+
+        if (vb && vb.width > 0 && vb.height > 0) {
+            return {
+                x: vb.x,
+                y: vb.y,
+                w: vb.width,
+                h: vb.height,
+            }
+        }
+
+        try {
+            const bbox = el.getBBox()
+            if (bbox.width > 0 && bbox.height > 0) {
+                return {
+                    x: bbox.x,
+                    y: bbox.y,
+                    w: bbox.width,
+                    h: bbox.height,
+                }
+            }
+        } catch {}
+
+        return { x: 0, y: 0, w: 100, h: 100 }
     }
 
+    let viewBox = getInitialViewBox(cloned)
     cloned.setAttribute(
         'viewBox',
         `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`
@@ -209,23 +223,14 @@ export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
         user-select: none;
     `
 
-    let pointers = new Map<number, { x: number; y: number }>()
-    let startDist = 0
-    let startVB = { ...viewBox }
-    let startMid = { x: 0, y: 0 }
+    const pointers = new Map<number, Point>()
+    const lastPointers = new Map<number, Point>()
 
-    function dist(a: any, b: any) {
-        return Math.hypot(a.x - b.x, a.y - b.y)
-    }
-
-    function mid(a: any, b: any) {
-        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
-    }
-
-    function getScaleFactor() {
-        const rect = cloned.getBoundingClientRect()
-        return Math.max(viewBox.w / rect.width, viewBox.h / rect.height)
-    }
+    let gestureStart: {
+        viewBox: ViewBox
+        distance: number
+        midpoint: Point
+    } | null = null
 
     function updateViewBox() {
         cloned.setAttribute(
@@ -234,68 +239,129 @@ export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
         )
     }
 
+    function dist(a: Point, b: Point) {
+        return Math.hypot(a.x - b.x, a.y - b.y)
+    }
+
+    function mid(a: Point, b: Point) {
+        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+    }
+
+    function getRectSafe() {
+        const rect = cloned.getBoundingClientRect()
+        return {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width || 1,
+            height: rect.height || 1,
+        }
+    }
+
     function onPointerDown(e: PointerEvent) {
-        cloned.setPointerCapture(e.pointerId)
-        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+        if (!cloned.isConnected) return
+
+        e.preventDefault()
+
+        try {
+            cloned.setPointerCapture(e.pointerId)
+        } catch {}
+
+        const point = { x: e.clientX, y: e.clientY }
+        pointers.set(e.pointerId, point)
+        lastPointers.set(e.pointerId, point)
 
         if (pointers.size === 2) {
             const [p1, p2] = [...pointers.values()]
-            startDist = dist(p1, p2)
-            startVB = { ...viewBox }
-            startMid = mid(p1, p2)
+            if (!(p1 && p2)) return;
+            gestureStart = {
+                viewBox: { ...viewBox },
+                distance: dist(p1, p2),
+                midpoint: mid(p1, p2),
+            }
         }
     }
 
     function onPointerMove(e: PointerEvent) {
         if (!pointers.has(e.pointerId)) return
-        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+        e.preventDefault()
+
+        const current = { x: e.clientX, y: e.clientY }
+        const previous = lastPointers.get(e.pointerId) ?? current
+
+        pointers.set(e.pointerId, current)
+        lastPointers.set(e.pointerId, current)
+
+        const rect = getRectSafe()
 
         if (pointers.size === 1) {
-            const factor = getScaleFactor()
+            const dx = current.x - previous.x
+            const dy = current.y - previous.y
+            const factor = Math.max(
+                viewBox.w / rect.width,
+                viewBox.h / rect.height
+            )
 
-            viewBox.x -= e.movementX * factor
-            viewBox.y -= e.movementY * factor
-
+            viewBox.x -= dx * factor
+            viewBox.y -= dy * factor
             updateViewBox()
+            return
         }
 
-        if (pointers.size === 2) {
+        if (pointers.size === 2 && gestureStart) {
             const [p1, p2] = [...pointers.values()]
-            const newDist = dist(p1, p2)
+            if (!(p1 && p2)) return;
 
-            const scale = startDist / newDist
+            const currentMid = mid(p1, p2)
+            const currentDistance = dist(p1, p2)
 
-            const newW = startVB.w * scale
-            const newH = startVB.h * scale
+            if (currentDistance <= 0) return
 
-            const rect = cloned.getBoundingClientRect()
-            const cx = (startMid.x - rect.left) / rect.width
-            const cy = (startMid.y - rect.top) / rect.height
+            const scale = gestureStart.distance / currentDistance
+            const newW = gestureStart.viewBox.w * scale
+            const newH = gestureStart.viewBox.h * scale
+
+            const startCx =
+                (gestureStart.midpoint.x - rect.left) / rect.width
+            const startCy =
+                (gestureStart.midpoint.y - rect.top) / rect.height
+            const currentCx = (currentMid.x - rect.left) / rect.width
+            const currentCy = (currentMid.y - rect.top) / rect.height
+
+            const anchorX =
+                gestureStart.viewBox.x + gestureStart.viewBox.w * startCx
+            const anchorY =
+                gestureStart.viewBox.y + gestureStart.viewBox.h * startCy
 
             viewBox.w = newW
             viewBox.h = newH
-            viewBox.x = startVB.x + (startVB.w - newW) * cx
-            viewBox.y = startVB.y + (startVB.h - newH) * cy
+            viewBox.x = anchorX - newW * currentCx
+            viewBox.y = anchorY - newH * currentCy
 
             updateViewBox()
         }
     }
 
-    function onPointerUp(e: PointerEvent) {
+    function endPointer(e: PointerEvent) {
         pointers.delete(e.pointerId)
+        lastPointers.delete(e.pointerId)
+
+        if (pointers.size < 2) {
+            gestureStart = null
+        }
     }
 
     function onWheel(e: WheelEvent) {
         e.preventDefault()
 
-        const scale = e.deltaY > 0 ? 1.1 : 0.9
+        const zoomFactor = Math.exp(e.deltaY * 0.0015)
 
-        const rect = cloned.getBoundingClientRect()
+        const rect = getRectSafe()
         const cx = (e.clientX - rect.left) / rect.width
         const cy = (e.clientY - rect.top) / rect.height
 
-        const newW = viewBox.w * scale
-        const newH = viewBox.h * scale
+        const newW = viewBox.w * zoomFactor
+        const newH = viewBox.h * zoomFactor
 
         viewBox.x += (viewBox.w - newW) * cx
         viewBox.y += (viewBox.h - newH) * cy
@@ -305,24 +371,29 @@ export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
         updateViewBox()
     }
 
-    const init = () => {
+    const init = (): PreviewController => {
         cloned.addEventListener('pointerdown', onPointerDown)
         cloned.addEventListener('pointermove', onPointerMove)
-        cloned.addEventListener('pointerup', onPointerUp)
-        cloned.addEventListener('pointercancel', onPointerUp)
+        cloned.addEventListener('pointerup', endPointer)
+        cloned.addEventListener('pointercancel', endPointer)
+        cloned.addEventListener('lostpointercapture', endPointer)
         cloned.addEventListener('wheel', onWheel, { passive: false })
 
         return {
+            zoomWithWheel: onWheel,
             destroy() {
                 cloned.removeEventListener('pointerdown', onPointerDown)
                 cloned.removeEventListener('pointermove', onPointerMove)
-                cloned.removeEventListener('pointerup', onPointerUp)
-                cloned.removeEventListener('pointercancel', onPointerUp)
+                cloned.removeEventListener('pointerup', endPointer)
+                cloned.removeEventListener('pointercancel', endPointer)
+                cloned.removeEventListener('lostpointercapture', endPointer)
                 cloned.removeEventListener('wheel', onWheel)
             },
             resetStyle() {},
-        } as any
+        }
     }
 
     return createPreview(cloned as unknown as HTMLElement, init, dispose)
 }
+
+

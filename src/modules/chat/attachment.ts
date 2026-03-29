@@ -1,7 +1,7 @@
 // attachment.ts: message attachment create & management
 import { fs } from "@/userdata";
 import { chatAttachmentIndexCurrentFile, getAttachmentIndexPath, getChatAttachmentPath } from "./path";
-import type { FileAttachmentInfo } from "@/types/message";
+import type { FileAttachmentInfo, FileAttachmentInfoBase } from "@/types/message";
 import { useConversationStore } from "@/stores/conversationStore";
 import { bsha256 } from "@/utils/sha256";
 
@@ -42,54 +42,77 @@ export async function SaveAttachmentIndex() {
     await fs.writeFile(getAttachmentIndexPath(indexId), JSON.stringify(Object.fromEntries(useConversationStore().attachmentsIndex.entries())));
 }
 
-export async function GetAttachmentById(id: string) {
-    return new Blob([await fs.readFile(getChatAttachmentPath(id)) as Uint8Array<ArrayBuffer>]);
+export function StripAttachmentInternalInfo({ id, name, type, size, hash }: FileAttachmentInfo): FileAttachmentInfoBase {
+    return {
+        id, name, type, size, hash,
+    }
+}
+
+export async function GetAttachmentById(id: string, type?: string) {
+    return new Blob([await fs.readFile(getChatAttachmentPath(id)) as Uint8Array<ArrayBuffer>], { type });
+}
+
+export async function GetAttachmentIdByHash(hash: string): Promise<string | null> {
+    const idx = useConversationStore().attachmentsIndex.get(hash);
+    return idx ? idx.id : null;
 }
 
 export async function GetAttachmentByHash(hash: string) {
-    const idx = useConversationStore().attachmentsIndex.get(hash);
-    if (!idx) return null;
-    return await GetAttachmentById(idx.id);
+    const id = await GetAttachmentIdByHash(hash);
+    if (!id) throw new TypeError('The attachment specified couldn\'t be found.');
+    return await GetAttachmentById(id);
 }
 
-export async function PutAttachment(data: Blob | File): Promise<FileAttachmentInfo> {
+export async function PutAttachment(data: Blob | File, weak: boolean = false): Promise<FileAttachmentInfoBase> {
     // compute hash first
     const hash = await bsha256(data);
     // check if hash already exists
     const idx = useConversationStore().attachmentsIndex.get(hash);
     if (idx) {
         // if found, increment ref count
-        idx.referenceCount++;
-        await useConversationStore().setAttachmentIndex(idx.hash, idx);
-        return idx;
+        if (!weak) {
+            ++idx.referenceCount;
+            await useConversationStore().setAttachmentIndex(idx.hash, idx);
+        }
+        return StripAttachmentInternalInfo(idx);
     }
     // if not, create a new entry
     const id = crypto.randomUUID();
     await fs.writeFile(getChatAttachmentPath(id), new Uint8Array(await data.arrayBuffer()));
-    const info: FileAttachmentInfo = {
+    const info: FileAttachmentInfoBase = {
         id,
         name: data instanceof File ? data.name : id,
         type: data.type || 'application/octet-stream',
         size: data.size,
         hash,
-        referenceCount: 1,
+    };
+    const withRef = {
+        ...info,
+        referenceCount: weak ? 0 : 1,
     };
     // add to index
-    await useConversationStore().setAttachmentIndex(hash, info);
+    await useConversationStore().setAttachmentIndex(hash, withRef);
     return info;
 }
 
-export async function DeleteAttachment(id: string) {
+export async function CommitAttachment(id: string) {
+    const idx = Array.from(useConversationStore().attachmentsIndex.values()).find((item) => item.id === id);
+    if (!idx) throw new TypeError('The attachment specified does not exist in the database.');
+    ++idx.referenceCount;
+    await useConversationStore().setAttachmentIndex(idx.hash, idx);
+}
+
+export async function DeleteAttachment(id: string, weak: boolean = false) {
     // check the ref count
     const idx = Array.from(useConversationStore().attachmentsIndex.values()).find((item) => item.id === id);
     if (idx) {
-        if (idx.referenceCount > 1) {
-            idx.referenceCount--;
-            await useConversationStore().setAttachmentIndex(idx.hash, idx);
+        if (!weak) --idx.referenceCount;
+        if (idx.referenceCount > 0) {
+            if (!weak) await useConversationStore().setAttachmentIndex(idx.hash, idx);
             return;
         }
-        // if ref count is 1 (last reference), delete the file
-        idx.referenceCount = 0;
+        if (weak) return; // temporarily keep the file
+        // if ref count is 0 (last reference), delete the file
         try {
             await fs.unlink(getChatAttachmentPath(id));
         }
@@ -102,7 +125,7 @@ export async function DeleteAttachment(id: string) {
             }
         }
         if (!useConversationStore().attachmentsIndex.delete(idx.hash)) {
-            // console.error("[DeleteAttachment]", `Failed to delete attachment index entry for ${id}`);
+            console.error("[DeleteAttachment]", `Failed to delete attachment index entry for ${id}`);
         }
         await SaveAttachmentIndex();
     }

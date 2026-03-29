@@ -1,4 +1,4 @@
-import { createApp, h, ref } from 'vue'
+import { createApp, h } from 'vue'
 
 import './cookiesTest'
 
@@ -61,7 +61,7 @@ catch (e) {
             onCancel: () => (location.href = '/recovery.html', new Promise(() => {})),
         });
     } else {
-        window.sessionStorage.setItem('app_init_failure_count', String(failureCount + 1));
+        window.sessionStorage.setItem('app_init_failure_count', isNaN(failureCount) ? '1' : String(failureCount + 1));
         Modal.error(configBase);
     }
     throw e;

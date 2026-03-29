@@ -164,6 +164,14 @@ export async function _base_stream(
                     if (options.onChunk) {
                         options.onChunk(req, json, conv, reqMsg, respMsg, providerInfo, modelInfo);
                     } else {
+                        if (!json.choices && json.error) {
+                            throw new APIError("Remote API returned an error", {
+                                cause: new TypeError('Remote API returned an error in streaming response', {
+                                    cause: JSON.stringify(json.error),
+                                })
+                            });
+                        }
+
                         if (json.object !== "chat.completion.chunk")
                             //throw new TypeError("Unexpected object type in streaming response: " + json.object);
                             // Some provider just give non-standard response

@@ -11,7 +11,9 @@ import { db } from "./userdata";
 import { createChatBaseStructure } from "./modules/chat/path";
 import { InitConvIndex } from "./modules/chat/convIndex";
 import { InitAttachmentIndex } from "./modules/chat/attachment";
+import { CleanupOrphanedAttachments } from "./modules/chat/attachment-cleanup";
 import { setupHotKey } from "./modules/hotkey/hotkey_manager";
+import currentStatistics from "./modules/statistics/current-statistics";
 // stores
 import { useAppStateStore } from "./stores/appState";
 import { useAppStatePersistStore } from "./stores/appStatePersist";
@@ -30,7 +32,6 @@ import { initVpWatch } from "./utils/metaViewport";
 import i18next from "i18next";
 import { GetTitleI18nKeyByText } from "./i18n/titles";
 import { SetupI18n } from "./i18n";
-import currentStatistics from "./modules/statistics/current-statistics";
 
 
 // init: the main init function, which will be called before the app is mounted.
@@ -69,6 +70,26 @@ export default async function init(app: ReturnType<typeof import('vue').createAp
     initAppStateAutoSave();
 
     app.config.globalProperties.t = await SetupI18n();
+    app.config.globalProperties.openInternalLink = function open(e: Event | string | URL, title?: string) {
+        if (e && e instanceof Event) {
+            const target = e.target as HTMLElement | undefined;
+            if (!(target && target.tagName === 'A')) return;
+            e.preventDefault();
+            const link = new URL((target as HTMLAnchorElement).href, location.href);
+            const title = target.title || target.dataset.title || undefined;
+            open(link, title);
+            return;
+        }
+        const safeUrl = new URL(e, location.href);
+        router.push({
+            path: '/webview',
+            query: {
+                src: safeUrl.href,
+                title,
+                ignoreIsolation: (safeUrl.origin === location.origin) ? 'true' : undefined,
+            }
+        });
+    }
 
     const { load: loadAppStateSession, initAutoSave: initAppStateSessionAutoSave } = useAppStateSessionStore()
     await loadAppStateSession();
@@ -146,6 +167,9 @@ export async function runonce() {
     
     // cleanup temp data
     useAppStateSessionStore().cleanup();
+
+    // cleanup unused attachments
+    await CleanupOrphanedAttachments();
 
 }
 

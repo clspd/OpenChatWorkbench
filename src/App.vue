@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
+import { ConfigProvider as AConfigProvider } from 'ant-design-vue';
 import MainView from './MainView.vue'
 import CookieConsent from './components/CookieConsent.vue'
 import { useAppStateStore } from './stores/appState';
 import { useAppStatePersistStore } from './stores/appStatePersist';
+import { antdvCurrentLanguage } from './i18n';
 
 const ConfigGuide = defineAsyncComponent(() => import('@/settings/ConfigGuide.vue'))
 
@@ -13,7 +15,11 @@ const appStatePersist = useAppStatePersistStore()
 
 <template>
     <div class="app-main-app">
-        <a-config-provider :theme="appStatePersist.theme" :autoInsertSpaceInButton="false">
+        <a-config-provider
+            :theme="appStatePersist.theme"
+            :locale="antdvCurrentLanguage"
+            :autoInsertSpaceInButton="false"
+        >
             <main-view></main-view>
             <CookieConsent />
             <ConfigGuide v-if="appState.showConfigGuide" />

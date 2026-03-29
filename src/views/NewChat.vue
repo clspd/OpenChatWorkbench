@@ -44,7 +44,7 @@ import { useConversationStore } from '@/stores/conversationStore'
 import { useAppStatePersistStore } from '@/stores/appStatePersist'
 import { useAppStateSessionStore } from '@/stores/appStateSession'
 // types
-import { EMPTY_MESSAGE_JSON, type FileAttachmentInfo, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
+import { EMPTY_MESSAGE_JSON, type FileAttachmentInfoBase, MessageRole, type MessageFeatureItem, MessageContentType } from '@/types/message'
 // modules
 import { CreateConversation, GetConvNextMessageId, InsertMessageToConversation } from '@/modules/chat/conversation'
 import { CreateUserMessage } from '@/modules/chat/message'
@@ -59,7 +59,7 @@ import { DialogView } from 'vue-dialog-view'
 
 const userMessage = ref('')
 const userMessageFeatures = ref<MessageFeatureItem[]>([])
-const userMessageFiles = ref<FileAttachmentInfo[]>([])
+const userMessageFiles = ref<FileAttachmentInfoBase[]>([])
 const modelId = ref('')
 const providerId = ref('')
 const router = useRouter()
@@ -79,8 +79,9 @@ onMounted(() => {
     const buffer = appStateSession.chatEditBuffer["_"]
     if (buffer) {
         userMessage.value = buffer.content
-        userMessageFeatures.value = buffer?.features ?? appStatePersist.userSendMsgDefaultFeatures
-        systemPrompt.value = buffer?.systemPrompt ?? appStatePersist.defaultSystemPrompt
+        userMessageFeatures.value = buffer.features ?? appStatePersist.userSendMsgDefaultFeatures
+        userMessageFiles.value = buffer.files ?? []
+        systemPrompt.value = buffer.systemPrompt ?? appStatePersist.defaultSystemPrompt
     } else {
         userMessage.value = EMPTY_MESSAGE_JSON
         userMessageFeatures.value = appStatePersist.userSendMsgDefaultFeatures
@@ -117,6 +118,18 @@ watch(() => userMessageFeatures.value, (newVal) => {
         }
     }
 }, { deep: true })
+
+watch(() => userMessageFiles.value, (newVal) => { 
+    if (newVal) {
+        appStateSession.chatEditBuffer["_"] = {
+            content: userMessage.value,
+            contentType: MessageContentType.Text,
+            features: userMessageFeatures.value,
+            files: newVal,
+            isEditing: false,
+        }
+    };  
+})
 
 watch(() => systemPrompt.value, (newVal) => {
     if (newVal) {

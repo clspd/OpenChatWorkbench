@@ -14,7 +14,7 @@
         </a-card>
 
         <a-card :title="t('about:license.title')" class="my-card">
-            <p><a href="/resource/license.html" target=_blank>GPL-3.0</a> {{ t('about:license.text') }}</p>
+            <p><a href="/resource/license.html" :title="t('about:license.title')" target="_blank" @click="openInternalLink">GPL-3.0</a> {{ t('about:license.text') }}</p>
         </a-card>
 
         <a-card :title="t('about:status.title')" class="my-card">

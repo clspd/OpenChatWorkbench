@@ -1,5 +1,5 @@
 // message.ts: functions about message management
-import { MessageContentType, MessageFragmentType, MessageStatus, type FileAttachmentInfo, type Message, type MessageContent, type MessageFeatureItem, type MessageRole } from "@/types/message";
+import { MessageContentType, MessageFragmentType, MessageStatus, type FileAttachmentInfoBase, type Message, type MessageContent, type MessageRole } from "@/types/message";
 import type { ChatCompletionChunk } from "openai/resources";
 import { GetResponseChunkFragmentType } from "../chat-remotes/provider";
 import MarkdownIt from "markdown-it";
@@ -14,7 +14,7 @@ export const CreateUserMessage = (
     role: MessageRole,
     contentType: MessageContentType,
     content: MessageContent<typeof contentType>,
-    files: FileAttachmentInfo[] = [],
+    files: FileAttachmentInfoBase[] = [],
 ): Message => ({
     id,
     parent_id,

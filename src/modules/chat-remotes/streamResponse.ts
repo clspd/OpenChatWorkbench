@@ -1,6 +1,6 @@
 // modules/chat-remotes/index.ts: remote chat service
 import type { Conversation } from "@/types/conversation";
-import { MessageFeedback, MessageRole, MessageStatus, type FileAttachmentInfo, type Message, type MessageFeatureItem } from "@/types/message";
+import { MessageFeedback, MessageRole, MessageStatus, type FileAttachmentInfoBase, type Message, type MessageFeatureItem } from "@/types/message";
 import { MessageStreamer } from "./streamer";
 import type { ModelConfig, ProviderConfig } from "@/types/config";
 import { useConversationStore } from "@/stores/conversationStore";
@@ -14,7 +14,7 @@ export async function streamResponse(
     provider: ProviderConfig,
     model: ModelConfig,
     features: MessageFeatureItem[],
-    files: FileAttachmentInfo[],
+    files: FileAttachmentInfoBase[],
     onCreated?: (msg: Message) => void | Promise<void>,
 ): Promise<number> {
     // check if there is an ongoing request

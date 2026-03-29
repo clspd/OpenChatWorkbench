@@ -3,12 +3,12 @@ import { MessageFeatureType, SchemaVersion, type Message } from "@/types/message
 import type { Conversation } from "@/types/conversation";
 import { fs } from "@/userdata";
 import { getConvPath, getConvPrefPath } from "./path";
-import { dumpConversationData, dumpConversationPref } from "./dumper";
+import { dumpConversationData } from "./dumper";
 import { AddConversationToIndex, GetCurrentConvIndexId, RemoveConversationFromAnyIndex, UpdateConversationIndexAuto } from "./convIndex";
 import { useConversationStore } from "@/stores/conversationStore";
 import { InitConversationPreference, LoadConversationPreference, UpdateConversationPreferenceInternal } from "./convPref";
 import i18next from "i18next";
-import { DeleteAttachment } from "./attachment";
+import { CommitAttachment, DeleteAttachment } from "./attachment";
 
 export const CONVERSATION_MAX_MESSAGE_COUNT = 10000;
 export const CONVERSATION_MAX_DEPTH = CONVERSATION_MAX_MESSAGE_COUNT;
@@ -167,6 +167,10 @@ export async function InsertMessageToConversation(id: string, message: Message) 
     let conv = await LoadConversation(id);
     // append message
     conv.messages.push(message);
+    // commit attachments
+    for (const i of message.files) {
+        await CommitAttachment(i.id);
+    }
     // update conversation
     await UpdateConversationInfo(id);
     await useConversationStore().updateConvInStore(id, conv);

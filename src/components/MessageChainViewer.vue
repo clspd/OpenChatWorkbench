@@ -5,6 +5,7 @@
         </div>
         <div v-else class="content-container" ref="contentContainerRef">
             <div :style="{ height: totalSize + 'px' }"></div>
+            <!-- <component is="style">:root>body>vue-app>.app-main-app>.app-main-view_main-layout>.app-main-view_main-content.app-scroll-container>.chat-view{height:{{ totalSize }}px}</component> -->
             <div v-for="vi in virtualItems" :key="vi.index"
                 class="vItem" :data-index="vi.index"
                 :style="{ top: vi.start + 'px' }"

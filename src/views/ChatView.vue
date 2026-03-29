@@ -69,7 +69,7 @@ import InputMessage from '@/components/InputMessage.vue'
 import MessageChainViewer from '@/components/MessageChainViewer.vue';
 // types
 import type { ConversationUserPref, Conversation } from '@/types/conversation';
-import { EMPTY_MESSAGE_JSON, MessageContentType, MessageRole, type FileAttachmentInfo, type Message, type MessageFeatureItem } from '@/types/message';
+import { EMPTY_MESSAGE_JSON, MessageContentType, MessageRole, type FileAttachmentInfoBase, type Message, type MessageFeatureItem } from '@/types/message';
 // stores
 import { useAppStateStore } from '@/stores/appState';
 import { useConfigStore } from '@/stores/configStore';
@@ -151,7 +151,7 @@ async function InitChatMsgUI() {
     if (buffer) {
         messageEditorState.content = buffer.content
         messageEditorState.features = buffer?.features ?? useAppStatePersistStore().userSendMsgDefaultFeatures
-        messageEditorState.files = buffer.files
+        messageEditorState.files = buffer.files ?? []
         if (buffer?.isEditing) {
             messageEditorState.editMessage = {
                 isEditing: buffer.isEditing,
@@ -197,7 +197,7 @@ interface MessageEditorState {
     modelId: string;
     providerId: string;
     features: MessageFeatureItem[];
-    files: FileAttachmentInfo[];
+    files: FileAttachmentInfoBase[];
     isSending: boolean;
     isGenerating: boolean;
     editMessage?: {
@@ -358,10 +358,13 @@ const handleSendMessage = async function () {
         requestScrollToBottom();
 
         // clear send buffer
-        messageEditorState.content = EMPTY_MESSAGE_JSON;
-        messageEditorState.features = useAppStatePersistStore().userSendMsgDefaultFeatures;
-        messageEditorState.files = [];
-        delete useAppStateSessionStore().chatEditBuffer[chatId.value];
+        if (messageEditorState.editMessage?.oldEditorState) {
+            Object.assign(messageEditorState, messageEditorState.editMessage.oldEditorState);
+        } else {
+            messageEditorState.content = EMPTY_MESSAGE_JSON;
+            messageEditorState.features = useAppStatePersistStore().userSendMsgDefaultFeatures;
+            messageEditorState.files = [];
+        }
     }
     catch (e) {
         console.error('[ChatView]', "Error sending message:", e);
@@ -377,6 +380,7 @@ const handleSendMessage = async function () {
             messageEditorState.editMessage.isEditing = false;
             messageEditorState.editMessage.parentId = null;
             messageEditorState.editMessage.newChoices = [];
+            messageEditorState.editMessage.oldEditorState = null;
         }
     }
 }

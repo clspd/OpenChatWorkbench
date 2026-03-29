@@ -1,4 +1,4 @@
-// adapter for other OpenAI-compatible providers
+// adapter for Alibaba Cloud (Aliyun)
 import type { Conversation } from "@/types/conversation";
 import { MessageFeatureType, type Message } from "@/types/message";
 import { _base_stream } from "../common";
@@ -17,7 +17,9 @@ export async function stream(conv: Conversation, reqMsg: Message, respMsg: Messa
         onBeforeRequest: async (req, conv, reqMsg, respMsg, prov, mode) => {
             if (respMsg.features) for (const i of respMsg.features) switch (i.type) {
                 case MessageFeatureType.Thinking:
-                    if (i.value === true) (req as any).enable_thinking = true;
+                    if (i.value === true) {
+                        (req as any).enable_thinking = true;
+                    }
                     break;
                 default: ; // ignore unknown feature type
             }

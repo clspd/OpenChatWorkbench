@@ -1,5 +1,5 @@
 <template>
-    <DialogView class="webview-page" v-model="open" :closable="false">
+    <DialogView class="webview-page" v-model="open" :closable="false" :show-title-bar="isExternal || !navhide" :data-navhide="!(isExternal || !navhide)">
         <template #title>
             <div class="titlebar">
                 <a-button class="btn" type="text" @click="goBack"><ArrowLeftOutlined /></a-button>
@@ -47,10 +47,13 @@ const appState = useAppStateStore();
 const props = withDefaults(defineProps<{
     url?: string;
     title?: string;
-    navhide: boolean;
+    navhide?: boolean;
+    ignoreIsolation?: boolean;
 }>(), {
     url: '',
     title: '',
+    navhide: false,
+    ignoreIsolation: false,
 });
 
 const fromPage = previousPage;
@@ -63,6 +66,9 @@ const contentUrl = computed(() => {
     let realOrigin: string, hn: string;
     try {
         const u = (new URL(props.url, location.href));
+        if (props.ignoreIsolation) {
+            if (checkUrlIsExternal(u) === false) return { origin: u.origin, hostname: u.hostname, href: u.href };
+        }
         realOrigin = u.origin; hn = u.hostname;
     } catch { realOrigin = 'null'; hn = ''; }
     return { origin: realOrigin, hostname: hn, href: url.href };
@@ -80,7 +86,7 @@ onMounted(() => {
 
 watch(() => contentUrl.value, () => updateTitle());
 
-const isolated = !!window.crossOriginIsolated;
+const isolated = computed(() => !!window.crossOriginIsolated && (!props.ignoreIsolation || !isExternal));
 
 const router = useRouter();
 
@@ -161,5 +167,8 @@ const openModeSwitcher = ref(false);
     flex-wrap: wrap;
     justify-content: center;
     margin-top: 1em;
+}
+.webview-page[data-navhide="true"] {
+    --dialog-padding: 0;
 }
 </style>
