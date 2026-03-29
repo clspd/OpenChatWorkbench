@@ -334,4 +334,7 @@ const handlePreviewSvg = async (e: CustomEvent) => {
 .renderer.markdown-renderer.renderer-main {
     white-space: normal;
 }
+.renderer.markdown-renderer.renderer-main :deep(ocw-code-block) {
+    margin-top: 0.5em;
+}
 </style>
