@@ -1,4 +1,6 @@
-import Panzoom from '@panzoom/panzoom'
+type Point = { x: number; y: number }
+type TransformState = { scale: number; x: number; y: number }
+type ViewBox = { x: number; y: number; w: number; h: number }
 
 export interface PreviewController {
     zoomWithWheel: (e: WheelEvent) => void
@@ -6,9 +8,43 @@ export interface PreviewController {
     resetStyle: () => void
 }
 
+interface PreviewAdapter extends PreviewController {
+    fitToStage: (stage: HTMLElement) => void
+    panBy: (dx: number, dy: number) => void
+    zoomAt: (clientX: number, clientY: number, factor: number) => void
+    beginPinch: (points: [Point, Point]) => void
+    updatePinch: (points: [Point, Point]) => void
+}
+
+function clamp(n: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, n))
+}
+
+function isFiniteNumber(n: number) {
+    return Number.isFinite(n)
+}
+
+function dist(a: Point, b: Point) {
+    return Math.hypot(a.x - b.x, a.y - b.y)
+}
+
+function mid(a: Point, b: Point) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+}
+
+function safeRect(el: Element) {
+    const rect = el.getBoundingClientRect()
+    return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width || 1,
+        height: rect.height || 1,
+    }
+}
+
 function createPreview(
     content: HTMLElement,
-    initPanzoom: (stage: HTMLElement) => PreviewController,
+    initAdapter: (stage: HTMLElement) => PreviewAdapter,
     dispose?: () => void
 ) {
     const body = document.body
@@ -18,10 +54,11 @@ function createPreview(
     const stage = document.createElement('div')
     const closeBtn = document.createElement('button')
 
-    let controller: PreviewController | null = null
-    let closed = false;
+    let adapter: PreviewAdapter | null = null
+    let gestureBinder: { destroy: () => void } | null = null
+    let closed = false
 
-    (dialog as any).closedBy = 'closeRequest'
+    ;(dialog as any).closedBy = 'closeRequest'
 
     dialog.style.cssText = `
         width: 100%;
@@ -50,7 +87,7 @@ function createPreview(
         top: 0;
         cursor: grab;
     `
-    content.autofocus = true
+    ;(content as any).autofocus = true
 
     closeBtn.type = 'button'
     closeBtn.textContent = '×'
@@ -75,11 +112,10 @@ function createPreview(
     stage.appendChild(closeBtn)
     dialog.appendChild(stage)
     body.appendChild(dialog)
-
     body.style.overflow = 'hidden'
 
     const onWheel = (e: WheelEvent) => {
-        controller?.zoomWithWheel(e)
+        adapter?.zoomWithWheel(e)
     }
 
     const cleanup = () => {
@@ -88,9 +124,12 @@ function createPreview(
 
         stage.removeEventListener('wheel', onWheel)
 
-        controller?.destroy()
-        controller?.resetStyle()
-        controller = null
+        gestureBinder?.destroy()
+        gestureBinder = null
+
+        adapter?.destroy()
+        adapter?.resetStyle()
+        adapter = null
 
         dialog.remove()
         body.style.overflow = previousOverflow
@@ -104,13 +143,625 @@ function createPreview(
 
     dialog.addEventListener('close', cleanup)
 
-    dialog.style.visibility = 'hidden';
-    requestAnimationFrame(() => (controller = initPanzoom(stage), requestAnimationFrame(() => dialog.style.visibility = 'visible')));
-    stage.addEventListener('wheel', onWheel, { passive: false })
-
+    dialog.style.visibility = 'hidden'
     dialog.showModal()
 
+    requestAnimationFrame(() => {
+        adapter = initAdapter(stage)
+
+        gestureBinder = bindGestures(content, adapter)
+
+        adapter.fitToStage(stage)
+
+        requestAnimationFrame(() => {
+            adapter?.fitToStage(stage)
+            dialog.style.visibility = 'visible'
+        })
+    })
+
+    stage.addEventListener('wheel', onWheel, { passive: false })
+
     return () => dialog.close()
+}
+
+function createTransformAdapter(
+    content: HTMLElement,
+    stage: HTMLElement,
+    baseWidth: number,
+    baseHeight: number,
+    options?: {
+        minScale?: number
+        maxScale?: number
+        fitPadding?: number
+        fitMaxScale?: number
+    }
+): PreviewAdapter {
+    const minScale = options?.minScale ?? 0.1
+    const maxScale = options?.maxScale ?? 8
+    const fitPadding = options?.fitPadding ?? 32
+    const fitMaxScale = options?.fitMaxScale ?? 1
+
+    const prev = {
+        transform: content.style.transform,
+        transformOrigin: content.style.transformOrigin,
+        width: content.style.width,
+        height: content.style.height,
+        cursor: content.style.cursor,
+        touchAction: content.style.touchAction,
+        userSelect: content.style.userSelect,
+        display: content.style.display,
+        maxWidth: content.style.maxWidth,
+        maxHeight: content.style.maxHeight,
+        position: content.style.position,
+        left: content.style.left,
+        top: content.style.top,
+    }
+
+    content.style.transformOrigin = '0 0'
+    content.style.touchAction = 'none'
+    content.style.userSelect = 'none'
+    content.style.cursor = 'grab'
+    content.style.display = 'block'
+    content.style.maxWidth = 'none'
+    content.style.maxHeight = 'none'
+    content.style.position = 'absolute'
+    content.style.left = '0'
+    content.style.top = '0'
+    content.style.width = `${baseWidth}px`
+    content.style.height = `${baseHeight}px`
+
+    const state: TransformState = {
+        scale: 1,
+        x: 0,
+        y: 0,
+    }
+
+    let pinchStart:
+        | {
+            state: TransformState
+            distance: number
+            anchor: Point
+        }
+        | null = null
+
+    function apply() {
+        content.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) scale(${state.scale})`
+    }
+
+    function fitToStage() {
+        const rect = safeRect(stage)
+        const availW = Math.max(rect.width - fitPadding, 1)
+        const availH = Math.max(rect.height - fitPadding, 1)
+
+        const raw = Math.min(availW / baseWidth, availH / baseHeight, fitMaxScale)
+        const fitScale = clamp(isFiniteNumber(raw) && raw > 0 ? raw : 1, minScale, maxScale)
+
+        state.scale = fitScale
+        state.x = (rect.width - baseWidth * fitScale) / 2
+        state.y = (rect.height - baseHeight * fitScale) / 2
+        apply()
+    }
+
+    function panBy(dx: number, dy: number) {
+        if (!isFiniteNumber(dx) || !isFiniteNumber(dy)) return
+        state.x += dx
+        state.y += dy
+        apply()
+    }
+
+    function zoomAt(clientX: number, clientY: number, factor: number) {
+        if (!isFiniteNumber(factor) || factor <= 0) return
+
+        const nextScale = clamp(state.scale * factor, minScale, maxScale)
+        if (nextScale === state.scale) return
+
+        const contentX = (clientX - state.x) / state.scale
+        const contentY = (clientY - state.y) / state.scale
+
+        state.scale = nextScale
+        state.x = clientX - contentX * nextScale
+        state.y = clientY - contentY * nextScale
+        apply()
+    }
+
+    function beginPinch(points: [Point, Point]) {
+        const [p1, p2] = points
+        const midpoint = mid(p1, p2)
+
+        pinchStart = {
+            state: { ...state },
+            distance: dist(p1, p2),
+            anchor: {
+                x: (midpoint.x - state.x) / state.scale,
+                y: (midpoint.y - state.y) / state.scale,
+            },
+        }
+    }
+
+    function updatePinch(points: [Point, Point]) {
+        if (!pinchStart) return
+
+        const [p1, p2] = points
+        const currentDistance = dist(p1, p2)
+        if (!isFiniteNumber(currentDistance) || currentDistance <= 0) return
+
+        const currentMid = mid(p1, p2)
+        const factor = currentDistance / pinchStart.distance
+        const nextScale = clamp(pinchStart.state.scale * factor, minScale, maxScale)
+
+        state.scale = nextScale
+        state.x = currentMid.x - pinchStart.anchor.x * nextScale
+        state.y = currentMid.y - pinchStart.anchor.y * nextScale
+        apply()
+    }
+
+    function zoomWithWheel(e: WheelEvent) {
+        e.preventDefault()
+        zoomAt(e.clientX, e.clientY, Math.exp(e.deltaY * 0.0015))
+    }
+
+    function destroy() {
+        pinchStart = null
+    }
+
+    function resetStyle() {
+        content.style.transform = prev.transform
+        content.style.transformOrigin = prev.transformOrigin
+        content.style.width = prev.width
+        content.style.height = prev.height
+        content.style.cursor = prev.cursor
+        content.style.touchAction = prev.touchAction
+        content.style.userSelect = prev.userSelect
+        content.style.display = prev.display
+        content.style.maxWidth = prev.maxWidth
+        content.style.maxHeight = prev.maxHeight
+        content.style.position = prev.position
+        content.style.left = prev.left
+        content.style.top = prev.top
+    }
+
+    return {
+        fitToStage,
+        panBy,
+        zoomAt,
+        beginPinch,
+        updatePinch,
+        zoomWithWheel,
+        destroy,
+        resetStyle,
+    }
+}
+
+function parseLength(value: string | null): number | null {
+    if (!value) return null
+    const n = Number.parseFloat(value)
+    return Number.isFinite(n) && n > 0 ? n : null
+}
+
+function measureSvgBaseViewBox(svg: SVGSVGElement): ViewBox {
+    const vb = svg.viewBox.baseVal
+    if (vb && vb.width > 0 && vb.height > 0) {
+        return { x: vb.x, y: vb.y, w: vb.width, h: vb.height }
+    }
+
+    const attrW = parseLength(svg.getAttribute('width'))
+    const attrH = parseLength(svg.getAttribute('height'))
+    if (attrW && attrH) {
+        return { x: 0, y: 0, w: attrW, h: attrH }
+    }
+
+    try {
+        const bbox = svg.getBBox()
+        if (bbox.width > 0 && bbox.height > 0) {
+            return { x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height }
+        }
+    } catch {
+        // ignore
+    }
+
+    return { x: 0, y: 0, w: 100, h: 100 }
+}
+
+function createSvgViewBoxAdapter(
+    svg: SVGSVGElement
+): PreviewAdapter {
+    const prev = {
+        transform: svg.style.transform,
+        transformOrigin: svg.style.transformOrigin,
+        width: svg.style.width,
+        height: svg.style.height,
+        cursor: svg.style.cursor,
+        touchAction: svg.style.touchAction,
+        userSelect: svg.style.userSelect,
+        display: svg.style.display,
+        maxWidth: svg.style.maxWidth,
+        maxHeight: svg.style.maxHeight,
+        position: svg.style.position,
+        left: svg.style.left,
+        top: svg.style.top,
+        overflow: svg.style.overflow,
+        preserveAspectRatio: svg.getAttribute('preserveAspectRatio'),
+        viewBox: svg.getAttribute('viewBox'),
+        widthAttr: svg.getAttribute('width'),
+        heightAttr: svg.getAttribute('height'),
+    }
+
+    const baseViewBox = measureSvgBaseViewBox(svg)
+    let viewBox: ViewBox = { ...baseViewBox }
+
+    let pinchStart:
+        | {
+              viewBox: ViewBox
+              distance: number
+              midpoint: Point
+          }
+        | null = null
+
+    function applyViewBox() {
+        svg.setAttribute(
+            'viewBox',
+            `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`
+        )
+    }
+
+    function fitToStage() {
+        svg.style.width = '100%'
+        svg.style.height = '100%'
+        svg.style.display = 'block'
+        svg.style.maxWidth = 'none'
+        svg.style.maxHeight = 'none'
+        svg.style.overflow = 'visible'
+        svg.style.position = 'absolute'
+        svg.style.left = '0'
+        svg.style.top = '0'
+
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+        viewBox = { ...baseViewBox }
+        applyViewBox()
+    }
+
+    function getRectSafe() {
+        const rect = svg.getBoundingClientRect()
+        return {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width || 1,
+            height: rect.height || 1,
+        }
+    }
+
+    function panBy(dx: number, dy: number) {
+        if (!isFiniteNumber(dx) || !isFiniteNumber(dy)) return
+
+        const rect = getRectSafe()
+        const factor = Math.max(viewBox.w / rect.width, viewBox.h / rect.height)
+
+        viewBox.x -= dx * factor
+        viewBox.y -= dy * factor
+        applyViewBox()
+    }
+
+    function zoomAt(clientX: number, clientY: number, factor: number) {
+        if (!isFiniteNumber(factor) || factor <= 0) return
+
+        const rect = getRectSafe()
+        const cx = (clientX - rect.left) / rect.width
+        const cy = (clientY - rect.top) / rect.height
+
+        const newW = viewBox.w * factor
+        const newH = viewBox.h * factor
+
+        viewBox.x += (viewBox.w - newW) * cx
+        viewBox.y += (viewBox.h - newH) * cy
+        viewBox.w = newW
+        viewBox.h = newH
+        applyViewBox()
+    }
+
+    function beginPinch(points: [Point, Point]) {
+        const [p1, p2] = points
+        const midpoint = mid(p1, p2)
+
+        pinchStart = {
+            viewBox: { ...viewBox },
+            distance: dist(p1, p2),
+            midpoint,
+        }
+    }
+
+    function updatePinch(points: [Point, Point]) {
+        if (!pinchStart) return
+
+        const [p1, p2] = points
+        const currentDistance = dist(p1, p2)
+        if (!isFiniteNumber(currentDistance) || currentDistance <= 0) return
+
+        const currentMid = mid(p1, p2)
+        const scale = pinchStart.distance / currentDistance
+
+        const newW = pinchStart.viewBox.w * scale
+        const newH = pinchStart.viewBox.h * scale
+
+        const rect = getRectSafe()
+        const startCx = (pinchStart.midpoint.x - rect.left) / rect.width
+        const startCy = (pinchStart.midpoint.y - rect.top) / rect.height
+        const currentCx = (currentMid.x - rect.left) / rect.width
+        const currentCy = (currentMid.y - rect.top) / rect.height
+
+        const anchorX = pinchStart.viewBox.x + pinchStart.viewBox.w * startCx
+        const anchorY = pinchStart.viewBox.y + pinchStart.viewBox.h * startCy
+
+        viewBox.w = newW
+        viewBox.h = newH
+        viewBox.x = anchorX - newW * currentCx
+        viewBox.y = anchorY - newH * currentCy
+        applyViewBox()
+    }
+
+    function zoomWithWheel(e: WheelEvent) {
+        e.preventDefault()
+        zoomAt(e.clientX, e.clientY, Math.exp(e.deltaY * 0.0015))
+    }
+
+    function destroy() {
+        pinchStart = null
+    }
+
+    function resetStyle() {
+        if (prev.transform !== undefined) svg.style.transform = prev.transform
+        if (prev.transformOrigin !== undefined) svg.style.transformOrigin = prev.transformOrigin
+        if (prev.width !== undefined) svg.style.width = prev.width
+        if (prev.height !== undefined) svg.style.height = prev.height
+        if (prev.cursor !== undefined) svg.style.cursor = prev.cursor
+        if (prev.touchAction !== undefined) svg.style.touchAction = prev.touchAction
+        if (prev.userSelect !== undefined) svg.style.userSelect = prev.userSelect
+        if (prev.display !== undefined) svg.style.display = prev.display
+        if (prev.maxWidth !== undefined) svg.style.maxWidth = prev.maxWidth
+        if (prev.maxHeight !== undefined) svg.style.maxHeight = prev.maxHeight
+        if (prev.position !== undefined) svg.style.position = prev.position
+        if (prev.left !== undefined) svg.style.left = prev.left
+        if (prev.top !== undefined) svg.style.top = prev.top
+        if (prev.overflow !== undefined) svg.style.overflow = prev.overflow
+
+        if (prev.preserveAspectRatio === null) {
+            svg.removeAttribute('preserveAspectRatio')
+        } else {
+            svg.setAttribute('preserveAspectRatio', prev.preserveAspectRatio)
+        }
+
+        if (prev.viewBox === null) {
+            svg.removeAttribute('viewBox')
+        } else {
+            svg.setAttribute('viewBox', prev.viewBox)
+        }
+
+        if (prev.widthAttr === null) svg.removeAttribute('width')
+        else svg.setAttribute('width', prev.widthAttr)
+
+        if (prev.heightAttr === null) svg.removeAttribute('height')
+        else svg.setAttribute('height', prev.heightAttr)
+    }
+
+    return {
+        fitToStage,
+        panBy,
+        zoomAt,
+        beginPinch,
+        updatePinch,
+        zoomWithWheel,
+        destroy,
+        resetStyle,
+    }
+}
+
+function bindGestures(
+    content: HTMLElement,
+    adapter: PreviewAdapter
+) {
+    const pointers = new Map<number, Point>()
+    const lastPointers = new Map<number, Point>()
+
+    let pinchActive = false
+    let pinchRafId: number | null = null
+
+    function getPrimaryTwoPoints(): [Point, Point] | null {
+        const pair = [...pointers.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .slice(0, 2)
+            .map(([, p]) => p)
+
+        if (pair.length !== 2) return null
+        return [pair[0]!, pair[1]!]
+    }
+
+    function ensurePinchStarted() {
+        const pair = getPrimaryTwoPoints()
+        if (!pair) return
+        adapter.beginPinch(pair)
+        pinchActive = true
+    }
+
+    function schedulePinchUpdate() {
+        if (pinchRafId !== null) return
+
+        pinchRafId = requestAnimationFrame(() => {
+            pinchRafId = null
+
+            if (pointers.size < 2) return
+
+            const pair = getPrimaryTwoPoints()
+            if (!pair) return
+
+            if (!pinchActive) {
+                adapter.beginPinch(pair)
+                pinchActive = true
+            }
+
+            adapter.updatePinch(pair)
+        })
+    }
+
+    function stopPinchIfNeeded() {
+        if (pointers.size < 2) {
+            pinchActive = false
+        }
+    }
+
+    function onPointerDown(e: PointerEvent) {
+        if (e.pointerType === 'touch') return
+        if (!content.isConnected) return
+
+        e.preventDefault()
+
+        try {
+            content.setPointerCapture(e.pointerId)
+        } catch {
+            // ignore
+        }
+
+        const point = { x: e.clientX, y: e.clientY }
+        pointers.set(e.pointerId, point)
+        lastPointers.set(e.pointerId, point)
+
+        if (pointers.size >= 2) {
+            ensurePinchStarted()
+        }
+    }
+
+    function onPointerMove(e: PointerEvent) {
+        if (e.pointerType === 'touch') return
+        if (!pointers.has(e.pointerId)) return
+        if (!content.isConnected) return
+
+        e.preventDefault()
+
+        const current = { x: e.clientX, y: e.clientY }
+        const previous = lastPointers.get(e.pointerId) ?? current
+
+        pointers.set(e.pointerId, current)
+        lastPointers.set(e.pointerId, current)
+
+        if (pointers.size === 1) {
+            adapter.panBy(current.x - previous.x, current.y - previous.y)
+            return
+        }
+
+        if (pointers.size >= 2) {
+            if (!pinchActive) ensurePinchStarted()
+            schedulePinchUpdate()
+        }
+    }
+
+    function onPointerUp(e: PointerEvent) {
+        if (e.pointerType === 'touch') return
+
+        pointers.delete(e.pointerId)
+        lastPointers.delete(e.pointerId)
+
+        if (pointers.size >= 2) {
+            ensurePinchStarted()
+            schedulePinchUpdate()
+        } else {
+            stopPinchIfNeeded()
+        }
+
+        if (pinchRafId !== null) {
+            cancelAnimationFrame(pinchRafId)
+            pinchRafId = null
+        }
+    }
+
+    function onTouchStart(e: TouchEvent) {
+        if (!content.isConnected) return
+
+        e.preventDefault()
+
+        for (const touch of Array.from(e.changedTouches)) {
+            const point = { x: touch.clientX, y: touch.clientY }
+            pointers.set(touch.identifier, point)
+            lastPointers.set(touch.identifier, point)
+        }
+
+        if (pointers.size >= 2) {
+            ensurePinchStarted()
+        }
+    }
+
+    function onTouchMove(e: TouchEvent) {
+        if (!content.isConnected) return
+
+        e.preventDefault()
+
+        for (const touch of Array.from(e.changedTouches)) {
+            const current = { x: touch.clientX, y: touch.clientY }
+            const previous = lastPointers.get(touch.identifier) ?? current
+
+            pointers.set(touch.identifier, current)
+            lastPointers.set(touch.identifier, current)
+
+            if (pointers.size === 1) {
+                adapter.panBy(current.x - previous.x, current.y - previous.y)
+            }
+        }
+
+        if (pointers.size >= 2) {
+            if (!pinchActive) ensurePinchStarted()
+            schedulePinchUpdate()
+        }
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+        for (const touch of Array.from(e.changedTouches)) {
+            pointers.delete(touch.identifier)
+            lastPointers.delete(touch.identifier)
+        }
+
+        if (pointers.size >= 2) {
+            ensurePinchStarted()
+            schedulePinchUpdate()
+        } else {
+            stopPinchIfNeeded()
+        }
+
+        if (pinchRafId !== null) {
+            cancelAnimationFrame(pinchRafId)
+            pinchRafId = null
+        }
+    }
+
+    content.addEventListener('pointerdown', onPointerDown)
+    content.addEventListener('pointermove', onPointerMove)
+    content.addEventListener('pointerup', onPointerUp)
+    content.addEventListener('pointercancel', onPointerUp)
+    content.addEventListener('lostpointercapture', onPointerUp)
+
+    content.addEventListener('touchstart', onTouchStart, { passive: false })
+    content.addEventListener('touchmove', onTouchMove, { passive: false })
+    content.addEventListener('touchend', onTouchEnd)
+    content.addEventListener('touchcancel', onTouchEnd)
+
+    return {
+        destroy() {
+            content.removeEventListener('pointerdown', onPointerDown)
+            content.removeEventListener('pointermove', onPointerMove)
+            content.removeEventListener('pointerup', onPointerUp)
+            content.removeEventListener('pointercancel', onPointerUp)
+            content.removeEventListener('lostpointercapture', onPointerUp)
+
+            content.removeEventListener('touchstart', onTouchStart)
+            content.removeEventListener('touchmove', onTouchMove)
+            content.removeEventListener('touchend', onTouchEnd)
+            content.removeEventListener('touchcancel', onTouchEnd)
+
+            pointers.clear()
+            lastPointers.clear()
+
+            if (pinchRafId !== null) {
+                cancelAnimationFrame(pinchRafId)
+                pinchRafId = null
+            }
+        },
+    }
 }
 
 export function previewImage(url: string, dispose?: () => void) {
@@ -125,35 +776,16 @@ export function previewImage(url: string, dispose?: () => void) {
         max-height: none;
     `
 
-    const init = (stage: HTMLElement): PreviewController => {
-        const stageRect = stage.getBoundingClientRect()
+    const init = (stage: HTMLElement): PreviewAdapter => {
         const w = img.naturalWidth || 1
         const h = img.naturalHeight || 1
 
-        const fitScale = Math.min(
-            (stageRect.width - 0) / w,
-            (stageRect.height - 0) / h,
-        );
-
-        const x = (stageRect.width - w) / (2 * fitScale)
-        const y = (stageRect.height - h) / (2 * fitScale)
-
-        const panzoom = Panzoom(img, {
-            startScale: fitScale,
+        return createTransformAdapter(img, stage, w, h, {
             minScale: 0.1,
             maxScale: 8,
-            roundPixels: true,
-            cursor: 'grab',
-            touchAction: 'none',
-            startX: x,
-            startY: y,
+            fitPadding: 32,
+            fitMaxScale: 1,
         })
-
-        return {
-            zoomWithWheel: (e: WheelEvent) => panzoom.zoomWithWheel(e),
-            destroy: () => panzoom.destroy(),
-            resetStyle: () => panzoom.resetStyle(),
-        }
     }
 
     if (img.complete && img.naturalWidth > 0) {
@@ -178,277 +810,16 @@ export function previewSvg(svg: SVGSVGElement, dispose?: () => void) {
     cloned.removeAttribute('width')
     cloned.removeAttribute('height')
 
-    type ViewBox = { x: number; y: number; w: number; h: number }
-    type Point = { x: number; y: number }
-
-    function warn(msg: string, data?: any) {
-        console.warn('[util::imagePreview]', msg, data ?? '')
-    }
-
-    function getInitialViewBox(el: SVGSVGElement): ViewBox {
-        const vb = el.viewBox.baseVal
-
-        if (vb && vb.width > 0 && vb.height > 0) {
-            return { x: vb.x, y: vb.y, w: vb.width, h: vb.height }
-        }
-
-        try {
-            const bbox = el.getBBox()
-            if (bbox.width > 0 && bbox.height > 0) {
-                return { x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height }
-            }
-        } catch (e) {
-            warn('getBBox failed', e)
-        }
-
-        warn('fallback viewBox used')
-        return { x: 0, y: 0, w: 100, h: 100 }
-    }
-
-    let viewBox = getInitialViewBox(cloned)
-
-    function updateViewBox() {
-        if (
-            !isFinite(viewBox.x) ||
-            !isFinite(viewBox.y) ||
-            !isFinite(viewBox.w) ||
-            !isFinite(viewBox.h)
-        ) {
-            warn('Invalid viewBox prevented', { ...viewBox })
-            return
-        }
-
-        cloned.setAttribute(
-            'viewBox',
-            `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`
-        )
-    }
-
-    updateViewBox()
-
     cloned.style.cssText = `
         display: block;
-        width: 100%;
-        height: 100%;
-        cursor: grab;
-        touch-action: none;
-        user-select: none;
+        max-width: none;
+        max-height: none;
+        overflow: visible;
     `
 
-    const pointers = new Map<number, Point>()
-    const lastPointers = new Map<number, Point>()
-
-    let gestureStart: {
-        viewBox: ViewBox
-        distance: number
-        midpoint: Point
-    } | null = null
-
-    let rafId: number | null = null
-
-    function dist(a: Point, b: Point) {
-        return Math.hypot(a.x - b.x, a.y - b.y)
-    }
-
-    function mid(a: Point, b: Point) {
-        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
-    }
-
-    function getRectSafe() {
-        const rect = cloned.getBoundingClientRect()
-
-        if (!rect.width || !rect.height) {
-            warn('getBoundingClientRect returned zero size', rect)
-        }
-
-        return {
-            left: rect.left,
-            top: rect.top,
-            width: rect.width || 1,
-            height: rect.height || 1,
-        }
-    }
-
-    function schedulePinchUpdate() {
-        if (rafId !== null) return
-
-        rafId = requestAnimationFrame(() => {
-            rafId = null
-
-            if (pointers.size !== 2 || !gestureStart) return
-
-            const [p1, p2] = [...pointers.values()]
-            if (!(p1 && p2)) return
-
-            const rect = getRectSafe()
-
-            const currentMid = mid(p1, p2)
-            const currentDistance = dist(p1, p2)
-
-            if (!isFinite(currentDistance) || currentDistance <= 0) {
-                warn('Invalid distance', currentDistance)
-                return
-            }
-
-            const scale = gestureStart.distance / currentDistance
-            if (!isFinite(scale)) {
-                warn('Invalid scale', scale)
-                return
-            }
-
-            const newW = gestureStart.viewBox.w * scale
-            const newH = gestureStart.viewBox.h * scale
-
-            const startCx =
-                (gestureStart.midpoint.x - rect.left) / rect.width
-            const startCy =
-                (gestureStart.midpoint.y - rect.top) / rect.height
-            const currentCx = (currentMid.x - rect.left) / rect.width
-            const currentCy = (currentMid.y - rect.top) / rect.height
-
-            const anchorX =
-                gestureStart.viewBox.x + gestureStart.viewBox.w * startCx
-            const anchorY =
-                gestureStart.viewBox.y + gestureStart.viewBox.h * startCy
-
-            viewBox.w = newW
-            viewBox.h = newH
-            viewBox.x = anchorX - newW * currentCx
-            viewBox.y = anchorY - newH * currentCy
-
-            updateViewBox()
-        })
-    }
-
-    function onPointerDown(e: PointerEvent) {
-        if (!cloned.isConnected) return
-
-        e.preventDefault()
-
-        try {
-            cloned.setPointerCapture(e.pointerId)
-        } catch (err) {
-            warn('setPointerCapture failed', err)
-        }
-
-        const point = { x: e.clientX, y: e.clientY }
-        pointers.set(e.pointerId, point)
-        lastPointers.set(e.pointerId, point)
-
-        if (pointers.size === 2) {
-            const [p1, p2] = [...pointers.values()]
-            if (!(p1 && p2)) return
-
-            gestureStart = {
-                viewBox: { ...viewBox },
-                distance: dist(p1, p2),
-                midpoint: mid(p1, p2),
-            }
-        }
-    }
-
-    function onPointerMove(e: PointerEvent) {
-        if (!pointers.has(e.pointerId)) return
-
-        e.preventDefault()
-
-        const current = { x: e.clientX, y: e.clientY }
-        const previous = lastPointers.get(e.pointerId) ?? current
-
-        pointers.set(e.pointerId, current)
-        lastPointers.set(e.pointerId, current)
-
-        const rect = getRectSafe()
-
-        if (pointers.size === 1) {
-            const dx = current.x - previous.x
-            const dy = current.y - previous.y
-
-            const factor = Math.max(
-                viewBox.w / rect.width,
-                viewBox.h / rect.height
-            )
-
-            if (!isFinite(factor)) {
-                warn('Invalid pan factor', factor)
-                return
-            }
-
-            viewBox.x -= dx * factor
-            viewBox.y -= dy * factor
-
-            updateViewBox()
-            return
-        }
-
-        if (pointers.size === 2 && gestureStart) {
-            schedulePinchUpdate()
-        }
-    }
-
-    function endPointer(e: PointerEvent) {
-        pointers.delete(e.pointerId)
-        lastPointers.delete(e.pointerId)
-
-        if (pointers.size < 2) {
-            gestureStart = null
-        }
-
-        if (rafId !== null) {
-            cancelAnimationFrame(rafId)
-            rafId = null
-        }
-    }
-
-    function onWheel(e: WheelEvent) {
-        e.preventDefault()
-
-        const zoomFactor = Math.exp(e.deltaY * 0.0015)
-
-        if (!isFinite(zoomFactor)) {
-            warn('Invalid zoomFactor', zoomFactor)
-            return
-        }
-
-        const rect = getRectSafe()
-
-        const cx = (e.clientX - rect.left) / rect.width
-        const cy = (e.clientY - rect.top) / rect.height
-
-        const newW = viewBox.w * zoomFactor
-        const newH = viewBox.h * zoomFactor
-
-        viewBox.x += (viewBox.w - newW) * cx
-        viewBox.y += (viewBox.h - newH) * cy
-        viewBox.w = newW
-        viewBox.h = newH
-
-        updateViewBox()
-    }
-
-    const init = (): PreviewController => {
-        cloned.addEventListener('pointerdown', onPointerDown)
-        cloned.addEventListener('pointermove', onPointerMove)
-        cloned.addEventListener('pointerup', endPointer)
-        cloned.addEventListener('pointercancel', endPointer)
-        cloned.addEventListener('lostpointercapture', endPointer)
-        cloned.addEventListener('wheel', onWheel, { passive: false })
-
-        return {
-            zoomWithWheel: onWheel,
-            destroy() {
-                cloned.removeEventListener('pointerdown', onPointerDown)
-                cloned.removeEventListener('pointermove', onPointerMove)
-                cloned.removeEventListener('pointerup', endPointer)
-                cloned.removeEventListener('pointercancel', endPointer)
-                cloned.removeEventListener('lostpointercapture', endPointer)
-                cloned.removeEventListener('wheel', onWheel)
-            },
-            resetStyle() {},
-        }
+    const init = (_stage: HTMLElement): PreviewAdapter => {
+        return createSvgViewBoxAdapter(cloned)
     }
 
     return createPreview(cloned as unknown as HTMLElement, init, dispose)
 }
-
-
