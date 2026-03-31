@@ -16,33 +16,33 @@
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.showRaw') }}</template>
-                <a-button type="text" shape="circle" aria-label="Toggle raw message" @click="emit('update:showRawMessage', !props.showRawMessage)">
+                <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.showRaw')" @click="emit('update:showRawMessage', !props.showRawMessage)">
                     <CompressOutlined v-if="!props.showRawMessage" />
                     <ExpandOutlined v-else />
                 </a-button>
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.edit') }}</template>
-                <a-button type="text" shape="circle" aria-label="Edit message" @click="emit('edit-message')" :disabled="props.disabled || isPending">
+                <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.edit')" @click="emit('edit-message')" :disabled="props.disabled || isPending">
                     <EditOutlined />
                 </a-button>
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.regenerate') }}</template>
-                <a-button type="text" shape="circle" aria-label="Regenerate message" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.regenerate')" @click="emit('regenerate-message')" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                     <RedoOutlined />
                 </a-button>
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.like') }}</template>
-                <a-button type="text" shape="circle" aria-label="Like message" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.like')" @click="emit('like-message', currentLikeState === 1 ? MessageFeedback.NotProvided : MessageFeedback.Positive)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                     <LikeFilled v-if="currentLikeState === 1" />
                     <LikeOutlined v-else />
                 </a-button>
             </a-tooltip>
             <a-tooltip>
                 <template #title>{{ t('chat:messageOperations.dislike') }}</template>
-                <a-button type="text" shape="circle" aria-label="Dislike message" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
+                <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.dislike')" @click="emit('like-message', currentLikeState === -1 ? MessageFeedback.NotProvided : MessageFeedback.Negative)" v-if="props.message.role === MessageRole.Assistant" :disabled="props.disabled || isPending">
                     <DislikeFilled v-if="currentLikeState === -1" />
                     <DislikeOutlined v-else />
                 </a-button>
@@ -97,7 +97,7 @@
                 </template>
                 <a-tooltip>
                     <template #title>{{ t('chat:messageOperations.more') }}</template>
-                    <a-button type="text" shape="circle" aria-label="More options">
+                    <a-button type="text" shape="circle" :aria-label="t('chat:messageOperations.more')">
                         <MoreOutlined />
                     </a-button>
                 </a-tooltip>

@@ -1,5 +1,5 @@
 <template>
-   <div class="file-reference-container" ref="container" @wheel.prevent="transformWheel">
+   <div class="file-reference-container" ref="container" @wheel="transformWheel" data-ro="!props.canRemove">
         <div v-if="props.align === 'right'" style="flex: 1;" aria-hidden="true"></div>
         <div v-if="props.canRemove && props.references.length > 5" class="file-reference-item" @click.stop="!props.disabled && emit('remove-all')">
             <a-button type="text" danger @click.stop="!props.disabled && emit('remove-all')" :disabled="props.disabled">
@@ -102,6 +102,7 @@ const { showPreview, previewPrepared } = (() => {
 const previewId = ref("");
 
 const transformWheel = (e: WheelEvent) => {
+    if (!props.canRemove) return;
     e.preventDefault();
     if (!container.value) return;
     container.value.scrollTo({
@@ -146,7 +147,7 @@ watch(() => showPreview.value, (newValue) => {
             const info = props.references.find((item) => item.id === previewId.value);
             if (!info) throw "File info not found";
             if (!info.type.startsWith('image/')) previewPrepared.value = true;
-            const file = await GetAttachmentById(previewId.value);
+            const file = await GetAttachmentById(previewId.value, info.type);
             if (tempObjUrl.value) {
                 URL.revokeObjectURL(tempObjUrl.value);
                 tempObjUrl.value = "";
@@ -216,6 +217,7 @@ const downloadCurrentFile = async () => {
     align-items: center;
     background-color: var(--file-reference-bg-color, #fff);
     border: 1px solid var(--file-reference-border-color, #ccc);
+    color: var(--file-reference-text-color);
     border-radius: 10px;
     padding: 0.2em 0.5em;
     gap: 6px;
@@ -223,12 +225,23 @@ const downloadCurrentFile = async () => {
     cursor: pointer;
 }
 
-.file-reference-item[data-disabled="true"] {
-    cursor: not-allowed;
+.file-reference-container[data-ro="true"] {
+    flex-wrap: wrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
-.file-reference-item:hover {
+.file-reference-item[data-disabled="true"] {
+    cursor: not-allowed;
+    color: var(--file-reference-text-color-disabled, #aaa);
+}
+
+.file-reference-item:not([data-disabled="true"]):hover {
     background-color: var(--file-reference-hover-bg-color, #f0f0f0);
+}
+
+.file-reference-item:not([data-disabled="true"]):active {
+    background-color: var(--file-reference-active-bg-color, #e7e7e7);
 }
 
 .preview-dialog {

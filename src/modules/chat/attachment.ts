@@ -74,7 +74,13 @@ export async function PutAttachment(data: Blob | File, weak: boolean = false): P
             ++idx.referenceCount;
             await useConversationStore().setAttachmentIndex(idx.hash, idx);
         }
-        return StripAttachmentInternalInfo(idx);
+        return {
+            id: idx.id,
+            name: data instanceof File ? data.name : idx.id,
+            type: data.type || 'application/octet-stream',
+            size: data.size,
+            hash,
+        };
     }
     // if not, create a new entry
     const id = crypto.randomUUID();
