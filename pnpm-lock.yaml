@@ -87,8 +87,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       lite-image-preview:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.4
+        version: 1.0.4
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1814,8 +1814,8 @@ packages:
   lit@3.3.2:
     resolution: {integrity: sha512-NF9zbsP79l4ao2SNrH3NkfmFgN/hBYSQo90saIVI1o5GpjAdCPVstVzO1MrLOakHoEhYkrtRjPK6Ob521aoYWQ==}
 
-  lite-image-preview@1.0.2:
-    resolution: {integrity: sha512-cjSJxrIFSyggiZm5O6ejO5geTECWuRrfzPuL5gjPIfKqb+y+URRTi14ULh8zBxJyf0rFOXDhzEcUGKWlB+QARg==}
+  lite-image-preview@1.0.4:
+    resolution: {integrity: sha512-l9P/bPx+0gVqU3ML1EMDZjzm40cAnDL+zw2EOEWF9aaTJSDSHdJLAncz3pwACtxtM7rNnL5vUbR3Z5qOAd947Q==}
 
   local-pkg@1.1.2:
     resolution: {integrity: sha512-arhlxbFRmoQHl33a0Zkle/YWlmNwoyt6QNZEIJcqNbdrsix5Lvc4HyyI3EnwxTYlZYc32EbYrQ8SzEZ7dqgg9A==}
@@ -4159,7 +4159,7 @@ snapshots:
       lit-element: 4.2.2
       lit-html: 3.3.2
 
-  lite-image-preview@1.0.2: {}
+  lite-image-preview@1.0.4: {}
 
   local-pkg@1.1.2:
     dependencies:

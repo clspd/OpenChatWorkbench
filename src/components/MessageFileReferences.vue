@@ -1,43 +1,45 @@
 <template>
-   <div class="file-reference-container" ref="container" @wheel="transformWheel" data-ro="!props.canRemove">
+    <div class="file-reference-root-container" @wheel="transformWheel">
         <div v-if="props.align === 'right'" style="flex: 1;" aria-hidden="true"></div>
-        <div v-if="props.canRemove && props.references.length > 5" class="file-reference-item" @click.stop="!props.disabled && emit('remove-all')">
-            <a-button type="text" danger @click.stop="!props.disabled && emit('remove-all')" :disabled="props.disabled">
-                {{ t("common:ui.mainInput.removeAllAttaLabel") }}
-            </a-button>
-        </div>
-        <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)" :data-disabled="props.disabled">
-            <div class="file-icon">
-                <FileOutlined />
-            </div>
-            <div class="file-info">
-                <div class="file-name">{{ file.name }}</div>
-                <div class="file-size">{{ file.size }}B</div>
-            </div>
-            <div class="file-operation" @click.stop @keydown.stop>
-                <a-button type="text" shape="circle" @click.stop="emit('remove-file', file.id)" v-if="props.canRemove" :disabled="props.disabled">
-                    <CloseOutlined />
+        <div class="file-reference-container" ref="container" :data-ro="!props.canRemove">
+            <div v-if="props.canRemove && props.references.length > 5" class="file-reference-item" @click.stop="!props.disabled && emit('remove-all')">
+                <a-button type="text" danger @click.stop="!props.disabled && emit('remove-all')" :disabled="props.disabled">
+                    {{ t("common:ui.mainInput.removeAllAttaLabel") }}
                 </a-button>
             </div>
-        </div>
-        <div v-if="hasUploading" class="file-reference-item">
-            {{ t("common:ui.mainInput.uploading") }}
-        </div>
-        <div v-else-if="props.references.length > 5" class="file-reference-item" @click="scrollToStart" @keydown.enter.prevent="scrollToStart">
-            <ArrowLeftOutlined />
-        </div>
-
-        <DialogView v-if="showPreview && previewPrepared" v-model="showPreview" class="preview-dialog">
-            <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
-            <common-file-preview class="preview-body" ref="previewElement" :data-auto-wrap="autowrapEnabled" />
-            <div class="preview-floating-buttons">
-                <a-button aria-label="Toggle auto wrap" shape="circle" @click="autowrapEnabled = !autowrapEnabled">
-                    <SwapRightOutlined v-if="autowrapEnabled" />
-                    <EnterOutlined v-else />
-                </a-button>
-                <a-button type="primary" aria-label="Download" shape="circle" @click="downloadCurrentFile"><DownloadOutlined /></a-button>
+            <div v-for="file in props.references" :key="file.id" class="file-reference-item" role="link" tabindex="0" @click="previewFile(file.id)" @keydown.self.enter.prevent="previewFile(file.id)" :data-disabled="props.disabled" :aria-disabled="props.disabled">
+                <div class="file-icon">
+                    <FileOutlined />
+                </div>
+                <div class="file-info">
+                    <div class="file-name">{{ file.name }}</div>
+                    <div class="file-size">{{ file.size }}B</div>
+                </div>
+                <div class="file-operation" @click.stop @keydown.stop>
+                    <a-button type="text" shape="circle" @click.stop="emit('remove-file', file.id)" v-if="props.canRemove" :disabled="props.disabled">
+                        <CloseOutlined />
+                    </a-button>
+                </div>
             </div>
-        </DialogView>
+            <div v-if="hasUploading" class="file-reference-item">
+                {{ t("common:ui.mainInput.uploading") }}
+            </div>
+            <div v-else-if="props.references.length > 5 && props.canRemove" class="file-reference-item" @click="scrollToStart" @keydown.enter.prevent="scrollToStart">
+                <ArrowLeftOutlined />
+            </div>
+    
+            <DialogView v-if="showPreview && previewPrepared" v-model="showPreview" class="preview-dialog">
+                <template #title>{{ t("chat:messageChain.files.previewDlg.title") }}</template>
+                <common-file-preview class="preview-body" ref="previewElement" :data-auto-wrap="autowrapEnabled" />
+                <div class="preview-floating-buttons">
+                    <a-button aria-label="Toggle auto wrap" shape="circle" @click="autowrapEnabled = !autowrapEnabled">
+                        <SwapRightOutlined v-if="autowrapEnabled" />
+                        <EnterOutlined v-else />
+                    </a-button>
+                    <a-button type="primary" aria-label="Download" shape="circle" @click="downloadCurrentFile"><DownloadOutlined /></a-button>
+                </div>
+            </DialogView>
+        </div>
     </div>
 </template>
 
@@ -199,6 +201,12 @@ const downloadCurrentFile = async () => {
 </script>
 
 <style scoped>
+.file-reference-root-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5em;
+}
+
 .file-reference-container {
     display: flex;
     flex-wrap: nowrap;
@@ -229,6 +237,7 @@ const downloadCurrentFile = async () => {
     flex-wrap: wrap;
     white-space: normal;
     overflow-wrap: anywhere;
+    overflow: hidden;
 }
 
 .file-reference-item[data-disabled="true"] {

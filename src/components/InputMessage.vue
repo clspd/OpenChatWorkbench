@@ -315,7 +315,7 @@ const eatFile = async (files: File[]) => {
                     onCancel: () => r(false),
                 }))) continue;
             }
-            else if (file.size > mySize) {
+            else if (!file.type.startsWith('image/') && file.size > mySize) {
                 if (!await new Promise(r => Modal.confirm({
                     title: t('common:ui.mainInput.confirmUploadLargeFile.title'),
                     content: t('common:ui.mainInput.confirmUploadLargeFile.content', { fileName: file.name, fileSize: (file.size / (1024 * 1024)).toFixed(2) }),

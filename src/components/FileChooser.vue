@@ -137,12 +137,12 @@ watch(() => props.dndTarget, (newTarget, oldTarget) => {
     if (oldTarget) {
         oldTarget.removeEventListener('dragover', onDragOver);
         oldTarget.removeEventListener('dragleave', onDragLeave);
-        oldTarget.removeEventListener('paste', onPaste);
+        oldTarget.removeEventListener('paste', onPaste, true);
     }
     if (newTarget) {
         newTarget.addEventListener('dragover', onDragOver);
         newTarget.addEventListener('dragleave', onDragLeave);
-        newTarget.addEventListener('paste', onPaste);
+        newTarget.addEventListener('paste', onPaste, true);
     }
 }, { immediate: true });
 
@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
     if (props.dndTarget) {
         props.dndTarget.removeEventListener('dragover', onDragOver);
         props.dndTarget.removeEventListener('dragleave', onDragLeave);
-        props.dndTarget.removeEventListener('paste', onPaste);
+        props.dndTarget.removeEventListener('paste', onPaste, true);
     }
 });
 

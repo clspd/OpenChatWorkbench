@@ -139,6 +139,7 @@ const vOptions = computed(() => ({
     getScrollElement: () => (appState.mainContentViewEl as any)?.$el || null,
     estimateSize: () => 3000,
     overscan: 5,
+    gap: 10,
     useScrollendEvent: !isSafari,
     shouldAdjustScrollPositionOnItemSizeChange: ((item: VirtualItem, delta: number, instance: Virtualizer<any, any>): boolean => {
         return (item.index === instance.getVirtualIndexes().length - 1) ? (false): true;
@@ -302,9 +303,6 @@ const handleSaveEdit = async () => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-.vItem + .vItem {
-    margin-top: 1em;
 }
 .fragment-editor {
     width: 100%;
