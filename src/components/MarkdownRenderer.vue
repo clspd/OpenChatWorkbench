@@ -50,7 +50,7 @@ import morphdom from 'morphdom';
 import { getSafeHTML } from '@/utils/htmlpurify';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
 import { OCW_CODE_BLOCK_TAG_NAME } from '@/modules/webcomponents/ocw-code-block';
-import { previewSvg } from '@/utils/imagePreview';
+import { previewSvg } from 'lite-image-preview';
 import '@/styles/markdown-beautify.css'
 
 const router = useRouter();

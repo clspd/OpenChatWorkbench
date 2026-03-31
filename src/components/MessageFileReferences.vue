@@ -52,7 +52,7 @@ import { t } from 'i18next';
 import { HTMLCommonFilePreviewElement } from 'common-file-preview';
 import { GetAttachmentById } from '@/modules/chat/attachment';
 import { useAppStatePersistStore } from '@/stores/appStatePersist';
-import { previewImage } from '@/utils/imagePreview';
+import { previewImage } from 'lite-image-preview';
 
 const appStatePersist = useAppStatePersistStore();
 
