@@ -48,16 +48,16 @@ const emit = defineEmits<{
     (e: 'directorycontent', directorycontent: Map<string, FileSystemFileHandle>): void;
 }>();
 
-const suppotsFileSystemAccess = computed(() => {
+const supportsFileSystemAccess = computed(() => {
     return 'showOpenFilePicker' in window && 'showDirectoryPicker' in window && typeof window.showOpenFilePicker === 'function' && typeof window.showDirectoryPicker === 'function';
 });
 
 defineExpose({
     fsSupported() {
-        return suppotsFileSystemAccess.value;
+        return supportsFileSystemAccess.value;
     },
     requestFile() {
-        if (suppotsFileSystemAccess.value) {
+        if (supportsFileSystemAccess.value) {
             if (props.type === 'file') {
                 this.requestFSFileHandle(true, true);
             }
@@ -244,78 +244,151 @@ function createFileNameProxy(file: File, name: string) {
     return proxy;
 }
 
-function processDataTransfer(dt: DataTransfer) {
-    const result1: File[] = [],
-        result2: FileSystemFileHandle[] = [],
-        result3: FileSystemDirectoryHandle[] = [],
-        result4: Map<string, FileSystemFileHandle> = new Map();
-    const fsh: Promise<FileSystemHandle | null>[] = [];
-    let wrongTypeCount = 0;
-    const names = new Set<string>();
+interface TransferItemSnapshot {
+    file: File | null;
+    handlePromise: Promise<FileSystemHandle | null> | null;
+}
+
+interface TransferBuckets {
+    files: File[];
+    fileHandles: FileSystemFileHandle[];
+    directoryHandles: FileSystemDirectoryHandle[];
+    directoryContent: Map<string, FileSystemFileHandle>;
+    wrongTypeCount: number;
+}
+
+function snapshotDataTransfer(dt: DataTransfer): TransferItemSnapshot[] {
+    const items: TransferItemSnapshot[] = [];
+
     for (const item of dt.items) {
         if (item.kind !== 'file') continue;
-        if (!suppotsFileSystemAccess.value) {
-            const file = item.getAsFile();
-            if (!file) {
-                wrongTypeCount++;
-                continue;
+
+        const file = item.getAsFile();
+
+        const handlePromise = (() => {
+            const getter = (item as DataTransferItem & {
+                getAsFileSystemHandle?: () => Promise<FileSystemHandle | null>;
+            }).getAsFileSystemHandle;
+            if (typeof getter !== 'function') return null;
+            try {
+                return getter.call(item).catch(() => null);
+            } catch {
+                return null;
             }
-            result1.push(file);
-        } else {
-            fsh.push(item.getAsFileSystemHandle());
-        }
+        })();
+
+        // 两者都没有就直接忽略这个 item
+        if (!file && !handlePromise) continue;
+
+        items.push({ file, handlePromise });
     }
 
-    return (async () => {
-        if (suppotsFileSystemAccess.value) {
-            const handles = await Promise.all(fsh);
-            for (const handle of handles) {
-                if (!handle) continue;
+    return items;
+}
 
-                if (handle.kind === 'file' && props.type === 'filehandle') {
-                    result2.push(handle as FileSystemFileHandle);
-                } else if (handle.kind === 'directory') {
-                    if (!props.recursiveReadDirectory) {
-                        if (props.type === 'directory')
-                            result3.push(handle as FileSystemDirectoryHandle);
-                        else wrongTypeCount++;
+function uniqueName(base: string, used: Set<string>) {
+    let name = base;
+    let n = 0;
+    while (used.has(name)) {
+        name = `${base} (${++n})`;
+        if (n > 999) throw new Error('Too many items with the same name');
+    }
+    used.add(name);
+    return name;
+}
+
+function processDataTransfer(dt: DataTransfer) {
+    const snapshots = snapshotDataTransfer(dt);
+
+    return (async () => {
+        const handles = await Promise.all(
+            snapshots.map(item => item.handlePromise ?? Promise.resolve(null))
+        );
+
+        const buckets: TransferBuckets = {
+            files: [],
+            fileHandles: [],
+            directoryHandles: [],
+            directoryContent: new Map<string, FileSystemFileHandle>(),
+            wrongTypeCount: 0,
+        };
+
+        const usedRootNames = new Set<string>();
+
+        for (let i = 0; i < snapshots.length; i++) {
+            const snapshot = snapshots[i]!; const { file } = snapshot;
+            const handle = handles[i];
+
+            // 优先 handle，handle 不可用时再 fallback 到 file
+            if (handle) {
+                if (handle.kind === 'file') {
+                    if (props.type === 'filehandle') {
+                        buckets.fileHandles.push(handle as FileSystemFileHandle);
+                    } else if (props.type === 'file') {
+                        buckets.files.push(await (handle as FileSystemFileHandle).getFile());
                     } else {
-                        let name = handle.name, n = 0;
-                        while (names.has(name)) {
-                            name = `${handle.name} (${++n})`;
-                            if (n > 999) throw new Error('Too many directories with the same name');
-                        }
-                        names.add(name);
-                        const files = await readdir(handle as FileSystemDirectoryHandle, name + '/');
-                        for (const [name, handle] of files) {
-                            if (props.type === 'file') {
-                                // compatible mode
-                                const file = (await (handle as FileSystemFileHandle).getFile());
-                                result1.push(createFileNameProxy(file, name));
+                        buckets.wrongTypeCount++;
+                    }
+                    continue;
+                }
+
+                if (handle.kind === 'directory') {
+                    const dirHandle = handle as FileSystemDirectoryHandle;
+
+                    if (props.recursiveReadDirectory) {
+                        const rootName = uniqueName(dirHandle.name, usedRootNames);
+                        const files = await readdir(dirHandle, rootName + '/');
+
+                        if (props.type === 'file') {
+                            for (const [name, fh] of files) {
+                                const f = await fh.getFile();
+                                buckets.files.push(createFileNameProxy(f, name));
                             }
-                            else result4.set(name, handle);
+                        } else if (props.type === 'directory') {
+                            for (const [name, fh] of files) {
+                                buckets.directoryContent.set(name, fh);
+                            }
+                        } else {
+                            buckets.wrongTypeCount++;
+                        }
+                    } else {
+                        if (props.type === 'directory') {
+                            buckets.directoryHandles.push(dirHandle);
+                        } else {
+                            buckets.wrongTypeCount++;
                         }
                     }
-                } else if (handle.kind === 'file' && props.type === 'file') {
-                    result1.push(await (handle as FileSystemFileHandle).getFile());
-                } else {
-                    wrongTypeCount++;
+
+                    continue;
                 }
+
+                buckets.wrongTypeCount++;
+                continue;
+            }
+
+            // 没拿到 handle，就回退到 file
+            if (file) {
+                if (props.type === 'file') {
+                    buckets.files.push(file);
+                } else {
+                    buckets.wrongTypeCount++;
+                }
+            } else {
+                buckets.wrongTypeCount++;
             }
         }
-        else return emit('file', result1); // if browser not support file system access, we can only get 'result1'
 
-        if (wrongTypeCount > 0) {
-            message.warn(t('common:ui.fileChooser.dnd.error.wrongType', { count: wrongTypeCount }));
+        if (buckets.wrongTypeCount > 0) {
+            message.warn(t('common:ui.fileChooser.dnd.error.wrongType', { count: buckets.wrongTypeCount }));
         }
 
         if (props.type === 'file') {
-            emit('file', result1);
+            emit('file', buckets.files);
         } else if (props.type === 'filehandle') {
-            emit('filehandle', result2);
+            emit('filehandle', buckets.fileHandles);
         } else if (props.type === 'directory') {
-            if (props.recursiveReadDirectory) emit('directorycontent', result4);
-            else emit('directory', result3);
+            if (props.recursiveReadDirectory) emit('directorycontent', buckets.directoryContent);
+            else emit('directory', buckets.directoryHandles);
         }
     })();
 }
