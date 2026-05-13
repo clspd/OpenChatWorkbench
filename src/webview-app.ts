@@ -3,7 +3,6 @@ import WebViewApp from "./views/WebViewApp.vue";
 import I18NextVue from 'i18next-vue'
 import i18next from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
-i18next.options.showSupportNotice = false;
 
 if (window.parent === window.self) {
     document.body.appendChild(document.createElement('div')).append('This page is not intended to be accessed directly.')

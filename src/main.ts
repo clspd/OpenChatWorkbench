@@ -24,7 +24,6 @@ await importModule("/internal/init_config.js?ts=" + init_config_ts_value);
 import i18next from 'i18next'
 import I18NextVue from 'i18next-vue'
 import './i18n'
-i18next.options.showSupportNotice = false;
 
 import './styles/style.css'
 import './styles/vars.css'

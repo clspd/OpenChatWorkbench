@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import addCSS from 'add-css-constructed';
+import addCSS, { removeCSS } from 'add-css-constructed';
 import { load_katex } from '@/vendor/npm/katex';
 
 const katex = await load_katex();
@@ -20,16 +20,16 @@ const [md_blank_line_spacer_name, remove] = (function () {
     const array = new Uint8Array(16);
     window.crypto.getRandomValues(array);
     const md_blank_line_spacer_name = 'a-' + array.join('-');
-    const { remove } = addCSS(`.renderer.markdown-renderer.renderer-main .${md_blank_line_spacer_name} {display: block}.renderer.markdown-renderer.renderer-main[data-isregular="true"] .${md_blank_line_spacer_name} {display: none}`);
+    const sheet = addCSS(`.renderer.markdown-renderer.renderer-main .${md_blank_line_spacer_name} {display: block}.renderer.markdown-renderer.renderer-main[data-isregular="true"] .${md_blank_line_spacer_name} {display: none}`);
     console.log('[MarkdownRenderer]', 'inject global stylesheet');
-    return [md_blank_line_spacer_name, remove];
+    return [md_blank_line_spacer_name, () => removeCSS(sheet)];
 }());
 
 const removes = [remove];
 
 removes.push(...([
     
-].map((v) => addCSS(v).remove)));
+].map((v) => () => removeCSS(addCSS(v)))));
 
 if (import.meta.hot) {
     import.meta.hot.dispose(() => {
