@@ -10,7 +10,7 @@ import './userdata'
 
 await new Promise<void>((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = '/resource/importer@1.0.0.js';
+    s.src = '/resource/importer@1.0.1.js';
     s.onload = () => resolve(), s.onerror = reject;
     document.head.append(s);
 }).catch((e) => {
